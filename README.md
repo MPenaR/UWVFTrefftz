@@ -1,4 +1,4 @@
 # UWVFTrefftz
-Ultra Weak Variational Formulatin of a Trefftz Method on a waveguide
+Ultra Weak Variational Formulation of a Trefftz Method on a waveguide.
 
-![](./random.png)
+![Trefftz function](./random.png)
