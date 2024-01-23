@@ -1,0 +1,407 @@
+
+import numpy as np
+from numpy import dot, pi, exp, sqrt, sin
+from numpy.linalg import norm
+from collections import namedtuple
+from labels import EdgeType
+
+TestFunction = namedtuple("TestFunction", ["k", "d"])
+
+
+
+class TrefftzSpace:
+    '''Defines a finite dimensional Trefftz space given
+    a mesh, the number of plane-waves per element and 
+    the wave-numbers.
+
+    It can create test and trial functions, aswell as 
+    actual functions.
+    '''
+
+    def __init__( self, Omega, DOF_per_element : tuple[int], kappa : dict[str, float], th0=0 ):
+        self.Omega = Omega
+        self.N_elements = Omega.ne
+        self.kappa = np.zeros(self.N_elements,dtype=np.float64)
+        for e in Omega.Elements():
+            self.kappa[e.faces[0].nr] = kappa[e.mat]
+        
+        
+        if hasattr(DOF_per_element, '__iter__'):
+            assert Omega.ne == len(DOF_per_element)
+            self.local_N_DOF = np.array( DOF_per_element )
+        else:
+            self.local_N_DOF = np.full_like(self.kappa, fill_value=DOF_per_element,dtype=np.int32)
+        self.N_DOF = np.sum(self.local_N_DOF)
+
+        self.d = [ np.array([[np.cos(th0 +th), np.sin(th0+th)] for th in np.linspace(0,2*pi,N,endpoint=False)]) 
+                  for N in self.local_N_DOF ] 
+
+
+        self.DOF_ownership = np.repeat( range(self.N_elements), self.local_N_DOF)
+        self.DOF_start = np.cumsum(self.local_N_DOF) - self.local_N_DOF
+        self.DOF_end = np.cumsum(self.local_N_DOF)
+        self.DOF_range = [ list(range(s,e)) for (s,e) in zip(self.DOF_start,self.DOF_end)]
+        self.global_to_local = np.array( [ n for N in self.local_N_DOF for n in range(N)])
+
+    @property
+    def TestFunctions( self ):
+        return [ TestFunction( k= self.kappa[self.DOF_ownership[n]], d=self.d[self.DOF_ownership[n]][self.global_to_local[n]]) for n in range(self.N_DOF)]
+    @property
+    def TrialFunctions( self ):
+        return [ TestFunction( k= self.kappa[self.DOF_ownership[n]], d=self.d[self.DOF_ownership[n]][self.global_to_local[n]]) for n in range(self.N_DOF)]
+
+
+
+
+class TrefftzFunction:
+    def __init__( self, V, DOFs = 0.):
+        '''Returns a Trefftz function with degrees of freedom set to "DOFs"'''
+        self.V = V
+        self.DOFs = DOFs
+
+
+    def Element(self, x, y ):
+        return self.V.Omega(x,y).nr
+    
+    @property
+    def DOFs( self ):
+        return self._DOFs
+
+    
+    @DOFs.setter
+    def DOFs( self, values):
+        if hasattr(values, '__iter__'):
+            assert self.V.N_DOF == len(values)
+            self._DOFs = np.array(values)
+        else:
+            self._DOFs = np.full( self.V.N_DOF, values, dtype=np.complex128)
+
+
+    def __call__(self, x, y ):
+        e = self.Element(x,y)
+        k = self.V.kappa[e]
+        P = self.DOFs[self.V.DOF_range[e]]
+        D = self.V.d[e]
+
+        r = np.array([x,y])
+        y = sum( p*np.exp(1j*k*dot(d,r)) for (p,d) in zip(P,D) )
+        return y 
+
+
+
+def Gamma_term(phi, psi, edge, k, d_1):
+
+    d_m = psi.d
+    d_n = phi.d
+    
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = (1 + d_1 * dot(d_n, N))*dot(d_m, N)
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return -1j*k*l* I
+    else:
+        return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
+    
+
+
+
+def Inner_term_PP(phi, psi, edge, k, a, b):
+
+    d_m = psi.d
+    d_n = phi.d
+    
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = dot( d_m, N) + dot( d_n, N) + 2*b*dot( d_m, N)*dot( d_n, N) + 2*a
+
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return -1/2*1j*k*l * I
+    else:
+        return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
+
+
+def Inner_term_PM(phi, psi, edge, k, a, b):
+
+    d_m = psi.d
+    d_n = phi.d
+    
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = dot( d_m, N) + dot( d_n, N) + 2*b*dot( d_m, N)*dot( d_n, N) + 2*a
+
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return 1/2*1j*k*l * I
+    else:
+        return 1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
+
+
+def Inner_term_MP(phi, psi, edge, k, a, b):
+
+    d_m = psi.d
+    d_n = phi.d
+    
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = dot( d_m, N) + dot( d_n, N) - 2*b*dot( d_m, N)*dot( d_n, N) - 2*a
+
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return -1/2*1j*k*l * I
+    else:
+        return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
+
+
+def Inner_term_MM(phi, psi, edge, k, a, b):
+
+    d_m = psi.d
+    d_n = phi.d
+    
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = dot( d_m, N) + dot( d_n, N) - 2*b*dot( d_m, N)*dot( d_n, N) - 2*a
+
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return 1/2*1j*k*l * I
+    else:
+        return 1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
+
+
+
+
+
+
+def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
+
+    d_n = phi.d
+    d_m = psi.d
+
+    d_mx = d_m[0]
+    d_my = d_m[1]
+    d_nx = d_n[0]
+    d_ny = d_n[1]
+    
+
+
+    kH = k*H
+    
+    P = edge.P 
+    N = edge.N
+    x  = P[0]/H
+
+    d_nN = dot(d_n,N)
+    d_mN = dot(d_m,N)
+    
+    #first-like terms
+    I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*((1-d_2)*d_mN*d_nN + d_2*(d_mN + d_nN))
+
+    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
+        F = I1 
+    elif np.isclose(d_ny, 0, 1E-3):
+        F = I1 * sin(d_my*kH) / (d_my*kH) 
+    elif np.isclose(d_my, 0, 1E-3):
+        F =  I1 * sin(d_ny*kH) / (d_ny*kH)
+    else:
+        I2 = -1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*(1-d_2)*d_mN*d_nN * \
+              sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sin(d_ny*kH+s*pi)/(d_ny*kH+s*pi) + sin(d_ny*kH-s*pi)/(d_ny*kH-s*pi)) 
+                                              * (sin(d_my*kH+s*pi)/(d_my*kH+s*pi) + sin(d_my*kH-s*pi)/(d_my*kH-s*pi))  
+                                              for s in range(1,Np)])
+        
+        F  = I1 * sin(d_my*kH) / (d_my*kH) * sin(d_ny*kH) / (d_ny*kH) + I2
+
+    #second-like terms
+        
+    I = -2*1j*kH*(d_nN-d_2)*exp(1j*(d_nx-d_mx)*kH*x)
+    if np.isclose(d_ny, d_my, 1E-3):
+        S = I 
+    else:
+        S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)  
+
+    return F + S
+    
+
+
+def Sigma_naive(phi, psi, edge, k, H, Np = 15):
+
+    d_n = phi.d
+    d_m = psi.d
+
+    d_mx = d_m[0]
+    d_my = d_m[1]
+    d_nx = d_n[0]
+    d_ny = d_n[1]
+    
+
+
+    kH = k*H
+    
+    P = edge.P 
+    N = edge.N
+    x  = P[0]/H
+
+    d_nN = dot(d_n,N)
+    d_mN = dot(d_m,N)
+    
+    #first-like terms
+    I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN
+
+    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
+        F = I1 
+    elif np.isclose(d_ny, 0, 1E-3):
+        F = I1 * sin(d_my*kH) / (d_my*kH) 
+    elif np.isclose(d_my, 0, 1E-3):
+        F =  I1 * sin(d_ny*kH) / (d_ny*kH)
+    else:
+
+        F = I1 * (sin(d_my*kH) / (d_my*kH) * sin(d_ny*kH) / (d_ny*kH) + 
+        1/2*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sin(d_ny*kH + s*pi)/(d_ny*kH + s*pi) + sin(d_ny*kH - s*pi)/(d_ny*kH - s*pi)) 
+                                                     * (sin(d_my*kH + s*pi)/(d_my*kH + s*pi) + sin(d_my*kH - s*pi)/(d_my*kH - s*pi))  
+                                              for s in range(1,Np)]))
+
+    #second-like terms
+        
+    I = -2*1j*kH*d_nN*exp(1j*(d_nx-d_mx)*kH*x)
+    if np.isclose(d_ny, d_my, 1E-3):
+        S = I 
+    else:
+        S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)  
+
+    return F + S
+
+
+
+
+
+def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+
+    N_DOF = V.N_DOF
+    A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
+   
+    Phi = V.TrialFunctions
+    Psi = V.TestFunctions # currently the same spaces 
+    for (s,E) in enumerate(Edges):
+        match E.Type:
+            case EdgeType.INNER:
+                K_plus, K_minus = E.Triangles
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]      
+                        A[m,n] += Inner_term_PP(phi, psi, E, k, a, b)
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        A[m,n] += Inner_term_MP(phi, psi, E, k, a, b)
+
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        A[m,n] += Inner_term_PM(phi, psi, E, k, a, b)
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        A[m,n] += Inner_term_MM(phi, psi, E, k, a, b)
+
+
+            case EdgeType.GAMMA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        A[m,n] += Gamma_term(phi, psi, E, k, d_1)
+                    
+            case EdgeType.SIGMA_L:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+
+            case EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+    return A
+
+
+
+
+
+
+def exact_RHS(psi, E, k, H, d_2, Np=15, s=0): 
+    d = psi.d
+    d_x = d[0]
+    d_y = d[1]
+    N = E.N
+
+    x = E.P[0]/H
+    kH = k*H
+
+    if np.isclose(d_y,0,1E-3):
+        if s == 0:
+            return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2)
+        else:
+            return 0.
+    else:
+        if s == 0:
+            return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2 )* sin(kH*d_y)/(kH*d_y)
+        else:
+            return -2*1j*kH*exp(1j*(sqrt(complex(kH**2 - (s*pi)**2))-kH*d_x)*x)*\
+                (d_x - d_2 - d_x*d_2 * kH / sqrt(complex(kH**2 - (s*pi)**2)) ) *\
+                    ( sin(kH*d_y+s*pi)/(kH*d_y+s*pi) +  sin(kH*d_y-s*pi)/(kH*d_y-s*pi) )
+
+
+def AssembleRHS(V, Edges, k, H, d_2, Np=10, s=0):
+    N_DOF = V.N_DOF
+    b = np.zeros((N_DOF), dtype=np.complex128)
+    Psi = V.TestFunctions
+
+    for E in Edges:
+        match E.Type:                
+            case EdgeType.SIGMA_L:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    b[m] += exact_RHS(psi, E, k, H, d_2, Np=Np, s=s)    
+            case EdgeType.SIGMA_R:
+                pass
+    return b
+
