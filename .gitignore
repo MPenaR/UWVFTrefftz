@@ -1,3 +1,9 @@
-theory/
+theory/*.lyx
+theory/*.aux
+theory/*.toc
+theory/*.lyx#
+theory/*.lyx~
+theory/*.log
+theory/*.gz
 src/mode_vs_plane/
 results/
