@@ -249,7 +249,7 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
     
 
 
-def Sigma_separated(phi, psi, edge, k, H, Np = 15):
+def Sigma_separated(phi, psi, edge, k, H, d_2, Np = 15):
 
     d_n = phi.d
     d_m = psi.d
@@ -269,6 +269,8 @@ def Sigma_separated(phi, psi, edge, k, H, Np = 15):
 
     d_nN = dot(d_n,N)
     d_mN = dot(d_m,N)
+
+    #CENTRED FLUXES
     
     #first-like terms
     I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN
@@ -294,9 +296,53 @@ def Sigma_separated(phi, psi, edge, k, H, Np = 15):
     else:
         S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)
 
-    Ctred = F+S  
+    centred = F+S
 
-    return Ctred
+
+    #REGULARIZATON
+
+
+    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
+        first =  d_nN*d_mN
+        second = - d_nN
+        third  = - d_mN
+    elif np.isclose(d_ny, 0, 1E-3):
+        first  = d_nN*d_mN * sin(kH*d_my)/(kH*d_my)
+        second = -d_nN     * sin(kH*d_my)/(kH*d_my)
+        third  = -d_mN     * sin(kH*d_my)/(kH*d_my)
+    elif np.isclose(d_my, 0, 1E-3):
+        first  = d_nN*d_mN * sin(kH*d_ny)/(kH*d_ny)
+        second = -d_nN     * sin(kH*d_ny)/(kH*d_ny)
+        third  = -d_mN     * sin(kH*d_ny)/(kH*d_ny)
+    else:
+        first = d_nN*d_mN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
+                          0.5 * sum( [ kH**2 / sqrt(complex(kH**2 - (s*pi)**2))**2 *
+                        (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
+                        (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
+                                         for s in range(1,Np)]) )
+
+        
+        second = -d_nN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
+                          0.5 * sum( [ kH / sqrt(complex(kH**2 - (s*pi)**2)) *
+                        (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
+                        (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
+                                         for s in range(1,Np)]) )
+
+        third  = -d_mN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
+                          0.5 * sum( [ kH / sqrt(complex(kH**2 - (s*pi)**2)) *
+                        (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
+                        (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
+                                         for s in range(1,Np)]) )
+
+    if d_my == d_ny:
+        forth = 1.
+    else:
+        forth = sin(kH*(d_ny - d_my))/(kH*(d_ny - d_my))
+
+    
+    reg = -2j*kH*exp(1j*kH*(d_nx-d_mx)*x)*( first + second + third + forth)
+
+    return centred + d_2*reg
 
 
 
