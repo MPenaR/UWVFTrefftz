@@ -466,8 +466,8 @@ def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     for n in V.DOF_range[K]:
                         phi = Phi[n]
                         #A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                        A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
-
+                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+                        A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
             # case EdgeType.SIGMA_R:
             #     K = E.Triangles[0]
             #     for m in V.DOF_range[K]:
