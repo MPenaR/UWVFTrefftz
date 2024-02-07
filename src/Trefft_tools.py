@@ -104,7 +104,7 @@ def Gamma_term(phi, psi, edge, k, d_1):
     I = (1 + d_1 * dot(d_n, N))*dot(d_m, N)
 
     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return -1j*k*l* I
+        return -1j*k*l* I * exp(1j*k*dot(d_n - d_m, P))
     else:
         return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
     
@@ -148,7 +148,7 @@ def Inner_term_PM(phi, psi, edge, k, a, b):
 
 
     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return 1/2*1j*k*l * I
+        return 1/2*1j*k*l * I* exp(1j*k*dot(d_n - d_m, P))
     else:
         return 1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
@@ -169,7 +169,7 @@ def Inner_term_MP(phi, psi, edge, k, a, b):
 
 
     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return -1/2*1j*k*l * I
+        return -1/2*1j*k*l * I* exp(1j*k*dot(d_n - d_m, P))
     else:
         return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
@@ -190,7 +190,7 @@ def Inner_term_MM(phi, psi, edge, k, a, b):
 
 
     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return 1/2*1j*k*l * I
+        return 1/2*1j*k*l * I* exp(1j*k*dot(d_n - d_m, P))
     else:
         return 1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
