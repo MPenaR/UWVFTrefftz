@@ -127,7 +127,7 @@ def Inner_term_PP(phi, psi, edge, k, a, b):
 
 
     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return -1/2*1j*k*l * I
+        return -1/2*1j*k*l * I * exp(1j*k*dot(d_n - d_m, P))
     else:
         return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
@@ -397,11 +397,11 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
     
     #second term
         
-    I = -1j*kH*d_nN*exp(1j*kH(d_nx-d_mx)*x/H)
+    I = -1j*kH*d_nN*exp(1j*kH*(d_nx-d_mx)*x/H)
     if np.isclose(d_ny, d_my, 1E-3):
         S = I*( Q_y - P_y)/H 
     else:
-        S = I * ( exp( 1j*kH(d_ny-d_my)*Q_y/H) -exp( 1j*kH(d_ny-d_my)*P_y/H)  ) / ( 1j*kH(d_ny-d_my))
+        S = I * ( exp( 1j*kH*(d_ny-d_my)*Q_y/H) -exp( 1j*kH*(d_ny-d_my)*P_y/H)  ) / ( 1j*kH*(d_ny-d_my))
 
     centred = F+S
 
@@ -416,6 +416,17 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
 
 
 def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+
+    Sigma_R_edges = [] 
+    Sigma_L_edges = [] 
+    
+    for E in Edges:
+        match E.Type:
+            case EdgeType.SIGMA_L:
+                Sigma_L_edges.append(E)
+            case EdgeType.SIGMA_R:
+                Sigma_R_edges.append(E)    
+
 
     N_DOF = V.N_DOF
     A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
@@ -459,22 +470,30 @@ def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                         phi = Phi[n]
                         A[m,n] += Gamma_term(phi, psi, E, k, d_1)
                     
-            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+            case EdgeType.SIGMA_L:
                 K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    for n in V.DOF_range[K]:
-                        phi = Phi[n]
-                        #A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
-                        A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
-            # case EdgeType.SIGMA_R:
-            #     K = E.Triangles[0]
-            #     for m in V.DOF_range[K]:
-            #         psi = Psi[m]
-            #         for n in V.DOF_range[K]:
-            #             phi = Phi[n]
-            #             A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    # for K_j with edges in sigma_L
+                    for E_j in Sigma_L_edges:
+                        K_j = E_j.Triangles[0]
+                        for m in V.DOF_range[K_j]:
+                            psi = Psi[m]
+                            #A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                            #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+                            A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
+            case EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    # for K_j with edges in sigma_L
+                    for E_j in Sigma_R_edges:
+                        K_j = E_j.Triangles[0]
+                        for m in V.DOF_range[K_j]:
+                            psi = Psi[m]
+                            #A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                            #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+                            A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
     return A
 
 
