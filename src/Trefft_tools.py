@@ -241,7 +241,7 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
         
     I = -2*1j*kH*(d_nN-d_2)*exp(1j*(d_nx-d_mx)*kH*x)
     if np.isclose(d_ny, d_my, 1E-3):
-        S = I 
+        S = I *exp(1j*(d_ny-d_my)*kH)
     else:
         S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)  
 
@@ -399,7 +399,7 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
         
     I = -1j*kH*d_nN*exp(1j*kH*(d_nx-d_mx)*x/H)
     if np.isclose(d_ny, d_my, 1E-3):
-        S = I*( Q_y - P_y)/H 
+        S = I*exp(1j*(d_ny-d_my)*kH)
     else:
         S = I * ( exp( 1j*kH*(d_ny-d_my)*Q_y/H) -exp( 1j*kH*(d_ny-d_my)*P_y/H)  ) / ( 1j*kH*(d_ny-d_my))
 
@@ -479,8 +479,6 @@ def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                         K_j = E_j.Triangles[0]
                         for m in V.DOF_range[K_j]:
                             psi = Psi[m]
-                            #A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                            #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
                             A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
             case EdgeType.SIGMA_R:
                 K = E.Triangles[0]
@@ -497,11 +495,74 @@ def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
     return A
 
 
+def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+
+    N_DOF = V.N_DOF
+    A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
+   
+    Phi = V.TrialFunctions
+    Psi = V.TestFunctions # currently the same spaces 
+    for (s,E) in enumerate(Edges):
+        match E.Type:
+            case EdgeType.INNER:
+                K_plus, K_minus = E.Triangles
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]      
+                        A[m,n] += Inner_term_PP(phi, psi, E, k, a, b)
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        A[m,n] += Inner_term_MP(phi, psi, E, k, a, b)
+
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        A[m,n] += Inner_term_PM(phi, psi, E, k, a, b)
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        A[m,n] += Inner_term_MM(phi, psi, E, k, a, b)
+
+
+            case EdgeType.GAMMA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        A[m,n] += Gamma_term(phi, psi, E, k, d_1)
+                    
+            case EdgeType.SIGMA_L:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+            case EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+    return A
 
 
 
 
-def exact_RHS(psi, E, k, H, d_2, s=0): 
+
+
+def exact_RHS(psi, E, k, H, d_2, t=0): 
     d = psi.d
     d_x = d[0]
     d_y = d[1]
@@ -511,17 +572,17 @@ def exact_RHS(psi, E, k, H, d_2, s=0):
     kH = k*H
 
     if np.isclose(d_y,0,1E-3):
-        if s == 0:
+        if t == 0:
             return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2)
         else:
             return 0.
     else:
-        if s == 0:
+        if t == 0:
             return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2 )* sin(kH*d_y)/(kH*d_y)
         else:
-            return -2*1j*kH*exp(1j*(sqrt(complex(kH**2 - (s*pi)**2))-kH*d_x)*x)*\
-                (d_x - d_2 - d_x*d_2 * kH / sqrt(complex(kH**2 - (s*pi)**2)) ) *\
-                    ( sin(kH*d_y+s*pi)/(kH*d_y+s*pi) +  sin(kH*d_y-s*pi)/(kH*d_y-s*pi) )
+            return -2*1j*kH*exp(1j*(sqrt(complex(kH**2 - (t*pi)**2))-kH*d_x)*x)*\
+                (d_x - d_2 - d_x*d_2 * kH / sqrt(complex(kH**2 - (t*pi)**2)) ) *\
+                    ( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
 
 
 
@@ -626,7 +687,7 @@ def exact_RHS_broken(psi, E, k, H, d_2, t=0):
 
 
 
-def AssembleRHS(V, Edges, k, H, d_2, t=0):
+def AssembleRHS(V, Edges, k, H, d_2, t=0, full_sides=False):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
@@ -637,9 +698,11 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
-                    # b[m] += exact_RHS(psi, E, k, H, d_2, Np=Np, s=t)
+                    if full_sides:
+                        b[m] += exact_RHS(psi, E, k, H, d_2, t=t)
                     # b[m] += exact_separated(psi, E, k, H, d_2, t = t)
-                    b[m] += exact_RHS_broken(psi, E, k, H, d_2, t = t)
+                    else:
+                        b[m] += exact_RHS_broken(psi, E, k, H, d_2, t = t)
             case EdgeType.SIGMA_R:
                 pass
     return b
