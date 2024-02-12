@@ -9,8 +9,6 @@ from collections import namedtuple
 
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
-    Px, Py = P[0], P[1]
-    Qx, Qy = Q[0], Q[1]
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
     x = P + np.outer(t,Q-P)
@@ -27,8 +25,6 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     return I
 
 def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
-    Px, Py = P[0], P[1]
-    Qx, Qy = Q[0], Q[1]
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
     x = P + np.outer(t,Q-P)
@@ -135,8 +131,10 @@ def test_Sigma():
     E = Edge(P,Q,N,T)
 
     k = 8.
-    d_n = np.array([1,1])/norm([1,1])
-    d_m = np.array([1,-1])/norm([1,-1])
+    d_n = [1,-1]
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = [1,1]
+    d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
     phi_n = TestFunction(d=d_n,k=k)

@@ -8,6 +8,7 @@ numpy = "*"
 matplotlib = "*"
 ipykernel = "*"
 ngsolve = "*"
+scipy = "*"
 
 [dev-packages]
 
