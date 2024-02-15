@@ -20,24 +20,25 @@ class TrefftzSpace:
 
     def __init__( self, Omega, DOF_per_element : tuple[int], kappa : dict[str, float], th0=0 ):
         self.Omega = Omega
-        self.N_elements = Omega.ne
-        self.kappa = np.zeros(self.N_elements,dtype=np.float64)
+        self.N_trig = len(Omega.faces)
+        self.kappa = np.zeros(self.N_trig, dtype=np.float64)
+        self._elements = list(Omega.Elements())
         for e in Omega.Elements():
             self.kappa[e.faces[0].nr] = kappa[e.mat]
         
         
         if hasattr(DOF_per_element, '__iter__'):
-            assert Omega.ne == len(DOF_per_element)
+            assert self.N_trig == len(DOF_per_element)
             self.local_N_DOF = np.array( DOF_per_element )
         else:
-            self.local_N_DOF = np.full_like(self.kappa, fill_value=DOF_per_element,dtype=np.int32)
+            self.local_N_DOF = np.full_like(self.kappa, fill_value=DOF_per_element, dtype=np.int32)
         self.N_DOF = np.sum(self.local_N_DOF)
 
-        self.d = [ np.array([[np.cos(th0 +th), np.sin(th0+th)] for th in np.linspace(0,2*pi,N,endpoint=False)]) 
-                  for N in self.local_N_DOF ] 
+        self.d = [ np.array([[ np.cos(th0 +th), 
+                               np.sin(th0 +th)  ] for th in np.linspace(0, 2*pi, N, endpoint=False)]) for N in self.local_N_DOF ] 
 
 
-        self.DOF_ownership = np.repeat( range(self.N_elements), self.local_N_DOF)
+        self.DOF_ownership = np.repeat( range(self.N_trig), self.local_N_DOF)
         self.DOF_start = np.cumsum(self.local_N_DOF) - self.local_N_DOF
         self.DOF_end = np.cumsum(self.local_N_DOF)
         self.DOF_range = [ list(range(s,e)) for (s,e) in zip(self.DOF_start,self.DOF_end)]
@@ -61,7 +62,11 @@ class TrefftzFunction:
 
 
     def Element(self, x, y ):
-        return self.V.Omega(x,y).nr
+        e_ID = self.V.Omega(x,y).nr
+        if e_ID == -1:
+            return e_ID
+        else:
+            return self.V._elements[e_ID].faces[0].nr
     
     @property
     def DOFs( self ):
@@ -79,6 +84,9 @@ class TrefftzFunction:
 
     def __call__(self, x, y ):
         e = self.Element(x,y)
+        if e < 0: # (x,y) outside the mesh
+            return np.nan
+        
         k = self.V.kappa[e]
         P = self.DOFs[self.V.DOF_range[e]]
         D = self.V.d[e]
@@ -261,7 +269,7 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
                            * (sin(d_my*kH + s*pi)/(d_my*kH + s*pi) + sin(d_my*kH - s*pi)/(d_my*kH - s*pi))  for s in range(1,Np)])
  
     return F + S + NN 
-    
+     
 
 
 def Sigma_separated(phi, psi, edge, k, H, d_2, Np = 15):

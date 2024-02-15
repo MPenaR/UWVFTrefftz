@@ -77,8 +77,10 @@ def test_inner():
     E = Edge(P,Q,N,T)
 
     k = 8.
-    d_n = np.array([1,1])/norm([1,1])
-    d_m = np.array([1,-1])/norm([1,-1])
+    d_n = [1,1]
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = [1,-1]
+    d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
     phi_n = TestFunction(d=d_n,k=k)
