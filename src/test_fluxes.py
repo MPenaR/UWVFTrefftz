@@ -1,4 +1,4 @@
-from Trefft_tools import Inner_term_PP, Gamma_term, Sigma_term
+from Trefft_tools import Inner_term_PP, Gamma_term, Sigma_term, exact_RHS
 
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
 from numpy.linalg import norm
@@ -106,8 +106,6 @@ def NewmanntoDirichlet(y, df_dy, k, H, M):
 
 
 def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
-    Px, Py = P[0], P[1]
-    Qx, Qy = Q[0], Q[1]
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
     x = P + np.outer(t,Q-P)
@@ -149,6 +147,52 @@ def test_Sigma():
     d2 = 0.5
     I_exact = Sigma_term(phi_n, psi_m, E, k, H, d2)
     I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=int(1E4))
+    relative_error = abs(I_exact - I_num)/abs(I_exact)
+    assert relative_error < 1E-5
+
+
+
+def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
+    l = norm(Q-P)
+    t = np.linspace(0,1,Nt)
+    x = P + np.outer(t,Q-P)
+    psi_m = exp(1j*k*dot(x,d_m))
+    beta = sqrt(complex(k**2 - (s*pi/H)**2 ))
+    u_inc = exp(1j*beta*x[:,0])*cos(s*pi*x[:,1]/H)
+
+    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+
+    N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
+
+    I = -2*Int( u_inc*conj(grad_psi_m_N) - d2*1j*k*u_inc*conj(N_gradpsi_m-psi_m), t)*l
+    
+    return I
+
+def test_RHS():
+    H=1
+    R= 10
+    P = np.array([R,-H])
+    Q = np.array([R,H])
+
+    T = (Q - P)/norm(Q-P)
+    N = np.array([0,1])
+
+    Edge = namedtuple('Edge',['P','Q','N','T'])
+    E = Edge(P,Q,N,T)
+
+    k = 8.
+    d_m = [1,1]
+    d_m = np.array(d_m)/norm(d_m)
+
+    TestFunction = namedtuple('TestFunction',['d','k'])
+    psi_m = TestFunction(d=d_m,k=k)
+
+    d2 = 0.5
+
+    t= 1
+
+    I_exact =exact_RHS(psi_m, E, k, H, d2, t)
+    I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=int(1E4))
     relative_error = abs(I_exact - I_num)/abs(I_exact)
     assert relative_error < 1E-5
 
