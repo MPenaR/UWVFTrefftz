@@ -21,50 +21,7 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     I+= l*b*Int(1/(1j*k)*grad_phi_n_N * conj(grad_psi_m_N), t)
     I-= l*a*Int(1j*k*phi_n*conj(psi_m),t)
 
-
     return I
-
-def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
-    l = norm(Q-P)
-    t = np.linspace(0,1,Nt)
-    x = P + np.outer(t,Q-P)
-    phi_n = exp(1j*k*dot(x,d_n))
-    psi_m = exp(1j*k*dot(x,d_m))
-    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
-    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
-
-    I = Int( (phi_n + d1/(1j*k)*grad_phi_n_N)*conj(grad_psi_m_N)*l, t)
-    return I
-
-def NewmanntoDirichlet(y, df_dy, k, H, M):
-
-    dfn = np.zeros(M, dtype=np.complex128)
-    dfn[0] = Int( df_dy*1/sqrt(2*H), y )
-    for n in range(1,M):
-        dfn[n] = Int( df_dy*cos(n*pi*y/H)/sqrt(H), y )
-    
-    f_y = 1/(1j*k)*dfn[0]/sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/sqrt(H) for n in range(1,M)])
-    return f_y
-
-
-def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
-    Px, Py = P[0], P[1]
-    Qx, Qy = Q[0], Q[1]
-    l = norm(Q-P)
-    t = np.linspace(0,1,Nt)
-    x = P + np.outer(t,Q-P)
-    phi_n = exp(1j*k*dot(x,d_n))
-    psi_m = exp(1j*k*dot(x,d_m))
-    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
-    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
-
-    N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, Np)
-    N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
-
-    I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
-    I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
-    return I
-
 
 def test_inner():
     P = np.array([3,3])
@@ -94,6 +51,21 @@ def test_inner():
     relative_error = abs(I_exact - I_num)/abs(I_exact)
     assert relative_error < 1E-5
 
+
+
+
+def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
+    l = norm(Q-P)
+    t = np.linspace(0,1,Nt)
+    x = P + np.outer(t,Q-P)
+    phi_n = exp(1j*k*dot(x,d_n))
+    psi_m = exp(1j*k*dot(x,d_m))
+    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
+    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+
+    I = Int( (phi_n + d1/(1j*k)*grad_phi_n_N)*conj(grad_psi_m_N)*l, t)
+    return I
+
 def test_Gamma():
     P = np.array([0,1])
     Q = np.array([3,1])
@@ -119,6 +91,38 @@ def test_Gamma():
     assert relative_error < 1E-5
 
 
+
+
+
+def NewmanntoDirichlet(y, df_dy, k, H, M):
+
+    dfn = np.zeros(M, dtype=np.complex128)
+    dfn[0] = Int( df_dy*1/sqrt(2*H), y )
+    for n in range(1,M):
+        dfn[n] = Int( df_dy*cos(n*pi*y/H)/sqrt(H), y )
+    
+    f_y = 1/(1j*k)*dfn[0]/sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/sqrt(H) for n in range(1,M)])
+    return f_y
+
+
+def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
+    Px, Py = P[0], P[1]
+    Qx, Qy = Q[0], Q[1]
+    l = norm(Q-P)
+    t = np.linspace(0,1,Nt)
+    x = P + np.outer(t,Q-P)
+    phi_n = exp(1j*k*dot(x,d_n))
+    psi_m = exp(1j*k*dot(x,d_m))
+    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
+    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+
+    N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, Np)
+    N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
+
+    I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
+    I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
+    
+    return I
 
 def test_Sigma():
     H=1
