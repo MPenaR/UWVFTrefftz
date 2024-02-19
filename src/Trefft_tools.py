@@ -613,31 +613,6 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
 
 
 
-
-
-# def exact_RHS(psi, E, k, H, d_2, t=0): 
-#     d = psi.d
-#     d_x = d[0]
-#     d_y = d[1]
-#     N = E.N
-
-#     x = E.P[0]/H
-#     kH = k*H
-
-#     if np.isclose(d_y,0,1E-3):
-#         if t == 0:
-#             return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2)
-#         else:
-#             return 0.
-#     else:
-#         if t == 0:
-#             return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2 )* sin(kH*d_y)/(kH*d_y)
-#         else:
-#             return -2*1j*kH*exp(1j*(sqrt(complex(kH**2 - (t*pi)**2))-kH*d_x)*x)*\
-#                 (d_x - d_2 - d_x*d_2 * kH / sqrt(complex(kH**2 - (t*pi)**2)) ) *\
-#                     ( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
-
-
 def exact_RHS(psi, E, k, H, d_2, t=0): 
     d = psi.d
     d_x = d[0]
