@@ -118,7 +118,6 @@ def Gamma_term(phi, psi, edge, k, d_1):
     
 
 
-
 def Inner_term_PP(phi, psi, edge, k, a, b):
 
     d_m = psi.d
@@ -302,100 +301,27 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
     return F + S + C1 + C2+ NN 
 
 
-# def Sigma_separated(phi, psi, edge, k, H, d_2, Np = 15):
 
-#     d_n = phi.d
-#     d_m = psi.d
+def sound_soft_term(phi, psi, edge, k, a):
 
-#     d_mx = d_m[0]
-#     d_my = d_m[1]
-#     d_nx = d_n[0]
-#     d_ny = d_n[1]
+    d_m = psi.d
+    d_n = phi.d
     
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = (dot(d_n, N) + a)
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return -1j*k*l* I * exp(1j*k*dot(d_n - d_m, P))
+    else:
+        return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
 
-#     kH = k*H
-    
-#     P = edge.P 
-#     N = edge.N
-#     x  = P[0]/H
-
-#     d_nN = dot(d_n,N)
-#     d_mN = dot(d_m,N)
-
-#     #CENTRED FLUXES
-    
-#     #first-like terms
-#     I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN
-
-#     if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-#         F = I1 
-#     elif np.isclose(d_ny, 0, 1E-3):
-#         F = I1 * sin(d_my*kH) / (d_my*kH) 
-#     elif np.isclose(d_my, 0, 1E-3):
-#         F =  I1 * sin(d_ny*kH) / (d_ny*kH)
-#     else:
-
-#         F = I1 * (sin(d_my*kH) / (d_my*kH) * sin(d_ny*kH) / (d_ny*kH) +
-#         1/2*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sin(d_ny*kH + s*pi)/(d_ny*kH + s*pi) + sin(d_ny*kH - s*pi)/(d_ny*kH - s*pi)) 
-#                                                      * (sin(d_my*kH + s*pi)/(d_my*kH + s*pi) + sin(d_my*kH - s*pi)/(d_my*kH - s*pi))  
-#                                               for s in range(1,Np)]))
-
-#     #second-like terms
-        
-#     I = -2*1j*kH*d_nN*exp(1j*(d_nx-d_mx)*kH*x)
-#     if np.isclose(d_ny, d_my, 1E-3):
-#         S = I 
-#     else:
-#         S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)
-
-#     centred = F+S
-
-
-#     #REGULARIZATON
-
-
-#     if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-#         first =  2*d_nN*d_mN
-#         second = -2*d_nN
-#         third  = -2*d_mN
-#     elif np.isclose(d_ny, 0, 1E-3):
-#         first  = 2*d_nN*d_mN * sin(kH*d_my)/(kH*d_my)
-#         second = -2*d_nN     * sin(kH*d_my)/(kH*d_my)
-#         third  = -2*d_mN     * sin(kH*d_my)/(kH*d_my)
-#     elif np.isclose(d_my, 0, 1E-3):
-#         first  = 2*d_nN*d_mN * sin(kH*d_ny)/(kH*d_ny)
-#         second = -2*d_nN     * sin(kH*d_ny)/(kH*d_ny)
-#         third  = -2*d_mN     * sin(kH*d_ny)/(kH*d_ny)
-#     else:
-#         first = 2*d_nN*d_mN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
-#                           0.5 * sum( [ kH**2 / sqrt(complex(kH**2 - (s*pi)**2))**2 *
-#                         (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
-#                         (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
-#                                          for s in range(1,Np)]) )
-
-        
-#         second = -2*d_nN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
-#                           0.5 * sum( [ kH / sqrt(complex(kH**2 - (s*pi)**2)) *
-#                         (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
-#                         (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
-#                                          for s in range(1,Np)]) )
-
-#         third  = -2*d_mN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
-#                           0.5 * sum( [ kH / sqrt(complex(kH**2 - (s*pi)**2)) *
-#                         (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
-#                         (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
-#                                          for s in range(1,Np)]) )
-
-#     if d_my == d_ny:
-#         forth = 1.
-#     else:
-#         forth = sin(kH*(d_ny - d_my))/(kH*(d_ny - d_my))
-
-    
-#     reg = -1j*kH*exp(1j*kH*(d_nx-d_mx)*x)*( first + second + third + forth)
-
-#     return centred + d_2*reg
 
 
 def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):

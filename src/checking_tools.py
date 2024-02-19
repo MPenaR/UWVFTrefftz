@@ -33,6 +33,10 @@ def checkLabels(Edges, ax = None, R=10, H=1):
 
             case EdgeType.SIGMA_R:
                 ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
+ 
+            case EdgeType.D_OMEGA:
+                ax.plot([px, qx], [py, qy], 'b', linewidth=lw)
+
 
     d = 0.2
     ax.axis('square')
