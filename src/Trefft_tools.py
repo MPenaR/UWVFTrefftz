@@ -518,6 +518,16 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                         phi = Phi[n]
                         A[m,n] += Gamma_term(phi, psi, E, k, d_1)
                     
+
+            case EdgeType.D_OMEGA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        A[m,n] += sound_soft_term(phi, psi, E, k, a)
+
+
             case EdgeType.SIGMA_L:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
@@ -534,6 +544,8 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                         psi = Psi[m]
                         A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
                         #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+
+
     return A
 
 
