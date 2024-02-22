@@ -34,8 +34,7 @@ def exact_sound_soft(X,Y,k, H, rad=1, c=(0,0), theta_inc=0, M = 15, N = 3):
         c_up_old = c_up
         c_down_old = c_down
 
-    r = np.sqrt( (X-c_x)**2 + (Y-c_y)**2)
+    # r = np.sqrt( (X-c_x)**2 + (Y-c_y)**2)
     u_inc= np.exp(1j*k*(X*np.cos(theta_inc) + Y*np.sin(theta_inc)))
-    u = np.where(r>rad, u+u_inc, np.zeros_like(u))
 
-    return u 
+    return u + u_inc
