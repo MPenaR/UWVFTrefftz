@@ -4,7 +4,7 @@ from numpy import dot, pi, exp, sqrt, sin, abs, conj
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
-
+from scipy.sparse import coo_matrix
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
 
