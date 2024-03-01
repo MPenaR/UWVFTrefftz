@@ -102,10 +102,11 @@ class TrefftzFunction:
 
 
 
-def Gamma_term(phi, psi, edge, k, d_1):
+def Gamma_term(phi, psi, edge, d_1):
 
     d_m = psi.d
     d_n = phi.d
+    k = phi.k
     
     M = edge.M
     l = edge.l
@@ -115,13 +116,13 @@ def Gamma_term(phi, psi, edge, k, d_1):
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
     return I
 
-    
 
-
-def Inner_term(phi, psi, edge, k, a, b):
+def Inner_term(phi, psi, edge, a, b):
 
     d_m = psi.d
     d_n = phi.d
+    k = phi.k
+
     
     M = edge.M
     N = edge.N
@@ -132,10 +133,12 @@ def Inner_term(phi, psi, edge, k, a, b):
 
     return I
 
-def sound_soft_term(phi, psi, edge, k, a):
+def sound_soft_term(phi, psi, edge, a):
 
     d_m = psi.d
     d_n = phi.d
+    k = phi.k
+
     
     M = edge.M
     N = edge.N
@@ -149,23 +152,29 @@ def sound_soft_term(phi, psi, edge, k, a):
 
 
 
-def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
+def Sigma_term(phi, psi, edge, d_2, Np = 15):
 
     d_n = phi.d
     d_m = psi.d
+    k = phi.k
 
     d_mx = d_m[0]
     d_my = d_m[1]
     d_nx = d_n[0]
     d_ny = d_n[1]
+
+    P = edge.P
+    N = edge.N
     
+    H = np.abs(P[1])
+    
+    x  = P[0]/H
+
+
 
 
     kH = k*H
 
-    P = edge.P
-    N = edge.N
-    x  = P[0]/H
 
     d_nN = dot(d_n,N)
     d_mN = dot(d_m,N)
@@ -315,7 +324,7 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
 
 
 def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
-                   k: float, H: float, a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
+                   a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
                    Np=10, fullsides=False) -> spmatrix:
     '''Assembles de matrix for the bilinear form.
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
@@ -323,25 +332,25 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
     a single triangle side.'''
 
     if fullsides:
-        return AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np)
+        return AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
     else:
-        return AssembleMatrix_broken_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np)
+        return AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
 
 
-def AssembleMatrix_broken_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np):
+def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
     pass
 
 
 
 
-def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+def AssembleMatrix_full_sides(V, Edges, a, b, d_1, d_2, Np=10):
 
     N_DOF = V.N_DOF
     A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
    
     Phi = V.TrialFunctions
     Psi = V.TestFunctions # currently the same spaces 
-    for (s,E) in enumerate(Edges):
+    for E in Edges:
         match E.Type:
             case EdgeType.INNER:
                 K_plus, K_minus = E.Triangles
@@ -349,25 +358,25 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     phi = Phi[n]
                     for m in V.DOF_range[K_plus]:
                         psi = Psi[m]      
-                        A[m,n] += Inner_term(phi, psi, E, k, a, b)
+                        A[m,n] += Inner_term(phi, psi, E, a, b)
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
                     for m in V.DOF_range[K_plus]:
                         psi = Psi[m]
-                        A[m,n] += Inner_term(phi, psi, E, k, -a, -b)
+                        A[m,n] += Inner_term(phi, psi, E, -a, -b)
 
                 for n in V.DOF_range[K_plus]:
                     phi = Phi[n]
                     for m in V.DOF_range[K_minus]:
                         psi = Psi[m]
-                        A[m,n] += -Inner_term(phi, psi, E, k, a, b)
+                        A[m,n] += -Inner_term(phi, psi, E, a, b)
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
                     for m in V.DOF_range[K_minus]:
                         psi = Psi[m]
-                        A[m,n] += -Inner_term(phi, psi, E, k, -a, -b)
+                        A[m,n] += -Inner_term(phi, psi, E, -a, -b)
 
 
             case EdgeType.GAMMA:
@@ -376,7 +385,7 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     psi = Psi[m]
                     for n in V.DOF_range[K]:
                         phi = Phi[n]
-                        A[m,n] += Gamma_term(phi, psi, E, k, d_1)
+                        A[m,n] += Gamma_term(phi, psi, E, d_1)
                     
 
             case EdgeType.D_OMEGA:
@@ -385,7 +394,7 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     psi = Psi[m]
                     for n in V.DOF_range[K]:
                         phi = Phi[n]
-                        A[m,n] += sound_soft_term(phi, psi, E, k, a)
+                        A[m,n] += sound_soft_term(phi, psi, E, a)
 
 
             case EdgeType.SIGMA_L:
@@ -394,19 +403,19 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     phi = Phi[n]
                     for m in V.DOF_range[K]:
                         psi = Psi[m]
-                        A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                        A[m,n] += Sigma_term(phi, psi, E, d_2, Np=Np)
             case EdgeType.SIGMA_R:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
                     phi = Phi[n]
                     for m in V.DOF_range[K]:
                         psi = Psi[m]
-                        A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
+                        A[m,n] += Sigma_term(phi, psi, E, d_2, Np=Np)
 
 
     return A
 
-def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> spmatrix:
+def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatrix:
     '''Assembles de matrix assuming Sigma_R+- consist of a single triangle side,
     and returns a Scipy sparse matrix.'''
 
@@ -428,7 +437,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Inner_term(phi, psi, E, k, a, b))
+                        values.append(Inner_term(phi, psi, E, a, b))
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
@@ -436,7 +445,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Inner_term(phi, psi, E, k, -a, -b))
+                        values.append(Inner_term(phi, psi, E, -a, -b))
 
 
                 for n in V.DOF_range[K_plus]:
@@ -445,7 +454,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, k, a, b))
+                        values.append(-Inner_term(phi, psi, E, a, b))
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
@@ -453,7 +462,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, k, -a, -b))
+                        values.append(-Inner_term(phi, psi, E, -a, -b))
 
 
             case EdgeType.GAMMA:
@@ -464,7 +473,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         phi = Phi[n]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Gamma_term(phi, psi, E, k, d_1))
+                        values.append(Gamma_term(phi, psi, E, d_1))
                     
 
             case EdgeType.D_OMEGA:
@@ -475,7 +484,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         phi = Phi[n]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(sound_soft_term(phi, psi, E, k, a))
+                        values.append(sound_soft_term(phi, psi, E, a))
 
             case EdgeType.SIGMA_L:
                 K = E.Triangles[0]
@@ -485,7 +494,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Sigma_term(phi, psi, E, k, H, d_2, Np=Np))
+                        values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
             case EdgeType.SIGMA_R:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
@@ -494,7 +503,8 @@ def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> s
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Sigma_term(phi, psi, E, k, H, d_2, Np=Np))
+                        values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
+    
     A = coo_matrix( (values,(i_index, j_index)), shape=(N_DOF,N_DOF))
 
     return A
