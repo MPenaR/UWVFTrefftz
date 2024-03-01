@@ -6,4 +6,5 @@ class EdgeType(Enum):
     GAMMA = auto()
     SIGMA_L = auto()
     SIGMA_R = auto()
+    D_OMEGA = auto()
 

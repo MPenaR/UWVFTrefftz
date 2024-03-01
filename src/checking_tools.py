@@ -33,6 +33,10 @@ def checkLabels(Edges, ax = None, R=10, H=1):
 
             case EdgeType.SIGMA_R:
                 ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
+ 
+            case EdgeType.D_OMEGA:
+                ax.plot([px, qx], [py, qy], 'b', linewidth=lw)
+
 
     d = 0.2
     ax.axis('square')
@@ -40,15 +44,16 @@ def checkLabels(Edges, ax = None, R=10, H=1):
     ax.set_ylim([-H-d,H+d])
 
 
-def checkNormals(Edges):
+def checkNormals(Edges, R=10., H=1.):
     Normals = np.array( [ E.N for E in Edges])
     Tangents = np.array( [ E.T for E in Edges])
     MidPoints = np.array( [ E.midpoint for E in Edges])
     checkLabels(Edges)
+    d = 0.2
     plt.quiver( MidPoints[:,0], MidPoints[:,1], Normals[:,0], Normals[:,1], scale=40)
     plt.quiver( MidPoints[:,0], MidPoints[:,1], Tangents[:,0], Tangents[:,1], scale=40, color='b')
-    plt.xlim([-12,12])
-    plt.ylim([-2,2])
+    plt.xlim([-R-d,R+d])
+    plt.ylim([-H-d,H+d])
 
 # def checkPlusMinus(Edges,Baricenters):
 #     Normals = np.array( [ E.N for E in Edges])

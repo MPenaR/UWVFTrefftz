@@ -4,7 +4,7 @@ from numpy import dot, pi, exp, sqrt, sin, abs, conj
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
-
+from scipy.sparse import coo_matrix
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
 
@@ -116,7 +116,6 @@ def Gamma_term(phi, psi, edge, k, d_1):
     else:
         return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
     
-
 
 
 def Inner_term_PP(phi, psi, edge, k, a, b):
@@ -302,100 +301,27 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
     return F + S + C1 + C2+ NN 
 
 
-# def Sigma_separated(phi, psi, edge, k, H, d_2, Np = 15):
 
-#     d_n = phi.d
-#     d_m = psi.d
+def sound_soft_term(phi, psi, edge, k, a):
 
-#     d_mx = d_m[0]
-#     d_my = d_m[1]
-#     d_nx = d_n[0]
-#     d_ny = d_n[1]
+    d_m = psi.d
+    d_n = phi.d
     
+    P = edge.P
+    Q = edge.Q
+    N = edge.N
+    T = edge.T
+
+    l = norm(Q-P)
+
+    I = (dot(d_n, N) + a)
+
+    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
+        return -1j*k*l* I * exp(1j*k*dot(d_n - d_m, P))
+    else:
+        return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
 
-#     kH = k*H
-    
-#     P = edge.P 
-#     N = edge.N
-#     x  = P[0]/H
-
-#     d_nN = dot(d_n,N)
-#     d_mN = dot(d_m,N)
-
-#     #CENTRED FLUXES
-    
-#     #first-like terms
-#     I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN
-
-#     if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-#         F = I1 
-#     elif np.isclose(d_ny, 0, 1E-3):
-#         F = I1 * sin(d_my*kH) / (d_my*kH) 
-#     elif np.isclose(d_my, 0, 1E-3):
-#         F =  I1 * sin(d_ny*kH) / (d_ny*kH)
-#     else:
-
-#         F = I1 * (sin(d_my*kH) / (d_my*kH) * sin(d_ny*kH) / (d_ny*kH) +
-#         1/2*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sin(d_ny*kH + s*pi)/(d_ny*kH + s*pi) + sin(d_ny*kH - s*pi)/(d_ny*kH - s*pi)) 
-#                                                      * (sin(d_my*kH + s*pi)/(d_my*kH + s*pi) + sin(d_my*kH - s*pi)/(d_my*kH - s*pi))  
-#                                               for s in range(1,Np)]))
-
-#     #second-like terms
-        
-#     I = -2*1j*kH*d_nN*exp(1j*(d_nx-d_mx)*kH*x)
-#     if np.isclose(d_ny, d_my, 1E-3):
-#         S = I 
-#     else:
-#         S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)
-
-#     centred = F+S
-
-
-#     #REGULARIZATON
-
-
-#     if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-#         first =  2*d_nN*d_mN
-#         second = -2*d_nN
-#         third  = -2*d_mN
-#     elif np.isclose(d_ny, 0, 1E-3):
-#         first  = 2*d_nN*d_mN * sin(kH*d_my)/(kH*d_my)
-#         second = -2*d_nN     * sin(kH*d_my)/(kH*d_my)
-#         third  = -2*d_mN     * sin(kH*d_my)/(kH*d_my)
-#     elif np.isclose(d_my, 0, 1E-3):
-#         first  = 2*d_nN*d_mN * sin(kH*d_ny)/(kH*d_ny)
-#         second = -2*d_nN     * sin(kH*d_ny)/(kH*d_ny)
-#         third  = -2*d_mN     * sin(kH*d_ny)/(kH*d_ny)
-#     else:
-#         first = 2*d_nN*d_mN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
-#                           0.5 * sum( [ kH**2 / sqrt(complex(kH**2 - (s*pi)**2))**2 *
-#                         (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
-#                         (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
-#                                          for s in range(1,Np)]) )
-
-        
-#         second = -2*d_nN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
-#                           0.5 * sum( [ kH / sqrt(complex(kH**2 - (s*pi)**2)) *
-#                         (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
-#                         (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
-#                                          for s in range(1,Np)]) )
-
-#         third  = -2*d_mN * ( sin(kH*d_ny)/(kH*d_ny) * sin(kH*d_my)/(kH*d_my) + 
-#                           0.5 * sum( [ kH / sqrt(complex(kH**2 - (s*pi)**2)) *
-#                         (sin(kH*d_ny+s*pi)/(kH*d_ny+s*pi) + sin(kH*d_ny-s*pi)/(kH*d_ny-s*pi)) *
-#                         (sin(kH*d_my+s*pi)/(kH*d_my+s*pi) + sin(kH*d_my-s*pi)/(kH*d_my-s*pi))
-#                                          for s in range(1,Np)]) )
-
-#     if d_my == d_ny:
-#         forth = 1.
-#     else:
-#         forth = sin(kH*(d_ny - d_my))/(kH*(d_ny - d_my))
-
-    
-#     reg = -1j*kH*exp(1j*kH*(d_nx-d_mx)*x)*( first + second + third + forth)
-
-#     return centred + d_2*reg
 
 
 def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
@@ -592,6 +518,16 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                         phi = Phi[n]
                         A[m,n] += Gamma_term(phi, psi, E, k, d_1)
                     
+
+            case EdgeType.D_OMEGA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        A[m,n] += sound_soft_term(phi, psi, E, k, a)
+
+
             case EdgeType.SIGMA_L:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
@@ -599,7 +535,6 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     for m in V.DOF_range[K]:
                         psi = Psi[m]
                         A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
             case EdgeType.SIGMA_R:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
@@ -607,35 +542,101 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     for m in V.DOF_range[K]:
                         psi = Psi[m]
                         A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
+
+
     return A
 
+def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+
+    N_DOF = V.N_DOF
+
+    values = []
+    i_index = []
+    j_index = []
+   
+    Phi = V.TrialFunctions
+    Psi = V.TestFunctions # currently the same spaces 
+    for E in Edges:
+        match E.Type:
+            case EdgeType.INNER:
+                K_plus, K_minus = E.Triangles
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_PP(phi, psi, E, k, a, b))
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_MP(phi, psi, E, k, a, b))
 
 
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_PM(phi, psi, E, k, a, b))
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_MM(phi, psi, E, k, a, b))
 
 
+            case EdgeType.GAMMA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Gamma_term(phi, psi, E, k, d_1))
+                    
 
-# def exact_RHS(psi, E, k, H, d_2, t=0): 
-#     d = psi.d
-#     d_x = d[0]
-#     d_y = d[1]
-#     N = E.N
+            case EdgeType.D_OMEGA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(sound_soft_term(phi, psi, E, k, a))
 
-#     x = E.P[0]/H
-#     kH = k*H
+            case EdgeType.SIGMA_L:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Sigma_term(phi, psi, E, k, H, d_2, Np=Np))
+            case EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Sigma_term(phi, psi, E, k, H, d_2, Np=Np))
+    A = coo_matrix( (values,(i_index, j_index)), shape=(N_DOF,N_DOF))
 
-#     if np.isclose(d_y,0,1E-3):
-#         if t == 0:
-#             return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2)
-#         else:
-#             return 0.
-#     else:
-#         if t == 0:
-#             return -4*1j*kH*exp(1j*k*H*(1-d_x)*x)*(d_x - d_2 - d_x*d_2 )* sin(kH*d_y)/(kH*d_y)
-#         else:
-#             return -2*1j*kH*exp(1j*(sqrt(complex(kH**2 - (t*pi)**2))-kH*d_x)*x)*\
-#                 (d_x - d_2 - d_x*d_2 * kH / sqrt(complex(kH**2 - (t*pi)**2)) ) *\
-#                     ( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
+    return A
+
 
 
 def exact_RHS(psi, E, k, H, d_2, t=0): 
