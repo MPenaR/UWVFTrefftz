@@ -4,7 +4,7 @@ from numpy import dot, pi, exp, sqrt, sin, abs, conj
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_matrix, spmatrix
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
 
@@ -390,88 +390,17 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
 
 
 
+def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10, fullsides=False) -> spmatrix:
+    if fullsides:
+        return AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np)
+    else:
+        return AssembleMatrix_broken_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np)
 
 
+def AssembleMatrix_broken_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np):
+    pass
 
 
-def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10):
-
-    Sigma_R_edges = [] 
-    Sigma_L_edges = [] 
-    
-    for E in Edges:
-        match E.Type:
-            case EdgeType.SIGMA_L:
-                Sigma_L_edges.append(E)
-            case EdgeType.SIGMA_R:
-                Sigma_R_edges.append(E)    
-
-
-    N_DOF = V.N_DOF
-    A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
-   
-    Phi = V.TrialFunctions
-    Psi = V.TestFunctions # currently the same spaces 
-    for (s,E) in enumerate(Edges):
-        match E.Type:
-            case EdgeType.INNER:
-                K_plus, K_minus = E.Triangles
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]      
-                        A[m,n] += Inner_term_PP(phi, psi, E, k, a, b)
-
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]
-                        A[m,n] += Inner_term_MP(phi, psi, E, k, a, b)
-
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        A[m,n] += Inner_term_PM(phi, psi, E, k, a, b)
-
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        A[m,n] += Inner_term_MM(phi, psi, E, k, a, b)
-
-
-            case EdgeType.GAMMA:
-                K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    for n in V.DOF_range[K]:
-                        phi = Phi[n]
-                        A[m,n] += Gamma_term(phi, psi, E, k, d_1)
-                    
-            case EdgeType.SIGMA_L:
-                K = E.Triangles[0]
-                for n in V.DOF_range[K]:
-                    phi = Phi[n]
-                    # for K_j with edges in sigma_L
-                    for E_j in Sigma_L_edges:
-                        K_j = E_j.Triangles[0]
-                        for m in V.DOF_range[K_j]:
-                            psi = Psi[m]
-                            A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
-            case EdgeType.SIGMA_R:
-                K = E.Triangles[0]
-                for n in V.DOF_range[K]:
-                    phi = Phi[n]
-                    # for K_j with edges in sigma_L
-                    for E_j in Sigma_R_edges:
-                        K_j = E_j.Triangles[0]
-                        for m in V.DOF_range[K_j]:
-                            psi = Psi[m]
-                            #A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                            #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
-                            A[m,n] += Sigma_broken(phi, psi, E, k, H, d_2, Np=Np)
-    return A
 
 
 def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
@@ -546,7 +475,9 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
 
     return A
 
-def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10) -> spmatrix:
+    '''Assembles de matrix assuming Sigma_R+- consist of a single triangle side,
+    and returns a Scipy sparse matrix.'''
 
     N_DOF = V.N_DOF
 
@@ -689,8 +620,6 @@ def exact_separated(psi, E, k, H, d_2, t=0):
 
 
     #centred part 
-
-
     if np.isclose(d_y,0,1E-3):
         if t == 0:
             centred =  2.
