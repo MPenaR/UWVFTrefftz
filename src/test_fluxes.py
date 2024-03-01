@@ -27,12 +27,13 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
 def test_inner():
     P = np.array([3,3])
     Q = np.array([1,1])
-
-    T = (Q - P)/norm(Q-P)
+    l = norm(Q-P)
+    T = (Q - P)/l
     N = np.array([-T[1], T[0]])
+    M = ( P + Q )/2    
+    Edge = namedtuple('Edge',['P','Q','N','T','M','l'])
+    E = Edge(P,Q,N,T,M,l)
 
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
 
     k = 8.
     d_n = [1,1]

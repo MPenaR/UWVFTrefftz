@@ -123,20 +123,14 @@ def Inner_term_PP(phi, psi, edge, k, a, b):
     d_m = psi.d
     d_n = phi.d
     
-    P = edge.P
-    Q = edge.Q
+    M = edge.M
     N = edge.N
     T = edge.T
+    l = edge.l
 
-    l = norm(Q-P)
+    I = -1/2*1j*k*l*(dot(d_m,N) + dot(d_n,N) + 2*b*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
-    I = dot( d_m, N) + dot( d_n, N) + 2*b*dot( d_m, N)*dot( d_n, N) + 2*a
-
-
-    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return -1/2*1j*k*l * I * exp(1j*k*dot(d_n - d_m, P))
-    else:
-        return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
+    return I
 
 
 def Inner_term_PM(phi, psi, edge, k, a, b):
