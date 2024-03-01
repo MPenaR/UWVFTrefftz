@@ -5,6 +5,11 @@ from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
 from scipy.sparse import coo_matrix, spmatrix
+from geometry_tools import Edge
+
+
+
+
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
 
@@ -390,7 +395,14 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
 
 
 
-def AssembleMatrix(V, Edges, k, H, a, b, d_1, d_2, Np=10, fullsides=False) -> spmatrix:
+def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
+                   k: float, H: float, a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
+                   Np=10, fullsides=False) -> spmatrix:
+    '''Assembles de matrix for the bilinear form.
+    a, b, d_1 and d_2 are the coefficients of the regularizing terms.
+    Use fullsides = True if each boundary Sigma_R+ and Sigma_R- consists of 
+    a single triangle side.'''
+
     if fullsides:
         return AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np)
     else:
