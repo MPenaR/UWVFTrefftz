@@ -132,87 +132,19 @@ def Inner_term(phi, psi, edge, k, a, b):
 
     return I
 
+def sound_soft_term(phi, psi, edge, k, a):
 
-
-
-# def Inner_term_PP(phi, psi, edge, k, a, b):
-
-#     d_m = psi.d
-#     d_n = phi.d
+    d_m = psi.d
+    d_n = phi.d
     
-#     M = edge.M
-#     N = edge.N
-#     T = edge.T
-#     l = edge.l
+    M = edge.M
+    N = edge.N
+    T = edge.T
+    l = edge.l
 
-#     I = -1/2*1j*k*l*(dot(d_m,N) + dot(d_n,N) + 2*b*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+    I = -1j*k*l*(dot(d_n, N) + a)* exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
-#     return I
-
-
-# def Inner_term_PM(phi, psi, edge, k, a, b):
-
-#     d_m = psi.d
-#     d_n = phi.d
-    
-#     P = edge.P
-#     Q = edge.Q
-#     N = edge.N
-#     T = edge.T
-
-#     l = norm(Q-P)
-
-#     I = dot( d_m, N) + dot( d_n, N) + 2*b*dot( d_m, N)*dot( d_n, N) + 2*a
-
-
-#     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-#         return 1/2*1j*k*l * I* exp(1j*k*dot(d_n - d_m, P))
-#     else:
-#         return 1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
-
-
-# def Inner_term_MP(phi, psi, edge, k, a, b):
-
-#     d_m = psi.d
-#     d_n = phi.d
-    
-#     P = edge.P
-#     Q = edge.Q
-#     N = edge.N
-#     T = edge.T
-
-#     l = norm(Q-P)
-
-#     I = dot( d_m, N) + dot( d_n, N) - 2*b*dot( d_m, N)*dot( d_n, N) - 2*a
-
-
-#     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-#         return -1/2*1j*k*l * I* exp(1j*k*dot(d_n - d_m, P))
-#     else:
-#         return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
-
-
-# def Inner_term_MM(phi, psi, edge, k, a, b):
-
-#     d_m = psi.d
-#     d_n = phi.d
-    
-#     P = edge.P
-#     Q = edge.Q
-#     N = edge.N
-#     T = edge.T
-
-#     l = norm(Q-P)
-
-#     I = dot( d_m, N) + dot( d_n, N) - 2*b*dot( d_m, N)*dot( d_n, N) - 2*a
-
-
-#     if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-#         return 1/2*1j*k*l * I* exp(1j*k*dot(d_n - d_m, P))
-#     else:
-#         return 1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
-
-
+    return  I
 
 
 
@@ -312,25 +244,6 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
     return F + S + C1 + C2+ NN 
 
 
-
-def sound_soft_term(phi, psi, edge, k, a):
-
-    d_m = psi.d
-    d_n = phi.d
-    
-    P = edge.P
-    Q = edge.Q
-    N = edge.N
-    T = edge.T
-
-    l = norm(Q-P)
-
-    I = (dot(d_n, N) + a)
-
-    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return -1j*k*l* I * exp(1j*k*dot(d_n - d_m, P))
-    else:
-        return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
 
 
@@ -436,25 +349,25 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     phi = Phi[n]
                     for m in V.DOF_range[K_plus]:
                         psi = Psi[m]      
-                        A[m,n] += Inner_term_PP(phi, psi, E, k, a, b)
+                        A[m,n] += Inner_term(phi, psi, E, k, a, b)
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
                     for m in V.DOF_range[K_plus]:
                         psi = Psi[m]
-                        A[m,n] += Inner_term_MP(phi, psi, E, k, a, b)
+                        A[m,n] += Inner_term(phi, psi, E, k, -a, -b)
 
                 for n in V.DOF_range[K_plus]:
                     phi = Phi[n]
                     for m in V.DOF_range[K_minus]:
                         psi = Psi[m]
-                        A[m,n] += Inner_term_PM(phi, psi, E, k, a, b)
+                        A[m,n] += -Inner_term(phi, psi, E, k, a, b)
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
                     for m in V.DOF_range[K_minus]:
                         psi = Psi[m]
-                        A[m,n] += Inner_term_MM(phi, psi, E, k, a, b)
+                        A[m,n] += -Inner_term(phi, psi, E, k, -a, -b)
 
 
             case EdgeType.GAMMA:
