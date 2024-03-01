@@ -42,7 +42,8 @@ class Edge:
         
         self.N = self.getNormal()
         self.T = self.getTangent() 
-        self.midpoint = (P+Q)/2 #not needed right now
+        self.M = (P+Q)/2
+        self.l = norm(Q-P)
         self.Triangles = self.setTriangles(Omega,edge)
 
 

@@ -7,6 +7,7 @@ from numpy import trapz as Int
 from collections import namedtuple
 
 
+
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     l = norm(Q-P)
@@ -59,7 +60,6 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     t = np.linspace(0,1,Nt)
     x = P + np.outer(t,Q-P)
     phi_n = exp(1j*k*dot(x,d_n))
-    psi_m = exp(1j*k*dot(x,d_m))
     grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
     grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
 
@@ -69,12 +69,13 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
 def test_Gamma():
     P = np.array([0,1])
     Q = np.array([3,1])
-
-    T = (Q - P)/norm(Q-P)
+    l = norm(P-Q)
+    T = (Q - P)/l
     N = np.array([0,1])
-
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
+    M = ( P + Q)/2
+    
+    Edge = namedtuple('Edge',['P','Q','N','T','M','l'])
+    E = Edge(P,Q,N,T,M,l)
 
     k = 8.
     d_n = np.array([1,1])/norm([1,1])

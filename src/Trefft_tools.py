@@ -6,7 +6,7 @@ from collections import namedtuple
 from labels import EdgeType
 from scipy.sparse import coo_matrix, spmatrix
 from geometry_tools import Edge
-
+from numpy import sinc
 
 
 
@@ -107,19 +107,14 @@ def Gamma_term(phi, psi, edge, k, d_1):
     d_m = psi.d
     d_n = phi.d
     
-    P = edge.P
-    Q = edge.Q
+    M = edge.M
+    l = edge.l
     N = edge.N
     T = edge.T
 
-    l = norm(Q-P)
+    I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+    return I
 
-    I = (1 + d_1 * dot(d_n, N))*dot(d_m, N)
-
-    if np.isclose( dot(d_m,T), dot(d_n,T), 1E-3) :
-        return -1j*k*l* I * exp(1j*k*dot(d_n - d_m, P))
-    else:
-        return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
     
 
 
