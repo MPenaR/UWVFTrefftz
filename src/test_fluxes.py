@@ -1,4 +1,4 @@
-from Trefft_tools import Inner_term_PP, Gamma_term, Sigma_term, exact_RHS
+from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS
 
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
 from numpy.linalg import norm
@@ -48,7 +48,7 @@ def test_inner():
     a = 0.5
     b = 0.5
 
-    I_exact = Inner_term_PP(phi_n, psi_m, E, k, a, b)
+    I_exact = Inner_term(phi_n, psi_m, E, a, b)
     I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=int(1E4))
     relative_error = abs(I_exact - I_num)/abs(I_exact)
     assert relative_error < 1E-5
@@ -87,7 +87,7 @@ def test_Gamma():
     psi_m = TestFunction(d=d_m,k=k)
 
     d1 = 0.5
-    I_exact = Gamma_term(phi_n, psi_m, E, k, d1)
+    I_exact = Gamma_term(phi_n, psi_m, E, d1)
     I_num = num_Gamma( k, P, Q, N, d_n, d_m, d1=d1,  Nt=int(1E4))
     relative_error = abs(I_exact - I_num)/abs(I_exact)
     assert relative_error < 1E-5
@@ -130,16 +130,18 @@ def test_Sigma():
     P = np.array([R,-H])
     Q = np.array([R,H])
 
-    T = (Q - P)/norm(Q-P)
-    N = np.array([0,1])
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([1,0])
+    M = (P+Q)/2
 
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
+    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
+    E = Edge(P,Q,N,T,M,l)
 
     k = 8.
-    d_n = [1,-1]
+    d_n = [1,1]
     d_n = np.array(d_n)/norm(d_n)
-    d_m = [1,1]
+    d_m = [1,-1]
     d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
@@ -147,10 +149,10 @@ def test_Sigma():
     psi_m = TestFunction(d=d_m,k=k)
 
     d2 = 0.5
-    I_exact = Sigma_term(phi_n, psi_m, E, k, H, d2)
+    I_exact = Sigma_term(phi_n, psi_m, E, d2)
     I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=int(1E4))
     relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    assert relative_error < 1E-5, f'{I_exact=}, {I_num=}'
 
 
 

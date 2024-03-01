@@ -165,6 +165,9 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
 
     P = edge.P
     N = edge.N
+    T = edge.T
+    M = edge.M
+    l = edge.l
     
     H = np.abs(P[1])
     
@@ -180,78 +183,34 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
     d_mN = dot(d_m,N)
     
     #first term
-    I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN
-   
-    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-        F = I1
-    elif np.isclose(d_ny, 0, 1E-3):
-        F = I1 * sin(d_my*kH) / (d_my*kH)
-    elif np.isclose(d_my, 0, 1E-3):
-        F =  I1 * sin(d_ny*kH) / (d_ny*kH)
-    else:
-        F = I1 * sin(d_my*kH)/(d_my*kH) * sin(d_ny*kH)/(d_ny*kH) + \
-            I1 * 0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sin(d_ny*kH+s*pi)/(d_ny*kH+s*pi) + sin(d_ny*kH-s*pi)/(d_ny*kH-s*pi)) 
-                                                              * (sin(d_my*kH+s*pi)/(d_my*kH+s*pi) + sin(d_my*kH-s*pi)/(d_my*kH-s*pi))  
-                                                              for s in range(1,Np)])
-        
+
+    F = -1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
+         0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
+                                                      * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
+
     # cross-terms
-    I1 = 2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN
-    
-    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-        C1 = I1
-    elif np.isclose(d_ny, 0, 1E-3):
-        C1 = I1 * sin(d_my*kH) / (d_my*kH)
-    elif np.isclose(d_my, 0, 1E-3):
-        C1 =  I1 * sin(d_ny*kH) / (d_ny*kH)
-    else:
-        C1 = I1 * sin(d_my*kH)/(d_my*kH) * sin(d_ny*kH)/(d_ny*kH) + \
-            I1 * 0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sin(d_ny*kH+s*pi)/(d_ny*kH+s*pi) + sin(d_ny*kH-s*pi)/(d_ny*kH-s*pi)) 
-                                                              * (sin(d_my*kH+s*pi)/(d_my*kH+s*pi) + sin(d_my*kH-s*pi)/(d_my*kH-s*pi))  
-                                                              for s in range(1,Np)])
 
+    C1 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
+         0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
+                                                      * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
-    I1 = 2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN
-    
-    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-        C2 = I1
-    elif np.isclose(d_ny, 0, 1E-3):
-        C2 = I1 * sin(d_my*kH) / (d_my*kH)
-    elif np.isclose(d_my, 0, 1E-3):
-        C2 =  I1 * sin(d_ny*kH) / (d_ny*kH)
-    else:
-        C2 = I1 * sin(d_my*kH)/(d_my*kH) * sin(d_ny*kH)/(d_ny*kH) + \
-            I1 * 0.5*sum([kH/conj(sqrt(complex(kH**2 - (s*pi)**2))) * (sin(d_ny*kH+s*pi)/(d_ny*kH+s*pi) + sin(d_ny*kH-s*pi)/(d_ny*kH-s*pi)) 
-                                                              * (sin(d_my*kH+s*pi)/(d_my*kH+s*pi) + sin(d_my*kH-s*pi)/(d_my*kH-s*pi))  
-                                                              for s in range(1,Np)])
-
+    C2 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
+         0.5*sum([kH/conj(sqrt(complex(kH**2 - (s*pi)**2))) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
+                                                      * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
 
     #second-like terms
-        
-    I = -2*1j*kH*(d_nN+d_2)*exp(1j*(d_nx-d_mx)*kH*x)
-    if np.isclose(d_ny, d_my, 1E-3):
-        S = I
-    else:
-        S = I * sin((d_ny-d_my)*kH) / ((d_ny-d_my)*kH)
+
+    S = -1j*k*l*(d_nN+d_2)*exp(1j*k*l*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+
 
     #N(...)N(...) terms
-    I1 = -2*1j*kH*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN*d_nN
 
-    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-        NN = I1
-    elif np.isclose(d_ny, 0, 1E-3):
-        NN = I1 * sin(d_my*kH) / (d_my*kH)
-    elif np.isclose(d_my, 0, 1E-3):
-        NN =  I1 * sin(d_ny*kH) / (d_ny*kH)
-    else:
-        NN = I1 * sin(d_my*kH)/(d_my*kH) * sin(d_ny*kH)/(d_ny*kH) + \
-             I1 * 0.5*sum([kH**2/abs(sqrt(complex(kH**2 - (s*pi)**2)))**2 
-                           * (sin(d_ny*kH + s*pi)/(d_ny*kH + s*pi) + sin(d_ny*kH - s*pi)/(d_ny*kH - s*pi)) 
-                           * (sin(d_my*kH + s*pi)/(d_my*kH + s*pi) + sin(d_my*kH - s*pi)/(d_my*kH - s*pi))  for s in range(1,Np)])
- 
+    NN = -1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
+         0.5*sum([kH**2/abs(sqrt(complex(kH**2 - (s*pi)**2)))**2 * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
+                                                                 * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                            
 
-    return F + S + C1 + C2+ NN 
-
+    return F + S + C1 + C2+ NN
 
 
 
