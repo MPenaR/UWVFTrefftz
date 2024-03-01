@@ -4,7 +4,7 @@ from numpy import dot, pi, exp, sqrt, sin, abs, conj
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
-
+from scipy.sparse import coo_matrix
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
 
@@ -535,7 +535,6 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     for m in V.DOF_range[K]:
                         psi = Psi[m]
                         A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
             case EdgeType.SIGMA_R:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
@@ -543,11 +542,100 @@ def AssembleMatrix_full_sides(V, Edges, k, H, a, b, d_1, d_2, Np=10):
                     for m in V.DOF_range[K]:
                         psi = Psi[m]
                         A[m,n] += Sigma_term(phi, psi, E, k, H, d_2, Np=Np)
-                        #A[m,n] += Sigma_separated(phi, psi, E, k, H, d_2, Np=Np)
 
 
     return A
 
+def AssembleMatrix_full_sides_sparse(V, Edges, k, H, a, b, d_1, d_2, Np=10):
+
+    N_DOF = V.N_DOF
+
+    values = []
+    i_index = []
+    j_index = []
+   
+    Phi = V.TrialFunctions
+    Psi = V.TestFunctions # currently the same spaces 
+    for E in Edges:
+        match E.Type:
+            case EdgeType.INNER:
+                K_plus, K_minus = E.Triangles
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_PP(phi, psi, E, k, a, b))
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_MP(phi, psi, E, k, a, b))
+
+
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_PM(phi, psi, E, k, a, b))
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_MM(phi, psi, E, k, a, b))
+
+
+            case EdgeType.GAMMA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Gamma_term(phi, psi, E, k, d_1))
+                    
+
+            case EdgeType.D_OMEGA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(sound_soft_term(phi, psi, E, k, a))
+
+            case EdgeType.SIGMA_L:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Sigma_term(phi, psi, E, k, H, d_2, Np=Np))
+            case EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Sigma_term(phi, psi, E, k, H, d_2, Np=Np))
+    A = coo_matrix( (values,(i_index, j_index)), shape=(N_DOF,N_DOF))
+
+    return A
 
 
 
