@@ -196,7 +196,7 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
 
     C2 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
          0.5*sum([kH/conj(sqrt(complex(kH**2 - (s*pi)**2))) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
-                                                      * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
+                                                            * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
 
     #second-like terms
@@ -413,7 +413,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, a, b))
+                        values.append(Inner_term(phi, psi, E, a, b))
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
@@ -445,7 +445,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                         j_index.append(n)
                         values.append(sound_soft_term(phi, psi, E, a))
 
-            case EdgeType.SIGMA_L:
+            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
                     phi = Phi[n]
@@ -454,15 +454,15 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                         i_index.append(m)
                         j_index.append(n)
                         values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
-            case EdgeType.SIGMA_R:
-                K = E.Triangles[0]
-                for n in V.DOF_range[K]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
+            # case EdgeType.SIGMA_R:
+            #     K = E.Triangles[0]
+            #     for n in V.DOF_range[K]:
+            #         phi = Phi[n]
+            #         for m in V.DOF_range[K]:
+            #             psi = Psi[m]
+            #             i_index.append(m)
+            #             j_index.append(n)
+            #             values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
     
     A = coo_matrix( (values,(i_index, j_index)), shape=(N_DOF,N_DOF))
 
@@ -505,62 +505,6 @@ def exact_RHS(psi, E, k, H, d_2, t=0):
             S = I*(dot(d,N)*d_2)*kH/conj(beta)*( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
 
     return F + S
-
-def exact_separated(psi, E, k, H, d_2, t=0): 
-    d = psi.d
-    d_x = d[0]
-    d_y = d[1]
-    N = E.N
-    d_N = dot(d,N)
-
-    x = E.P[0]/H
-    kH = k*H
-
-    beta = sqrt( complex( kH**2 - (t*pi)**2))
-
-
-    #centred part 
-    if np.isclose(d_y,0,1E-3):
-        if t == 0:
-            centred =  2.
-        else:
-            centred = 0.
-    else:
-        if t == 0:
-            centred = 2 * sin(kH*d_y)/(kH*d_y)
-        else:
-            centred = (sin( kH*d_y + t*pi) / ( kH*d_y + t*pi) +
-                       sin( kH*d_y - t*pi) / ( kH*d_y - t*pi)  )
-            
-    centred = 2j *kH* d_N * exp(1j*(beta-kH*d_x)*x) * centred 
-        
-    # d_2 part
-            
-    
-    if np.isclose(d_y,0,1E-3):
-        if t == 0:
-            reg1 =  2*d_N
-            reg2 = -2
-        else:
-            reg1 =  0.
-            reg2 =  0.
-    
-    else:
-        if t == 0:
-            reg1 = d_N * sin(kH*d_y)/(kH*d_y)
-            reg2 = - 2 * sin(kH*d_y)/(kH*d_y)
-        else:
-            reg1 = d_N * kH / beta * ( sin( kH*d_y + t*pi) / ( kH*d_y + t*pi) +
-                                       sin( kH*d_y - t*pi) / ( kH*d_y - t*pi) )
-        
-            reg2 = - ( sin( kH*d_y + t*pi) / ( kH*d_y + t*pi) +
-                       sin( kH*d_y - t*pi) / ( kH*d_y - t*pi) )
-
-    
-    reg = 2j *kH*exp(1j*(beta-kH*d_x)*x)*( reg1 + reg2)
-    
-    return centred + d_2*reg
-
 
 def exact_RHS_broken(psi, E, k, H, d_2, t=0):
     d = psi.d
@@ -617,7 +561,6 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0, full_sides=False):
                     psi = Psi[m]
                     if full_sides:
                         b[m] += exact_RHS(psi, E, k, H, d_2, t=t)
-                    # b[m] += exact_separated(psi, E, k, H, d_2, t = t)
                     else:
                         b[m] += exact_RHS_broken(psi, E, k, H, d_2, t = t)
             case EdgeType.SIGMA_R:

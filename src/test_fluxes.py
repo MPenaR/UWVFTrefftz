@@ -7,7 +7,8 @@ from numpy import trapz as Int
 from collections import namedtuple
 
 
-
+TOL = 1E-7
+N_points = int(1E5)
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     l = norm(Q-P)
@@ -49,9 +50,9 @@ def test_inner():
     b = 0.5
 
     I_exact = Inner_term(phi_n, psi_m, E, a, b)
-    I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=int(1E4))
+    I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_points)
     relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    assert relative_error < TOL
 
 
 
@@ -88,9 +89,9 @@ def test_Gamma():
 
     d1 = 0.5
     I_exact = Gamma_term(phi_n, psi_m, E, d1)
-    I_num = num_Gamma( k, P, Q, N, d_n, d_m, d1=d1,  Nt=int(1E4))
+    I_num = num_Gamma( k, P, Q, N, d_n, d_m, d1=d1,  Nt=N_points)
     relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    assert relative_error < TOL
 
 
 
@@ -150,9 +151,9 @@ def test_Sigma():
 
     d2 = 0.5
     I_exact = Sigma_term(phi_n, psi_m, E, d2)
-    I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=int(1E4))
+    I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_points)
     relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5, f'{I_exact=}, {I_num=}'
+    assert relative_error < TOL, f'{I_exact=}, {I_num=}'
 
 
 
@@ -196,7 +197,7 @@ def test_RHS():
     t= 1
 
     I_exact =exact_RHS(psi_m, E, k, H, d2, t)
-    I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=int(1E4))
+    I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
     relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    assert relative_error < TOL
 
