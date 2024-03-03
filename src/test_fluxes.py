@@ -18,7 +18,7 @@ NTH = 3
 d_m = [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]
 d_n = [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]
 
-inputs = product(d_m,d_n)
+inputs = list(product(d_m,d_n))
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     l = norm(Q-P)
@@ -78,7 +78,8 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     I = Int( (phi_n + d1/(1j*k)*grad_phi_n_N)*conj(grad_psi_m_N)*l, t)
     return I
 
-def test_Gamma():
+@pytest.mark.parametrize(('d_m', 'd_n'), inputs )
+def test_Gamma(d_m,d_n):
     P = np.array([0,1])
     Q = np.array([3,1])
     l = norm(P-Q)
@@ -90,8 +91,8 @@ def test_Gamma():
     E = Edge(P,Q,N,T,M,l)
 
     k = 8.
-    d_n = np.array([1,1])/norm([1,1])
-    d_m = np.array([1,-1])/norm([1,-1])
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
     phi_n = TestFunction(d=d_n,k=k)
@@ -135,7 +136,8 @@ def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
     
     return I
 
-def test_Sigma():
+@pytest.mark.parametrize(('d_m', 'd_n'), inputs )
+def test_Sigma(d_m,d_n):
     H=1
     R= 10
     P = np.array([R,-H])
@@ -150,9 +152,7 @@ def test_Sigma():
     E = Edge(P,Q,N,T,M,l)
 
     k = 8.
-    d_n = [1,1]
     d_n = np.array(d_n)/norm(d_n)
-    d_m = [1,-1]
     d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])

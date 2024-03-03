@@ -389,7 +389,6 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
     for E in Edges:
         match E.Type:
             case EdgeType.INNER:
-                print('inner')
                 K_plus, K_minus = E.Triangles
                 for n in V.DOF_range[K_plus]:
                     phi = Phi[n]
@@ -426,7 +425,6 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
 
 
             case EdgeType.GAMMA:
-                print('gamma')
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
@@ -438,7 +436,6 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                     
 
             case EdgeType.D_OMEGA:
-                print('d_OMEGA')
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
@@ -449,7 +446,6 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                         values.append(sound_soft_term(phi, psi, E, a))
 
             case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
-                print('sigma')
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
                     phi = Phi[n]
