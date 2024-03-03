@@ -168,11 +168,11 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
     T = edge.T
     M = edge.M
     l = edge.l
+
     
     H = np.abs(P[1])
     
     x  = P[0]/H
-
 
     kH = k*H
 
@@ -187,7 +187,7 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
                                                       * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
     # grad(u)*v
-    S1 = -1j*k*l*d_nN*exp(1j*k*l*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+    S1 = -1j*k*l*d_nN*exp(1j*k*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
 
 
@@ -205,7 +205,7 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
 
 
     # d2*u*v
-    S2 = -1j*k*l*d_2*exp(1j*k*l*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+    S2 = -1j*k*l*d_2*exp(1j*k*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
 
     #d2*N(grad(u))*N(grad(v)) 
