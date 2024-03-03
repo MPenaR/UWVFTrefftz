@@ -1,14 +1,24 @@
 from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS
 
+
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
 from numpy.linalg import norm
 import numpy as np 
 from numpy import trapz as Int
 from collections import namedtuple
+from itertools import product
+import pytest
 
 
 TOL = 1E-7
 N_points = int(1E5)
+
+NTH = 3
+# directions
+d_m = [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]
+d_n = [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]
+
+inputs = product(d_m,d_n)
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     l = norm(Q-P)
@@ -25,7 +35,9 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
 
     return I
 
-def test_inner():
+
+@pytest.mark.parametrize(('d_m', 'd_n'), inputs )
+def test_inner(d_m,d_n):
     P = np.array([3,3])
     Q = np.array([1,1])
     l = norm(Q-P)
@@ -37,9 +49,7 @@ def test_inner():
 
 
     k = 8.
-    d_n = [1,1]
     d_n = np.array(d_n)/norm(d_n)
-    d_m = [1,-1]
     d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
@@ -52,7 +62,7 @@ def test_inner():
     I_exact = Inner_term(phi_n, psi_m, E, a, b)
     I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_points)
     relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < TOL
+    assert relative_error < TOL, f'{I_exact=}, {I_num=}'
 
 
 

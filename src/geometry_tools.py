@@ -39,20 +39,20 @@ class Edge:
         self.P = P
         self.Q = Q
         self.Type = computeEdgeType(Omega,edge)
-        
-        self.N = self.getNormal()
-        self.T = self.getTangent() 
-        self.M = (P+Q)/2
+
         self.l = norm(Q-P)
+        self.T = (Q - P) / self.l
+        self.M = (P+Q)/2
+
+        self.N = self.getNormal()
         self.Triangles = self.setTriangles(Omega,edge)
 
 
 #        probably they should be properties with getters and setters, fix later    
 
     def getNormal(self):
-        px, py = self.P 
-        qx, qy = self.Q 
-        tx, ty = self.Q - self.P
+        _, py = self.P 
+        tx, ty = self.T
 
         match self.Type: #maybe use gamma_up and gamma_down
             
@@ -66,18 +66,18 @@ class Edge:
                 return np.array([1., 0.])
 
             case EdgeType.INNER:
-                return np.array([ -ty, tx] ) / norm([tx,ty])
+                return np.array([ -ty, tx] )
             
             case EdgeType.D_OMEGA:
-                N = np.array([ -ty, tx] ) / norm([tx,ty])
-                if dot((self.Q+self.P)/2 - np.array(c),N) > 0:  # need to fix this
+                N = np.array([ -ty, tx] ) 
+                if dot(self.M - np.array(c),N) > 0:  # NEED TO FIX THIS
                     N = -N
                 return N
 
 
-    def getTangent(self):
-        T = (self.Q - self.P) / norm(self.Q - self.P)
-        return T
+    # def getTangent(self):
+    #     T = (self.Q - self.P) / self.l
+    #     return T
 
     def setTriangles(self, Omega, edge):
         Triangles = [ K.nr for K in edge.faces ]
