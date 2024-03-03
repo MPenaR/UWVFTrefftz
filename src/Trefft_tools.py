@@ -174,8 +174,6 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
     x  = P[0]/H
 
 
-
-
     kH = k*H
 
 
@@ -183,34 +181,40 @@ def Sigma_term(phi, psi, edge, d_2, Np = 15):
     d_mN = dot(d_m,N)
     
     #first term
-
+    #N(grad(u))*grad(v)
     F = -1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
          0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
                                                       * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
-    # cross-terms
+    # grad(u)*v
+    S1 = -1j*k*l*d_nN*exp(1j*k*l*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
+
+
+    # cross-terms
+    # d2*N(grad(u))*v
     C1 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
          0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
                                                       * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
-    C2 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
+    # d2*u*N(grad(v))
+    C2 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
          0.5*sum([kH/conj(sqrt(complex(kH**2 - (s*pi)**2))) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
                                                             * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
 
 
-    #second-like terms
 
-    S = -1j*k*l*(d_nN+d_2)*exp(1j*k*l*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+    # d2*u*v
+    S2 = -1j*k*l*d_2*exp(1j*k*l*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
 
-    #N(...)N(...) terms
+    #d2*N(grad(u))*N(grad(v)) 
 
     NN = -1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
          0.5*sum([kH**2/abs(sqrt(complex(kH**2 - (s*pi)**2)))**2 * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
                                                                  * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                            
 
-    return F + S + C1 + C2+ NN
+    return F + S1 + NN + C1 + C2 + S2
 
 
 
