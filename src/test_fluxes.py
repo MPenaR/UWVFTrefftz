@@ -61,8 +61,7 @@ def test_inner(d_m,d_n):
 
     I_exact = Inner_term(phi_n, psi_m, E, a, b)
     I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_points)
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < TOL, f'{I_exact=}, {I_num=}'
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -101,8 +100,7 @@ def test_Gamma(d_m,d_n):
     d1 = 0.5
     I_exact = Gamma_term(phi_n, psi_m, E, d1)
     I_num = num_Gamma( k, P, Q, N, d_n, d_m, d1=d1,  Nt=N_points)
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < TOL
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -162,8 +160,7 @@ def test_Sigma(d_m,d_n):
     d2 = 0.5
     I_exact = Sigma_term(phi_n, psi_m, E, d2)
     I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_points)
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < TOL, f'{I_exact=}, {I_num=}'
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -208,6 +205,5 @@ def test_RHS():
 
     I_exact =exact_RHS(psi_m, E, k, H, d2, t)
     I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < TOL
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
