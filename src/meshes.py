@@ -1,17 +1,18 @@
 '''Module for generating the different meshes.
  Creates a netgen mesh and returns the NG-solve wrapper.'''
+from enum import Enum, auto
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
-from enum import Enum, auto
 
 class ScattererType(Enum):
+    '''Enumeration of the different scatterer types.'''
     PENETRABLE = auto()
     SOUND_SOFT = auto()
     SOUND_HARD = auto()
 
 
 
-def waveguideMesh( h_max = 2., R = 10., H=1., c=(0.0), rad = (0.2), quad = False,
+def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False,
                    scatterer_type = ScattererType.PENETRABLE ):
     '''Mesh for the full waveguide.'''
     geo = SplineGeometry()

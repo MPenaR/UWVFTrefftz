@@ -14,11 +14,8 @@ TOL = 1E-7
 N_points = int(1E5)
 
 NTH = 3
-# directions
-d_m = [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]
-d_n = [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]
+directions = list(product([(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)], [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]))
 
-inputs = list(product(d_m,d_n))
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     l = norm(Q-P)
@@ -36,7 +33,7 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     return I
 
 
-@pytest.mark.parametrize(('d_m', 'd_n'), inputs )
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_inner(d_m,d_n):
     P = np.array([3,3])
     Q = np.array([1,1])
@@ -77,7 +74,7 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     I = Int( (phi_n + d1/(1j*k)*grad_phi_n_N)*conj(grad_psi_m_N)*l, t)
     return I
 
-@pytest.mark.parametrize(('d_m', 'd_n'), inputs )
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_Gamma(d_m,d_n):
     P = np.array([0,1])
     Q = np.array([3,1])
@@ -134,7 +131,7 @@ def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
     
     return I
 
-@pytest.mark.parametrize(('d_m', 'd_n'), inputs )
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_Sigma(d_m,d_n):
     H=1
     R= 10
