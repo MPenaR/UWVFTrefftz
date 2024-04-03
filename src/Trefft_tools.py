@@ -304,14 +304,26 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
 
 def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
     '''Assembles de matrix assuming Sigma_R+- consist of several triangles sides,
-    and returns a Scipy sparse matrix.'''
-
+    and returns a Scipy sparse matrix.'''   
+                    
     N_DOF = V.N_DOF
 
     values = []
     i_index = []
     j_index = []
-   
+
+
+    Side_edges = { EdgeType.SIGMA_L : [], EdgeType.SIGMA_R : []} 
+    
+    for E in Edges:
+        match E.Type:
+            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+                Side_edges[E.Type].append(E)
+            case _:
+                pass
+
+
+
     Phi = V.TrialFunctions
     Psi = V.TestFunctions # currently the same spaces 
     for E in Edges:
@@ -377,11 +389,13 @@ def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
                     phi = Phi[n]
-                    for m in V.DOF_range[K]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
+                    for E_other in Side_edges[E.Type]:
+                        K_other = E_other.Triangles[0]
+                        for m in V.DOF_range[K_other]:
+                            psi = Psi[m]
+                            i_index.append(m)
+                            j_index.append(n)
+                            values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
                         
     values = np.array(values)
     i_index = np.array(i_index)
@@ -549,16 +563,7 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                         i_index.append(m)
                         j_index.append(n)
                         values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
-            # case EdgeType.SIGMA_R:
-            #     K = E.Triangles[0]
-            #     for n in V.DOF_range[K]:
-            #         phi = Phi[n]
-            #         for m in V.DOF_range[K]:
-            #             psi = Psi[m]
-            #             i_index.append(m)
-            #             j_index.append(n)
-            #             values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
-                        
+
     values = np.array(values)
     i_index = np.array(i_index)
     j_index = np.array(j_index)
