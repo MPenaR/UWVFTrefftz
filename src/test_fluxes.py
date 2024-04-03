@@ -1,11 +1,20 @@
-from Trefft_tools import Inner_term_PP, Gamma_term, Sigma_term, exact_RHS
+from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS
+
 
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
 from numpy.linalg import norm
 import numpy as np 
 from numpy import trapz as Int
 from collections import namedtuple
+from itertools import product
+import pytest
 
+
+TOL = 1E-7
+N_points = int(1E5)
+
+NTH = 3
+directions = list(product([(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)], [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]))
 
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
@@ -23,20 +32,21 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
 
     return I
 
-def test_inner():
+
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_inner(d_m,d_n):
     P = np.array([3,3])
     Q = np.array([1,1])
-
-    T = (Q - P)/norm(Q-P)
+    l = norm(Q-P)
+    T = (Q - P)/l
     N = np.array([-T[1], T[0]])
+    M = ( P + Q )/2    
+    Edge = namedtuple('Edge',['P','Q','N','T','M','l'])
+    E = Edge(P,Q,N,T,M,l)
 
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
 
     k = 8.
-    d_n = [1,1]
     d_n = np.array(d_n)/norm(d_n)
-    d_m = [1,-1]
     d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
@@ -46,10 +56,9 @@ def test_inner():
     a = 0.5
     b = 0.5
 
-    I_exact = Inner_term_PP(phi_n, psi_m, E, k, a, b)
-    I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=int(1E4))
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    I_exact = Inner_term(phi_n, psi_m, E, a, b)
+    I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_points)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -59,36 +68,36 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     t = np.linspace(0,1,Nt)
     x = P + np.outer(t,Q-P)
     phi_n = exp(1j*k*dot(x,d_n))
-    psi_m = exp(1j*k*dot(x,d_m))
     grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
     grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
 
     I = Int( (phi_n + d1/(1j*k)*grad_phi_n_N)*conj(grad_psi_m_N)*l, t)
     return I
 
-def test_Gamma():
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_Gamma(d_m,d_n):
     P = np.array([0,1])
     Q = np.array([3,1])
-
-    T = (Q - P)/norm(Q-P)
+    l = norm(P-Q)
+    T = (Q - P)/l
     N = np.array([0,1])
-
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
+    M = ( P + Q)/2
+    
+    Edge = namedtuple('Edge',['P','Q','N','T','M','l'])
+    E = Edge(P,Q,N,T,M,l)
 
     k = 8.
-    d_n = np.array([1,1])/norm([1,1])
-    d_m = np.array([1,-1])/norm([1,-1])
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
     phi_n = TestFunction(d=d_n,k=k)
     psi_m = TestFunction(d=d_m,k=k)
 
     d1 = 0.5
-    I_exact = Gamma_term(phi_n, psi_m, E, k, d1)
-    I_num = num_Gamma( k, P, Q, N, d_n, d_m, d1=d1,  Nt=int(1E4))
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    I_exact = Gamma_term(phi_n, psi_m, E, d1)
+    I_num = num_Gamma( k, P, Q, N, d_n, d_m, d1=d1,  Nt=N_points)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -122,22 +131,23 @@ def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
     
     return I
 
-def test_Sigma():
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_Sigma(d_m,d_n):
     H=1
     R= 10
     P = np.array([R,-H])
     Q = np.array([R,H])
 
-    T = (Q - P)/norm(Q-P)
-    N = np.array([0,1])
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([1,0])
+    M = (P+Q)/2
 
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
+    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
+    E = Edge(P,Q,N,T,M,l)
 
     k = 8.
-    d_n = [1,-1]
     d_n = np.array(d_n)/norm(d_n)
-    d_m = [1,1]
     d_m = np.array(d_m)/norm(d_m)
 
     TestFunction = namedtuple('TestFunction',['d','k'])
@@ -145,10 +155,9 @@ def test_Sigma():
     psi_m = TestFunction(d=d_m,k=k)
 
     d2 = 0.5
-    I_exact = Sigma_term(phi_n, psi_m, E, k, H, d2)
-    I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=int(1E4))
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    I_exact = Sigma_term(phi_n, psi_m, E, d2)
+    I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_points)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -192,7 +201,6 @@ def test_RHS():
     t= 1
 
     I_exact =exact_RHS(psi_m, E, k, H, d2, t)
-    I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=int(1E4))
-    relative_error = abs(I_exact - I_num)/abs(I_exact)
-    assert relative_error < 1E-5
+    I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 

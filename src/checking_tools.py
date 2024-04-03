@@ -47,7 +47,7 @@ def checkLabels(Edges, ax = None, R=10, H=1):
 def checkNormals(Edges, R=10., H=1.):
     Normals = np.array( [ E.N for E in Edges])
     Tangents = np.array( [ E.T for E in Edges])
-    MidPoints = np.array( [ E.midpoint for E in Edges])
+    MidPoints = np.array( [ E.M for E in Edges])
     checkLabels(Edges)
     d = 0.2
     plt.quiver( MidPoints[:,0], MidPoints[:,1], Normals[:,0], Normals[:,1], scale=40)
