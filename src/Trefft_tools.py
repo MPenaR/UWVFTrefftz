@@ -300,8 +300,99 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
             return AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
     else:
         return AssembleMatrix_full_sides(V, Edges, a, b, d_1, d_2, Np)
+
+
 def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
-    pass
+    '''Assembles de matrix assuming Sigma_R+- consist of several triangles sides,
+    and returns a Scipy sparse matrix.'''
+
+    N_DOF = V.N_DOF
+
+    values = []
+    i_index = []
+    j_index = []
+   
+    Phi = V.TrialFunctions
+    Psi = V.TestFunctions # currently the same spaces 
+    for E in Edges:
+        match E.Type:
+            case EdgeType.INNER:
+                K_plus, K_minus = E.Triangles
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term(phi, psi, E, a, b))
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term(phi, psi, E, -a, -b))
+
+
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(-Inner_term(phi, psi, E, a, b))
+
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(-Inner_term(phi, psi, E, -a, -b))
+
+
+            case EdgeType.GAMMA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Gamma_term(phi, psi, E, d_1))
+                    
+
+            case EdgeType.D_OMEGA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(sound_soft_term(phi, psi, E, a))
+
+            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
+                        
+    values = np.array(values)
+    i_index = np.array(i_index)
+    j_index = np.array(j_index)
+    
+    
+    A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
+    A = csr_matrix(A)
+
+    return A
+
 
 
 
