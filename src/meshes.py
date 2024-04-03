@@ -12,6 +12,9 @@ class ScattererType(Enum):
 
 
 
+
+
+
 def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False,
                    scatterer_type = ScattererType.PENETRABLE ):
     '''Mesh for the full waveguide.'''
