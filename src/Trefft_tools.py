@@ -6,7 +6,7 @@ from collections import namedtuple
 from labels import EdgeType
 from scipy.sparse import coo_matrix, csr_matrix, spmatrix
 from geometry_tools import Edge
-from numpy import sinc
+from numpy import sinc, cos
 
 
 
@@ -599,6 +599,7 @@ def exact_RHS(psi, E, k, H, d_2, t=0):
         else:
             F = I*(dot(d,N) - d_2)*( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
 
+
     if np.isclose(d_y,0,1E-3):
         if t == 0:
             S = 2*I*(dot(d,N)*d_2)
@@ -612,43 +613,28 @@ def exact_RHS(psi, E, k, H, d_2, t=0):
 
     return F + S
 
-def exact_RHS_broken(psi, E, k, H, d_2, t=0):
+def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
     d = psi.d
-    P_y = E.P[1]
-    Q_y = E.Q[1]
-
-    d_x = d[0]
+    # d_x = d[0]
     d_y = d[1]
-    
-    R = 10 #!! REPLACE DO NOT HARDCODE
-    
-    #N = E.N
-    # d_N = dot(d,N)
+    N = E.N
+    M = E.M
+    l = E.l
 
-    kH = k*H
+    # x = E.P[0]
+    # kH = k*H
 
-    beta = sqrt( complex( kH**2 - (t*pi)**2))
+    beta = sqrt(complex(k**2 - (t*pi/H)**2))
 
+    F = 2*1j*k*H*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*(dot(d,N) - d_2)*(exp( 1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)) + 
+                                                                         exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)))
 
-    #centred part
-
-    if np.isclose(d_y,0,1E-3):
-        if t == 0:
-            I =  (Q_y - P_y)/H
-        else:
-            I =  (sin(t*pi*Q_y/H) - sin(t*pi*P_y/H))/(t*pi)
-    else:
-        if t == 0:
-            I = - 1/(1j*kH*d_y)*( exp(-1j*kH*d_y*Q_y/H) - exp(-1j*kH*d_y*P_y/H))
-        else:
-            I = -((exp(-1j*(kH*d_y - t*pi)*Q_y/H) - exp(-1j*(kH*d_y - t*pi)*P_y/H) ) / (2j*(kH*d_y - t*pi)) +
-                  (exp(-1j*(kH*d_y + t*pi)*Q_y/H) - exp(-1j*(kH*d_y + t*pi)*P_y/H) ) / (2j*(kH*d_y + t*pi))  )
-            
-    centred = -2j*kH*d_x*exp(1j*(kH*d_x - beta)*R/H)*I
-
-    reg = 0.
-
-    return centred + d_2*reg
+    S = 2*1j*k*H*dot(d,N)*d_2*exp(1j*beta*M[0])*exp(-1j*k*d[0]*M[0])*( l/H * sinc(k*H*d[1]/pi)*sinc(t*l/(2*H))*cos(pi*t/H*M[1]) + 
+                                                                      l/(2*H) * sum( [ k/conj(sqrt(complex(k**2 - (t*pi/H)**2))) *
+                                                                                       (sinc(k*H*d[1]/pi+p)+
+                                                                                        sinc(k*H*d[1]/pi-p))
+                                                                                        *(sinc(t+p) + sinc(t-p)) for p in range(1,Np)] ) )
+    return F + S
 
 
 
