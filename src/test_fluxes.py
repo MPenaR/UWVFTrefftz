@@ -1,4 +1,4 @@
-from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS
+from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS, exact_RHS_broken
 
 
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
@@ -177,17 +177,50 @@ def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
     
     return I
 
+# def test_RHS():
+#     H=1
+#     R= 10
+#     P = np.array([R,-H])
+#     Q = np.array([R,H])
+
+#     T = (Q - P)/norm(Q-P)
+#     N = np.array([0,1])
+
+#     Edge = namedtuple('Edge',['P','Q','N','T'])
+#     E = Edge(P,Q,N,T)
+
+#     k = 8.
+#     d_m = [1,1]
+#     d_m = np.array(d_m)/norm(d_m)
+
+#     TestFunction = namedtuple('TestFunction',['d','k'])
+#     psi_m = TestFunction(d=d_m,k=k)
+
+#     d2 = 0.5
+
+#     t= 1
+
+#     I_exact =exact_RHS(psi_m, E, k, H, d2, t)
+#     I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
+#     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+
+
+
+
 def test_RHS():
     H=1
     R= 10
-    P = np.array([R,-H])
-    Q = np.array([R,H])
+    P = np.array([-R,-H])
+    Q = np.array([-R,H])
 
-    T = (Q - P)/norm(Q-P)
-    N = np.array([0,1])
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([0,-1])
+    M = (P+Q)/2
+    
 
-    Edge = namedtuple('Edge',['P','Q','N','T'])
-    E = Edge(P,Q,N,T)
+    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
+    E = Edge(P,Q,N,T, M, l)
 
     k = 8.
     d_m = [1,1]
@@ -200,7 +233,37 @@ def test_RHS():
 
     t= 1
 
-    I_exact =exact_RHS(psi_m, E, k, H, d2, t)
+    I_exact = exact_RHS_broken(psi_m, E, k, H, d2, t)
     I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
+
+def test_RHS_broken():
+    H=1
+    R= 10
+    P = np.array([-R,-H])
+    Q = np.array([-R,H/3])
+
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([0,-1])
+    M = (P+Q)/2
+    
+
+    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
+    E = Edge(P,Q,N,T, M, l)
+
+    k = 8.
+    d_m = [1,1]
+    d_m = np.array(d_m)/norm(d_m)
+
+    TestFunction = namedtuple('TestFunction',['d','k'])
+    psi_m = TestFunction(d=d_m,k=k)
+
+    d2 = 0.5
+
+    t= 1
+
+    I_exact = exact_RHS_broken(psi_m, E, k, H, d2, t)
+    I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
