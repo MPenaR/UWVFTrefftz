@@ -295,12 +295,14 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
     a single triangle side.'''
     if sparse:
         if fullsides:
+            print(f'{a=}, {b=}, {d_1= }, {d_2=}')
             return AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
         else:
             return AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
     else:
         return AssembleMatrix_full_sides(V, Edges, a, b, d_1, d_2, Np)
 
+    return
 
 def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
     '''Assembles de matrix assuming Sigma_R+- consist of several triangles sides,
@@ -564,12 +566,8 @@ def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatri
                         j_index.append(n)
                         values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
 
-    values = np.array(values)
-    i_index = np.array(i_index)
-    j_index = np.array(j_index)
-    
-    
-    A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
+
+    A = coo_matrix( (np.array(values), (np.array(i_index), np.array(j_index))), shape=(N_DOF,N_DOF))
     A = csr_matrix(A)
 
     return A
@@ -630,7 +628,7 @@ def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
                                                                          exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)))
 
     S = 2*1j*k*H*dot(d,N)*d_2*exp(1j*beta*M[0])*exp(-1j*k*d[0]*M[0])*( l/H * sinc(k*H*d[1]/pi)*sinc(t*l/(2*H))*cos(pi*t/H*M[1]) + 
-                                                                      l/(2*H) * sum( [ k/conj(sqrt(complex(k**2 - (t*pi/H)**2))) *
+                                                                      l/(2*H) * sum( [ k/conj(sqrt(complex(k**2 - (p*pi/H)**2))) *
                                                                                        (sinc(k*H*d[1]/pi+p)+
                                                                                         sinc(k*H*d[1]/pi-p))
                                                                                         *(sinc(t+p) + sinc(t-p)) for p in range(1,Np)] ) )
