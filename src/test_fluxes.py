@@ -173,7 +173,8 @@ def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
 
     N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
 
-    I = -2*Int( u_inc*conj(grad_psi_m_N) - d2*1j*k*u_inc*conj(N_gradpsi_m-psi_m), t)*l
+#    I = -2*Int( u_inc*conj(grad_psi_m_N) - d2*1j*k*u_inc*conj(N_gradpsi_m-psi_m), t)*l
+    I = -2*Int( - d2*1j*k*u_inc*conj(N_gradpsi_m), t)*l
     
     return I
 

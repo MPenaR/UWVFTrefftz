@@ -633,7 +633,8 @@ def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
                                                                         (sinc((t+p)*l/(2*H))*cos((t+p)*pi/H*M[1]) + 
                                                                          sinc((t-p)*l/(2*H))*cos((t-p)*pi/H*M[1])) 
                                                                         for p in range(1,Np)] ) )
-    return F + S
+    return S
+    #return F + S
 
 
 
