@@ -624,8 +624,8 @@ def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
 
     beta = sqrt(complex(k**2 - (t*pi/H)**2))
 
-    F = 2*1j*k*H*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*(dot(d,N) - d_2)*(exp( 1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)) + 
-                                                                         exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) + k*l*d_y/(2*pi)))
+    F = 1j*k*l*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*(dot(d,N) - d_2)*(exp( 1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)) + 
+                                                                       exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) + k*l*d_y/(2*pi)))
 
     S = 2*1j*k*H*exp(1j*beta*M[0])*exp(-1j*k*d[0]*M[0])*dot(d,N)*d_2*(  l/H * sinc(k*H*d[1]/pi)*sinc(t*l/(2*H))*cos(pi*t/H*M[1]) + 
                                                                         l/(2*H)* sum( [ k/conj(sqrt(complex(k**2 - (p*pi/H)**2))) *
@@ -634,7 +634,6 @@ def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
                                                                          sinc((t-p)*l/(2*H))*cos((t-p)*pi/H*M[1])) 
                                                                         for p in range(1,Np)] ) )
     return F + S
-
 
 
 
