@@ -242,7 +242,7 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
     #first terms
 
     F = -1j*k*l*dot(d_n,N)*dot(d_m,N)*exp(1j*k*dot(d_n - d_m, M))*l/(2*H)*( sinc(k*l*d_n[1]/(2*pi))*sinc(k*l*d_m[1]/(2*pi)) + 
-         1/2*sum([ k/sqrt(conj(k**2 - (p*pi/H)**2))*
+         1/2*sum([ k/sqrt(complex(k**2 - (p*pi/H)**2))*
                   (exp(1j*pi*p/H*M[1])*sinc(p*l/(2*H) + k*l/(2*pi)*d_n[1]) + exp(-1j*pi*p/H*M[1])*sinc(p*l/(2*H) - k*l/(2*pi)*d_n[1] ))*
                   (exp(1j*pi*p/H*M[1])*sinc(p*l/(2*H) - k*l/(2*pi)*d_m[1]) + exp(-1j*pi*p/H*M[1])*sinc(p*l/(2*H) + k*l/(2*pi)*d_m[1] ))
                                                                                for p in range(1,Np)]))
