@@ -225,11 +225,6 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
     d_n = phi.d
     d_m = psi.d
 
-    d_mx = d_m[0]
-    d_my = d_m[1]
-    d_nx = d_n[0]
-    d_ny = d_n[1]
-    
 
 
     kH = k*H
@@ -238,45 +233,23 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
     P_y = edge.P[1]
     Q_y = edge.Q[1]
      
-
-
+    l = edge.l
+    M = edge.M
     N = edge.N
-
-    d_nN = dot(d_n,N)
-    d_mN = dot(d_m,N)
 
     #CENTRED FLUXES
     
     #first terms
-    I1 = -1j*kH*d_mN*d_nN*exp(1j*(d_nx-d_mx)*kH*x/H)
 
-    if np.isclose(d_ny, 0, 1E-3) and np.isclose(d_my, 0, 1E-3):
-        F = I1 *( Q_y - P_y) / H
-    elif np.isclose(d_ny, 0, 1E-3):
-        F = I1 * ( exp(-1j*kH*d_my*Q_y/H) - exp(-1j*kH*d_my*P_y/H)) / (-1j*kH*d_my) 
-    elif np.isclose(d_my, 0, 1E-3):
-        F =  I1 * ( 2*sin(kH*d_ny) / (kH*d_ny) + 
-                   sum([ kH/sqrt(complex(kH**2 - (s*pi)**2))*
-                        ( sin(kH*d_ny + s*pi)/(kH*d_ny + s*pi)+
-                          sin(kH*d_ny - s*pi)/(kH*d_ny - s*pi)  )*
-                          (sin(s*pi*Q_y/H) - sin(s*pi*P_y/H))/(s*pi)  for s in range(1,Np)]) )
-    else:
-        F =  I1 * ( sin(kH*d_ny) / (kH*d_ny) * (exp(-1j*kH*d_my*Q_y/H) - exp(-1j*kH*d_my*P_y/H)) / (-1j*kH*d_my) +
-                  0.5*sum([ kH/sqrt(complex(kH**2 - (s*pi)**2))*
-                        ( sin(kH*d_ny + s*pi)/(kH*d_ny + s*pi)+
-                          sin(kH*d_ny - s*pi)/(kH*d_ny - s*pi)  )*
-                          ( ( exp(-1j*(kH*d_my - s*pi)*Q_y/H) - exp(-1j*(kH*d_my - s*pi)*P_y/H)) / (-1j*(kH*d_my - s*pi)) +
-                            ( exp(-1j*(kH*d_my + s*pi)*Q_y/H) - exp(-1j*(kH*d_my + s*pi)*P_y/H)) / (-1j*(kH*d_my + s*pi))
-                                                                   )  for s in range(1,Np)]) )
-
+    F = -1j*k*l*dot(d_n,N)*dot(d_m,N)*exp(1j*k*dot(d_n - d_m, M))*l/(2*H)*( sinc(k*l*d_n[1]/(2*pi))*sinc(k*l*d_m[1]/(2*pi)) + 
+         1/2*sum([ k/sqrt(conj(k**2 - (p*pi/H)**2))*
+                  (exp(1j*pi*p/H*M[1])*sinc(p*l/(2*H) + k*l/(2*pi)*d_n[1]) + exp(-1j*pi*p/H*M[1])*sinc(p*l/(2*H) - k*l/(2*pi)*d_n[1] ))*
+                  (exp(1j*pi*p/H*M[1])*sinc(p*l/(2*H) - k*l/(2*pi)*d_m[1]) + exp(-1j*pi*p/H*M[1])*sinc(p*l/(2*H) + k*l/(2*pi)*d_m[1] ))
+                                                                               for p in range(1,Np)]))
     
     #second term
         
-    I = -1j*kH*d_nN*exp(1j*kH*(d_nx-d_mx)*x/H)
-    if np.isclose(d_ny, d_my, 1E-3):
-        S = I*exp(1j*(d_ny-d_my)*kH)
-    else:
-        S = I * ( exp( 1j*kH*(d_ny-d_my)*Q_y/H) -exp( 1j*kH*(d_ny-d_my)*P_y/H)  ) / ( 1j*kH*(d_ny-d_my))
+    S = -1j*k*l*dot(d_n,N)*exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*(d_n[1] - d_m[1]))
 
     centred = F+S
 
@@ -397,7 +370,7 @@ def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
                             psi = Psi[m]
                             i_index.append(m)
                             j_index.append(n)
-                            values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
+                            values.append(Sigma_broken(phi, psi, E, d_2, Np=Np))
                         
     values = np.array(values)
     i_index = np.array(i_index)

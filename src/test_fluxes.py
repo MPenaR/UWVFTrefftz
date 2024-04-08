@@ -1,4 +1,4 @@
-from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS, exact_RHS_broken
+from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS, exact_RHS_broken, Sigma_broken
 
 
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
@@ -161,6 +161,39 @@ def test_Sigma(d_m,d_n):
 
 
 
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_Sigma_broken(d_m,d_n):
+    H=1
+    R= 10
+    P = np.array([R,-H])
+    Q = np.array([R,H])
+
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([1,0])
+    M = (P+Q)/2
+
+    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
+    E = Edge(P,Q,N,T,M,l)
+
+    k = 8.
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = np.array(d_m)/norm(d_m)
+
+    TestFunction = namedtuple('TestFunction',['d','k'])
+    phi_n = TestFunction(d=d_n,k=k)
+    psi_m = TestFunction(d=d_m,k=k)
+
+    d2 = 0.0
+    I_exact = Sigma_broken(phi_n, psi_m, E, k, H, d2)
+    I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_points)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+
+
+
+
+
+
 def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
@@ -176,35 +209,6 @@ def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
     I = -2*Int( u_inc*conj(grad_psi_m_N) - d2*1j*k*u_inc*conj(N_gradpsi_m-psi_m), t)*l
     
     return I
-
-# def test_RHS():
-#     H=1
-#     R= 10
-#     P = np.array([R,-H])
-#     Q = np.array([R,H])
-
-#     T = (Q - P)/norm(Q-P)
-#     N = np.array([0,1])
-
-#     Edge = namedtuple('Edge',['P','Q','N','T'])
-#     E = Edge(P,Q,N,T)
-
-#     k = 8.
-#     d_m = [1,1]
-#     d_m = np.array(d_m)/norm(d_m)
-
-#     TestFunction = namedtuple('TestFunction',['d','k'])
-#     psi_m = TestFunction(d=d_m,k=k)
-
-#     d2 = 0.5
-
-#     t= 1
-
-#     I_exact =exact_RHS(psi_m, E, k, H, d2, t)
-#     I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
-#     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
-
-
 
 
 def test_RHS():
