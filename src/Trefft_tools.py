@@ -258,6 +258,50 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
     return centred + d_2*reg
 
 
+def Sigma_broken_cross(phi, psi, edge_1, edge_2, k, H, d_2, Np = 15):
+
+    d_n = phi.d
+    d_m = psi.d
+
+
+
+    
+     
+    l_1 = edge_1.l
+    M_1 = edge_1.M
+    N_1 = edge_1.N
+
+    l_2 = edge_2.l
+    M_2 = edge_2.M
+    N_2 = edge_2.N
+
+    N = N_1
+
+    #CENTRED FLUXES
+    
+    #first terms
+
+    F = -2*1j*k*H*dot(d_n,N)*dot(d_m,N)*exp(1j*k*dot(d_n,M_2))*exp(-1j*k*dot(d_m,M_1))*l_2/(2*H)*l_1/(2*H)*(
+        sinc(k*l_2/(2*pi)*d_n[1])*sinc(k*l_1/(2*pi)*d_m[1]) + 1/2*sum([ k / sqrt(complex(k**2 - (p*pi/H)**2)) *
+        (exp( 1j*p*pi/H*M_2[1])*sinc(k*l_2/(2*pi)*d_n[1] + p*l_2/(2*H)) + exp(-1j*p*pi/H*M_2[1])*sinc(k*l_2/(2*pi)*d_n[1] - p*l_2/(2*H)))*
+        (exp(-1j*p*pi/H*M_1[1])*sinc(k*l_1/(2*pi)*d_m[1] + p*l_1/(2*H)) + exp( 1j*p*pi/H*M_1[1])*sinc(k*l_1/(2*pi)*d_m[1] - p*l_1/(2*H))) 
+        for p in range(1,Np)]))
+    
+    #second term
+        
+    # S = -1j*k*l*dot(d_n,N)*exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*(d_n[1] - d_m[1]))
+
+    centred = F
+
+    # REGULARIZATION
+    reg = 0
+    return centred + d_2*reg
+
+
+
+
+
+
 
 def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
                    a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
@@ -366,11 +410,22 @@ def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
                     phi = Phi[n]
                     for E_other in Side_edges[E.Type]:
                         K_other = E_other.Triangles[0]
-                        for m in V.DOF_range[K_other]:
-                            psi = Psi[m]
-                            i_index.append(m)
-                            j_index.append(n)
-                            values.append(Sigma_broken(phi, psi, E, d_2, Np=Np))
+                        if E_other == E:
+                            for m in V.DOF_range[K_other]:
+                                psi = Psi[m]
+                                k = psi.k
+                                H = 1
+                                i_index.append(m)
+                                j_index.append(n)
+                                values.append(Sigma_broken(phi, psi, E, k, H, d_2, Np = 15))
+                        else:
+                            for m in V.DOF_range[K_other]:
+                                psi = Psi[m]
+                                k = psi.k
+                                H = 1
+                                i_index.append(m)
+                                j_index.append(n)
+                                values.append(Sigma_broken_cross(phi, psi, E_other, E, k, H, d_2, Np = 15))
                         
     values = np.array(values)
     i_index = np.array(i_index)
