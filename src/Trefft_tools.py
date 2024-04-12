@@ -258,6 +258,58 @@ def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
     return centred + d_2*reg
 
 
+def Sigma_local(phi, psi, edge, k, H, d_2):
+
+    d_n = phi.d
+    d_m = psi.d
+     
+    l = edge.l
+    M = edge.M
+    N = edge.N
+    T = edge.T
+
+
+    I = -1j*k*l*(d_2 + dot(d_n,N))*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+
+    return I
+
+
+def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
+
+    d_n = phi.d
+    d_m = psi.d
+     
+    l_u = edge_u.l
+    M_u = edge_u.M
+    l_v = edge_v.l
+    M_v = edge_v.M
+
+
+    N = edge_u.N
+    T = edge_u.T
+
+    I1 = -2j*k*H*dot(d_n,N)*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/(2*H)*l_v/(2*H)*(
+        sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / abs(sqrt(complex(k**2 - (s*pi/H)**2)))**2 * (
+        exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
+        exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
+        for s in range(1,Np)]) )
+    
+    I2 = 2j*k*H*dot(d_n,N)*(d_2-dot(d_m,N))*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/(2*H)*l_v/(2*H)*(
+        sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / sqrt(complex(k**2 - (s*pi/H)**2)) * (
+        exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
+        exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
+        for s in range(1,Np)]) )
+    
+    I3 = 2j*k*H*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/(2*H)*l_v/(2*H)*(
+        sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / conj(sqrt(complex(k**2 - (s*pi/H)**2))) * (
+        exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
+        exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
+        for s in range(1,Np)]) )
+
+    return I1 + I2 + I3
+
+
+
 def Sigma_broken_cross(phi, psi, edge_1, edge_2, k, H, d_2, Np = 15):
 
     d_n = phi.d
@@ -277,6 +329,9 @@ def Sigma_broken_cross(phi, psi, edge_1, edge_2, k, H, d_2, Np = 15):
 
     N = N_1
 
+    #local terms
+    
+
     #CENTRED FLUXES
     
     #first terms
@@ -287,10 +342,12 @@ def Sigma_broken_cross(phi, psi, edge_1, edge_2, k, H, d_2, Np = 15):
         (exp(-1j*p*pi/H*M_1[1])*sinc(k*l_1/(2*pi)*d_m[1] + p*l_1/(2*H)) + exp( 1j*p*pi/H*M_1[1])*sinc(k*l_1/(2*pi)*d_m[1] - p*l_1/(2*H))) 
         for p in range(1,Np)]))
     
+
     #second term
         
     # S = -1j*k*l*dot(d_n,N)*exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*(d_n[1] - d_m[1]))
 
+    
     centred = F
 
     # REGULARIZATION
@@ -417,7 +474,8 @@ def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
                                 H = 1
                                 i_index.append(m)
                                 j_index.append(n)
-                                values.append(Sigma_broken(phi, psi, E, k, H, d_2, Np = 15))
+                                S = Sigma_local(phi, psi, E, k, H, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
+                                values.append(S)
                         else:
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
@@ -425,7 +483,7 @@ def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
                                 H = 1
                                 i_index.append(m)
                                 j_index.append(n)
-                                values.append(Sigma_broken_cross(phi, psi, E_other, E, k, H, d_2, Np = 15))
+                                values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
                         
     values = np.array(values)
     i_index = np.array(i_index)
@@ -641,30 +699,25 @@ def exact_RHS(psi, E, k, H, d_2, t=0):
 
 def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
     d = psi.d
-    # d_x = d[0]
     d_y = d[1]
     N = E.N
     M = E.M
     l = E.l
 
-    # x = E.P[0]
-    # kH = k*H
 
     beta = sqrt(complex(k**2 - (t*pi/H)**2))
 
     F = 1j*k*l*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*(dot(d,N) - d_2)*(exp( 1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)) + 
                                                                        exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) + k*l*d_y/(2*pi)))
 
+    if t == 0:
+        S = 2j*k*l*dot(d,N)*d_2*exp(1j*(beta*M[0]-k*dot(d,M)))*sinc(k*l/(2*pi)*d[1])
 
-    S = 1j*k*l*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*dot(d,N)*d_2*l/H*( sinc(k*l*d[1]/(2*pi))*sinc(t*l/(2*H))*cos(pi*t/H*M[1]) + 
-                                                                        1/2* sum( [ k/conj(sqrt(complex(k**2 - (p*pi/H)**2))) *
-                                                                        (exp( 1j*p*pi*M[1]/H)*sinc(p*l/(2*H) - k*l*d[1]/(2*pi)) + 
-                                                                         exp(-1j*p*pi*M[1]/H)*sinc(p*l/(2*H) + k*l*d[1]/(2*pi))) * 
-                                                                        (sinc((t+p)*l/(2*H))*cos((t+p)*pi/H*M[1]) + 
-                                                                         sinc((t-p)*l/(2*H))*cos((t-p)*pi/H*M[1])) 
-                                                                        for p in range(1,Np)] ) )
-
-
+    else:
+        S = 1j*k*l*dot(d,N)*d_2*exp(1j*(beta*M[0]-k*dot(d,M)))*( k/conj(sqrt(complex(k**2 - (t*pi/H)**2))) *
+                                                                        (exp( 1j*t*pi*M[1]/H)*sinc(t*l/(2*H) - k*l*d[1]/(2*pi)) + 
+                                                                         exp(-1j*t*pi*M[1]/H)*sinc(t*l/(2*H) + k*l*d[1]/(2*pi))))
+ 
     return F + S
 
 
