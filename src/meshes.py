@@ -61,17 +61,17 @@ def testMesh(h_max = 2., quad=False, R = 10., H = 1.):
     return Omega
 
 
-def toyMesh(H=1.):
+def toyMesh(H=1., quad=False):
     '''Creates a toy square mesh without scatterer for testing.'''
     geo = SplineGeometry()
-    geo.AddRectangle(p1=(-2*H,-H),
-                    p2=( 2*H, H),
+    geo.AddRectangle(p1=(-H,-H),
+                    p2=( H, H),
                     bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
                     leftdomain=1,
                     rightdomain=0)
     geo.SetMaterial (1, "Omega_e")
 
-    Omega = Mesh(geo.GenerateMesh(maxh= 2*H))
+    Omega = Mesh(geo.GenerateMesh(maxh= 2*H, quad_dominated=quad))
     
     return Omega
 
