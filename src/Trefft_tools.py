@@ -166,114 +166,6 @@ def sound_soft_term(phi, psi, edge, a):
     return  I
 
 
-
-
-def Sigma_term(phi, psi, edge, d_2, Np = 15):
-
-    d_n = phi.d
-    d_m = psi.d
-    k = phi.k
-
-    d_mx = d_m[0]
-    d_my = d_m[1]
-    d_nx = d_n[0]
-    d_ny = d_n[1]
-
-    P = edge.P
-    N = edge.N
-    T = edge.T
-    M = edge.M
-    l = edge.l
-
-    
-    H = np.abs(P[1])
-    
-    x  = P[0]/H
-
-    kH = k*H
-
-
-    d_nN = dot(d_n,N)
-    d_mN = dot(d_m,N)
-    
-    #first term
-    #N(grad(u))*grad(v)
-    F = -1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_mN*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
-         0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
-                                                      * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
-
-    # grad(u)*v
-    S1 = -1j*k*l*d_nN*exp(1j*k*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
-
-
-
-    # cross-terms
-    # d2*N(grad(u))*v
-    C1 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
-         0.5*sum([kH/sqrt(complex(kH**2 - (s*pi)**2)) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
-                                                      * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
-
-    # d2*u*N(grad(v))
-    C2 = 1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
-         0.5*sum([kH/conj(sqrt(complex(kH**2 - (s*pi)**2))) * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
-                                                            * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                           
-
-
-
-    # d2*u*v
-    S2 = -1j*k*l*d_2*exp(1j*k*dot(d_n-d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
-
-
-    #d2*N(grad(u))*N(grad(v)) 
-
-    NN = -1j*k*l*exp(1j*(d_nx-d_mx)*kH*x)*d_2*d_mN*d_nN*( sinc(k*l/(2*pi)*d_ny)*sinc(k*l/(2*pi)*d_my) + 
-         0.5*sum([kH**2/abs(sqrt(complex(kH**2 - (s*pi)**2)))**2 * (sinc(k*l/(2*pi)*d_ny + s) + sinc(k*l/(2*pi)*d_ny - s)) 
-                                                                 * (sinc(k*l/(2*pi)*d_my + s) + sinc(k*l/(2*pi)*d_my - s)) for s in range(1,Np)]) )                                            
-
-    return F + S1 + NN + C1 + C2 + S2
-
-
-
-
-
-def Sigma_broken(phi, psi, edge, k, H, d_2, Np = 15):
-
-    d_n = phi.d
-    d_m = psi.d
-
-
-
-    kH = k*H
-    
-    x = edge.P[0]
-    P_y = edge.P[1]
-    Q_y = edge.Q[1]
-     
-    l = edge.l
-    M = edge.M
-    N = edge.N
-
-    #CENTRED FLUXES
-    
-    #first terms
-
-    F = -1j*k*l*dot(d_n,N)*dot(d_m,N)*exp(1j*k*dot(d_n - d_m, M))*l/(2*H)*( sinc(k*l*d_n[1]/(2*pi))*sinc(k*l*d_m[1]/(2*pi)) + 
-         1/2*sum([ k/sqrt(complex(k**2 - (p*pi/H)**2))*
-                  (exp(1j*pi*p/H*M[1])*sinc(p*l/(2*H) + k*l/(2*pi)*d_n[1]) + exp(-1j*pi*p/H*M[1])*sinc(p*l/(2*H) - k*l/(2*pi)*d_n[1] ))*
-                  (exp(1j*pi*p/H*M[1])*sinc(p*l/(2*H) - k*l/(2*pi)*d_m[1]) + exp(-1j*pi*p/H*M[1])*sinc(p*l/(2*H) + k*l/(2*pi)*d_m[1] ))
-                                                                               for p in range(1,Np)]))
-    
-    #second term
-        
-    S = -1j*k*l*dot(d_n,N)*exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*(d_n[1] - d_m[1]))
-
-    centred = F+S
-
-    # REGULARIZATION
-    reg = 0
-    return centred + d_2*reg
-
-
 def Sigma_local(phi, psi, edge, k, H, d_2):
 
     d_n = phi.d
@@ -325,57 +217,6 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
     return I1 + I2 + I3
 
 
-
-def Sigma_broken_cross(phi, psi, edge_1, edge_2, k, H, d_2, Np = 15):
-
-    d_n = phi.d
-    d_m = psi.d
-
-
-
-    
-     
-    l_1 = edge_1.l
-    M_1 = edge_1.M
-    N_1 = edge_1.N
-
-    l_2 = edge_2.l
-    M_2 = edge_2.M
-    N_2 = edge_2.N
-
-    N = N_1
-
-    #local terms
-    
-
-    #CENTRED FLUXES
-    
-    #first terms
-
-    F = -2*1j*k*H*dot(d_n,N)*dot(d_m,N)*exp(1j*k*dot(d_n,M_2))*exp(-1j*k*dot(d_m,M_1))*l_2/(2*H)*l_1/(2*H)*(
-        sinc(k*l_2/(2*pi)*d_n[1])*sinc(k*l_1/(2*pi)*d_m[1]) + 1/2*sum([ k / sqrt(complex(k**2 - (p*pi/H)**2)) *
-        (exp( 1j*p*pi/H*M_2[1])*sinc(k*l_2/(2*pi)*d_n[1] + p*l_2/(2*H)) + exp(-1j*p*pi/H*M_2[1])*sinc(k*l_2/(2*pi)*d_n[1] - p*l_2/(2*H)))*
-        (exp(-1j*p*pi/H*M_1[1])*sinc(k*l_1/(2*pi)*d_m[1] + p*l_1/(2*H)) + exp( 1j*p*pi/H*M_1[1])*sinc(k*l_1/(2*pi)*d_m[1] - p*l_1/(2*H))) 
-        for p in range(1,Np)]))
-    
-
-    #second term
-        
-    # S = -1j*k*l*dot(d_n,N)*exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*(d_n[1] - d_m[1]))
-
-    
-    centred = F
-
-    # REGULARIZATION
-    reg = 0
-    return centred + d_2*reg
-
-
-
-
-
-
-
 def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
                    a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
                    Np=10, fullsides=False, sparse = False) -> spmatrix:
@@ -383,21 +224,8 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
     Use fullsides = True if each boundary Sigma_R+ and Sigma_R- consists of 
     a single triangle side.'''
-    if sparse:
-        if fullsides:
-            print(f'{a=}, {b=}, {d_1= }, {d_2=}')
-            return AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
-        else:
-            return AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np)
-    else:
-        return AssembleMatrix_full_sides(V, Edges, a, b, d_1, d_2, Np)
 
-    return
 
-def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
-    '''Assembles de matrix assuming Sigma_R+- consist of several triangles sides,
-    and returns a Scipy sparse matrix.'''   
-                    
     N_DOF = V.N_DOF
 
     values = []
@@ -509,211 +337,12 @@ def AssembleMatrix_broken_sides_sparse(V, Edges, a, b, d_1, d_2, Np):
     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
     A = csr_matrix(A)
 
-    return A
-
-
-
-
-
-def AssembleMatrix_full_sides(V, Edges, a, b, d_1, d_2, Np=10):
-
-    N_DOF = V.N_DOF
-    A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
-   
-    Phi = V.TrialFunctions
-    Psi = V.TestFunctions # currently the same spaces 
-    for E in Edges:
-        match E.Type:
-            case EdgeType.INNER:
-                K_plus, K_minus = E.Triangles
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]      
-                        A[m,n] += Inner_term(phi, psi, E, a, b)
-
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]
-                        A[m,n] += Inner_term(phi, psi, E, -a, -b)
-
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        A[m,n] += -Inner_term(phi, psi, E, a, b)
-
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        A[m,n] += -Inner_term(phi, psi, E, -a, -b)
-
-
-            case EdgeType.GAMMA:
-                K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    for n in V.DOF_range[K]:
-                        phi = Phi[n]
-                        A[m,n] += Gamma_term(phi, psi, E, d_1)
-                    
-
-            case EdgeType.D_OMEGA:
-                K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    for n in V.DOF_range[K]:
-                        phi = Phi[n]
-                        A[m,n] += sound_soft_term(phi, psi, E, a)
-
-
-            case EdgeType.SIGMA_L:
-                K = E.Triangles[0]
-                for n in V.DOF_range[K]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K]:
-                        psi = Psi[m]
-                        A[m,n] += Sigma_term(phi, psi, E, d_2, Np=Np)
-            case EdgeType.SIGMA_R:
-                K = E.Triangles[0]
-                for n in V.DOF_range[K]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K]:
-                        psi = Psi[m]
-                        A[m,n] += Sigma_term(phi, psi, E, d_2, Np=Np)
-
+    if not sparse:
+        A = A.toarray()
 
     return A
 
-def AssembleMatrix_full_sides_sparse(V, Edges, a, b, d_1, d_2, Np=10) -> spmatrix:
-    '''Assembles de matrix assuming Sigma_R+- consist of a single triangle side,
-    and returns a Scipy sparse matrix.'''
-
-    N_DOF = V.N_DOF
-
-    values = []
-    i_index = []
-    j_index = []
-   
-    Phi = V.TrialFunctions
-    Psi = V.TestFunctions # currently the same spaces 
-    for E in Edges:
-        match E.Type:
-            case EdgeType.INNER:
-                K_plus, K_minus = E.Triangles
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Inner_term(phi, psi, E, a, b))
-
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Inner_term(phi, psi, E, -a, -b))
-
-
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, a, b))
-
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, -a, -b))
-
-
-            case EdgeType.GAMMA:
-                K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    for n in V.DOF_range[K]:
-                        phi = Phi[n]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Gamma_term(phi, psi, E, d_1))
-                    
-
-            case EdgeType.D_OMEGA:
-                K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    for n in V.DOF_range[K]:
-                        phi = Phi[n]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(sound_soft_term(phi, psi, E, a))
-
-            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
-                K = E.Triangles[0]
-                for n in V.DOF_range[K]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Sigma_term(phi, psi, E, d_2, Np=Np))
-
-
-    A = coo_matrix( (np.array(values), (np.array(i_index), np.array(j_index))), shape=(N_DOF,N_DOF))
-    A = csr_matrix(A)
-
-    return A
-
-
-
-def exact_RHS(psi, E, k, H, d_2, t=0): 
-    d = psi.d
-    d_x = d[0]
-    d_y = d[1]
-    N = E.N
-
-    x = E.P[0]
-    kH = k*H
-
-    beta = sqrt(complex(kH**2 - (t*pi)**2))
-
-    I = 2*1j*k*H*exp(1j*(beta-kH*d_x)*x/H)
-    if np.isclose(d_y,0,1E-3):
-        if t == 0:
-            F = 2*I*(dot(d,N) - d_2)
-        else:
-            F =  0.
-    else:
-        if t == 0:
-            F = 2*I*(dot(d,N) - d_2)* sin(kH*d_y)/(kH*d_y)
-        else:
-            F = I*(dot(d,N) - d_2)*( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
-
-
-    if np.isclose(d_y,0,1E-3):
-        if t == 0:
-            S = 2*I*(dot(d,N)*d_2)
-        else:
-            S =  0.
-    else:
-        if t == 0:
-            S = 2*I*(dot(d,N)*d_2)*sin(kH*d_y)/(kH*d_y)
-        else:
-            S = I*(dot(d,N)*d_2)*kH/conj(beta)*( sin(kH*d_y+t*pi)/(kH*d_y+t*pi) +  sin(kH*d_y-t*pi)/(kH*d_y-t*pi) )
-
-    return F + S
-
-def exact_RHS_broken(psi, E, k, H, d_2, t=0, Np=15):
+def exact_RHS(psi, E, k, H, d_2, t):
     d = psi.d
     d_y = d[1]
     N = E.N
@@ -750,10 +379,7 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0, full_sides=False):
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
-                    if full_sides:
-                        b[m] += exact_RHS(psi, E, k, H, d_2, t=t)
-                    else:
-                        b[m] += exact_RHS_broken(psi, E, k, H, d_2, t = t)
+                    b[m] += exact_RHS(psi, E, k, H, d_2, t=t)
             case EdgeType.SIGMA_R:
                 pass
     return b
