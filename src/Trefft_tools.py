@@ -133,6 +133,22 @@ def Inner_term(phi, psi, edge, a, b):
 
     return I
 
+def Inner_term_general(phi, psi, edge, n, a, b):
+
+    d_m = psi.d
+    d_n = phi.d
+    k = phi.k
+
+    
+    M = edge.M
+    N = edge.N
+    T = edge.T
+    l = edge.l
+
+    I = -1/2*1j*k*l*(sqrt(n)*(dot(d_m,N) + dot(d_n,N)) + 2*b*n*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*sqrt(n)*dot(d_n - d_m,M))*sinc(k*sqrt(n)*l/(2*pi)*dot(d_n-d_m,T))
+
+    return I
+
 def sound_soft_term(phi, psi, edge, a):
 
     d_m = psi.d
