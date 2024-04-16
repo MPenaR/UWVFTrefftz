@@ -219,11 +219,11 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
 
 def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
                    a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
-                   Np=10, fullsides=False, sparse = False) -> spmatrix:
+                   Np=10, full_matrix = False) -> spmatrix:
     '''Assembles de matrix for the bilinear form.
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
-    Use fullsides = True if each boundary Sigma_R+ and Sigma_R- consists of 
-    a single triangle side.'''
+    Use full_matrix = Truee if the returned matrix should NOT be a sparse
+    matrix.'''
 
 
     N_DOF = V.N_DOF
@@ -337,7 +337,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
     A = csr_matrix(A)
 
-    if not sparse:
+    if full_matrix:
         A = A.toarray()
 
     return A

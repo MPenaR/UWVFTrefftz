@@ -84,8 +84,9 @@ class Edge:
         if len(Triangles) == 1:
             return Triangles
         else:  # put first K^+
-            B_1 = 1/3*(sum([ np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[0]].vertices ]))          
-            B_2 = 1/3*(sum([ np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[1]].vertices ]))          
+            N = len(Omega.faces[Triangles[0]].vertices)
+            B_1 = 1/N*(sum([ np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[0]].vertices ]))          
+            B_2 = 1/N*(sum([ np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[1]].vertices ]))          
             if dot(self.N, B_2 - B_1) > 0:
                 return Triangles
             else:
