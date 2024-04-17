@@ -102,6 +102,26 @@ class TrefftzFunction:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def Gamma_term(phi, psi, edge, d_1):
 
     d_m = psi.d
