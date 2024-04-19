@@ -305,6 +305,10 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                         j_index.append(n)
                         values.append(sound_soft_term(phi, psi, E, a))
 
+            # case EdgeType.IN_OMEGA:
+            #     #Inner_term_general(phi, psi, edge, n, a, b)
+            #     pass
+
             case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
                 K = E.Triangles[0]
                 for n in V.DOF_range[K]:
