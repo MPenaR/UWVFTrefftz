@@ -22,7 +22,6 @@ def computeEdgeType(Omega, edge):
         return EdgeType.INNER
 
 
-c = (0,0) #NEED TO FIX THIS
 
 class Edge:
     '''Holds all the information from an edge that is needed:
@@ -33,11 +32,12 @@ class Edge:
     - Type: EdgeType: {INNER, GAMMA, SIGMA_L, SIGMA_R}
     - Triangless: tuple of one or two element IDs.'''
 
-    def __init__(self, Omega, edge ):
+    def __init__(self, Omega, edge, c ):
         P = np.array( Omega.vertices[edge.vertices[0].nr].point)
         Q = np.array( Omega.vertices[edge.vertices[1].nr].point)        
         self.P = P
         self.Q = Q
+        self.c = c
         self.Type = computeEdgeType(Omega,edge)
 
         self.l = norm(Q-P)
@@ -48,11 +48,13 @@ class Edge:
         self.Triangles = self.setTriangles(Omega,edge)
 
 
+
 #        probably they should be properties with getters and setters, fix later    
 
     def getNormal(self):
         _, py = self.P 
         tx, ty = self.T
+        c = self.c
 
         match self.Type: #maybe use gamma_up and gamma_down
             

@@ -84,7 +84,7 @@ def u_FEM_SOUNDSOFT(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k=8., X=None, Y=
             for j in range(Nx):
                 x_ = x[j]
                 y_ = y[i]
-                if x_**2 + y_**2 <= rad**2:
+                if (x_ - c[0])**2 + (y_ - c[1])**2 <= rad**2:
                     pass
                 else:
                     U_tot[i,j] = u_tot(mesh(x_,y_))
