@@ -6,6 +6,7 @@ from numpy.linalg import norm
 from labels import EdgeType
 
 def computeEdgeType(Omega, edge):
+    rad = 0.2
         
     if edge.nr in [ e.edges[0].nr for e in Omega.Boundaries("Gamma").Elements()]:
         return EdgeType.GAMMA
@@ -66,15 +67,14 @@ class Edge:
 
             case EdgeType.SIGMA_R:
                 return np.array([1., 0.])
-
-            case EdgeType.INNER:
-                return np.array([ -ty, tx] )
             
             case EdgeType.D_OMEGA:
                 N = np.array([ -ty, tx] ) 
                 if dot(self.M - np.array(c),N) > 0:  # NEED TO FIX THIS
                     N = -N
                 return N
+            case _:
+                return np.array([ -ty, tx] )
 
 
     # def getTangent(self):
@@ -87,10 +87,9 @@ class Edge:
             return Triangles
         else:  # put first K^+
             N = len(Omega.faces[Triangles[0]].vertices)
-            B_1 = 1/N*(sum([ np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[0]].vertices ]))          
-            B_2 = 1/N*(sum([ np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[1]].vertices ]))          
+            B_1 = 1/N*(sum( np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[0]].vertices ))          
+            B_2 = 1/N*(sum( np.array(Omega.vertices[v.nr].point) for v in Omega.faces[Triangles[1]].vertices ))          
             if dot(self.N, B_2 - B_1) > 0:
                 return Triangles
-            else:
-                return [Triangles[1], Triangles[0]]
+            return [Triangles[1], Triangles[0]]
 

@@ -133,11 +133,12 @@ def Inner_term(phi, psi, edge, a, b):
 
     return I
 
-def Inner_term_general(phi, psi, edge, n, a, b):
+def Inner_term_general(phi, psi, edge, k, a, b):
 
     d_m = psi.d
     d_n = phi.d
-    k = phi.k
+    k_n = phi.k
+    k_m = psi.k
 
     
     M = edge.M
@@ -145,7 +146,7 @@ def Inner_term_general(phi, psi, edge, n, a, b):
     T = edge.T
     l = edge.l
 
-    I = -1/2*1j*k*l*(sqrt(n)*(dot(d_m,N) + dot(d_n,N)) + 2*b*n*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*sqrt(n)*dot(d_n - d_m,M))*sinc(k*sqrt(n)*l/(2*pi)*dot(d_n-d_m,T))
+    I = -1j*l/2*(2*a*k + k_n*dot(d_n,N) + k_m*dot(d_m,N) + 2*b/k*k_n*dot(d_n,N)*k_m*dot(d_m,N))*exp(1j*dot(k_n*d_n - k_m*d_m,M))*sinc(l/(2*pi)*dot(k_n*d_n - k_m*d_m,T))
 
     return I
 
@@ -217,8 +218,171 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
     return I1 + I2 + I3
 
 
+# def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
+#                    a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
+#                    Np=10, full_matrix = False) -> spmatrix:
+#     '''Assembles de matrix for the bilinear form.
+#     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
+#     Use full_matrix = Truee if the returned matrix should NOT be a sparse
+#     matrix.'''
+
+
+#     N_DOF = V.N_DOF
+
+#     values = []
+#     i_index = []
+#     j_index = []
+
+
+#     Side_edges = { EdgeType.SIGMA_L : [], EdgeType.SIGMA_R : []} 
+    
+#     for E in Edges:
+#         match E.Type:
+#             case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+#                 Side_edges[E.Type].append(E)
+#             case _:
+#                 pass
+
+
+
+#     Phi = V.TrialFunctions
+#     Psi = V.TestFunctions # currently the same spaces 
+
+#     for E in Edges:
+#         match E.Type:
+#             case EdgeType.INNER:
+#                 K_plus, K_minus = E.Triangles
+#                 for n in V.DOF_range[K_plus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_plus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(Inner_term(phi, psi, E, a, b))
+
+#                 for n in V.DOF_range[K_minus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_plus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(Inner_term(phi, psi, E, -a, -b))
+
+
+#                 for n in V.DOF_range[K_plus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_minus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(-Inner_term(phi, psi, E, a, b))
+
+#                 for n in V.DOF_range[K_minus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_minus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(-Inner_term(phi, psi, E, -a, -b))
+
+
+#             case EdgeType.GAMMA:
+#                 K = E.Triangles[0]
+#                 for m in V.DOF_range[K]:
+#                     psi = Psi[m]
+#                     for n in V.DOF_range[K]:
+#                         phi = Phi[n]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(Gamma_term(phi, psi, E, d_1))
+                    
+
+#             case EdgeType.D_OMEGA:
+#                 K = E.Triangles[0]
+#                 for m in V.DOF_range[K]:
+#                     psi = Psi[m]
+#                     for n in V.DOF_range[K]:
+#                         phi = Phi[n]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(sound_soft_term(phi, psi, E, a))
+
+
+#             case EdgeType.IN_OMEGA:
+#                 K_plus, K_minus = E.Triangles
+#                 for n in V.DOF_range[K_plus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_plus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(Inner_term_general(phi, psi, E, k_e**2/k_i**2, a, b))
+
+#                 for n in V.DOF_range[K_minus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_plus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(Inner_term_general(phi, psi, E, k_e**2/k_i**2, -a, -b))
+
+
+#                 for n in V.DOF_range[K_plus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_minus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(-Inner_term_general(phi, psi, E, k_e**2/k_i**2, a, b))
+
+#                 for n in V.DOF_range[K_minus]:
+#                     phi = Phi[n]
+#                     for m in V.DOF_range[K_minus]:
+#                         psi = Psi[m]
+#                         i_index.append(m)
+#                         j_index.append(n)
+#                         values.append(-Inner_term_general(phi, psi, E, k_e**2/k_i**2, -a, -b))
+
+
+#             case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+#                 K = E.Triangles[0]
+#                 for n in V.DOF_range[K]:
+#                     phi = Phi[n]
+#                     for E_other in Side_edges[E.Type]:
+#                         K_other = E_other.Triangles[0]
+#                         if E_other == E:
+#                             for m in V.DOF_range[K_other]:
+#                                 psi = Psi[m]
+#                                 k = psi.k
+#                                 H = 1
+#                                 i_index.append(m)
+#                                 j_index.append(n)
+#                                 S = Sigma_local(phi, psi, E, k, H, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
+#                                 values.append(S)
+#                         else:
+#                             for m in V.DOF_range[K_other]:
+#                                 psi = Psi[m]
+#                                 k = psi.k
+#                                 H = 1
+#                                 i_index.append(m)
+#                                 j_index.append(n)
+#                                 values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
+                        
+#     values = np.array(values)
+#     i_index = np.array(i_index)
+#     j_index = np.array(j_index)
+    
+    
+#     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
+#     A = csr_matrix(A)
+
+#     if full_matrix:
+#         A = A.toarray()
+
+#     return A
+
 def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
-                   a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
+                   a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, k=0.8, 
                    Np=10, full_matrix = False) -> spmatrix:
     '''Assembles de matrix for the bilinear form.
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
@@ -246,6 +410,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
 
     Phi = V.TrialFunctions
     Psi = V.TestFunctions # currently the same spaces 
+
     for E in Edges:
         match E.Type:
             case EdgeType.INNER:
@@ -256,7 +421,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Inner_term(phi, psi, E, a, b))
+                        values.append(Inner_term_general(phi, psi, E, k, a, b))
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
@@ -264,7 +429,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Inner_term(phi, psi, E, -a, -b))
+                        values.append(Inner_term_general(phi, psi, E, k, -a, -b))
 
 
                 for n in V.DOF_range[K_plus]:
@@ -273,7 +438,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, a, b))
+                        values.append(-Inner_term_general(phi, psi, E, k, a, b))
 
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
@@ -281,7 +446,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(-Inner_term(phi, psi, E, -a, -b))
+                        values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
 
 
             case EdgeType.GAMMA:
@@ -305,9 +470,6 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                         j_index.append(n)
                         values.append(sound_soft_term(phi, psi, E, a))
 
-            # case EdgeType.IN_OMEGA:
-            #     #Inner_term_general(phi, psi, edge, n, a, b)
-            #     pass
 
             case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
                 K = E.Triangles[0]
@@ -345,6 +507,8 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
         A = A.toarray()
 
     return A
+
+
 
 def exact_RHS(psi, E, k, H, d_2, t):
     d = psi.d

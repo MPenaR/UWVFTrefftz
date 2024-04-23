@@ -28,7 +28,6 @@ def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False
         case ScattererType.PENETRABLE:
             geo.AddCircle(c=c,
                         r=rad,
-                        bc="D_Omega",
                         leftdomain=2,
                         rightdomain=1)
             geo.SetMaterial (1, "Omega_e")
