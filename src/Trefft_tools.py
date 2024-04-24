@@ -410,7 +410,7 @@ def Green_RHS(psi, E, k, H, a, x0, y0):
     Npoints = 200
     t = np.linspace(-l/2,l/2,Npoints)
     g = GreenFunction(k, H, M + np.outer(t,T), x0, y0)
-    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( g,exp(-1j*k*dot(d_m, T)*t), t)
+    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
     return I
 
 
