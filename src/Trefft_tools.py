@@ -7,6 +7,8 @@ from labels import EdgeType
 from scipy.sparse import coo_matrix, csr_matrix, spmatrix
 from geometry_tools import Edge
 from numpy import sinc, cos
+from numpy import trapz as Int
+from exact_solutions import GreenFunction
 
 
 
@@ -244,12 +246,37 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
             case _:
                 pass
 
+    N_Edges = len(Edges)
+
+    
+    # filling the vectors
+    if np.isscalar(a):
+        a_vec = np.full(N_Edges,a)
+    else:
+        a_vec = a 
+        
+    if np.isscalar(b):
+        b_vec = np.full(N_Edges,b)
+    else:
+        b_vec = b 
+    
+    if np.isscalar(d_1):
+        d_1_vec = np.full(N_Edges,d_1)
+    else:
+        d_1_vec = d_1 
+    
+
+    if np.isscalar(d_2):
+        d_2_vec = np.full(N_Edges,d_2)
+    else:
+        d_2_vec = d_2
+    
 
 
     Phi = V.TrialFunctions
     Psi = V.TestFunctions # currently the same spaces 
 
-    for E in Edges:
+    for (E, a, b, d_1, d_2) in zip(Edges, a_vec, b_vec, d_1_vec, d_2_vec):
         match E.Type:
             case EdgeType.INNER:
                 K_plus, K_minus = E.Triangles
@@ -348,7 +375,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
 
 
 
-def exact_RHS(psi, E, k, H, d_2, t):
+def mode_RHS(psi, E, k, H, d_2, t):
     d = psi.d
     d_y = d[1]
     N = E.N
@@ -372,9 +399,22 @@ def exact_RHS(psi, E, k, H, d_2, t):
     return F + S
 
 
+def Green_RHS(psi, E, k, H, a, x0, y0):
+    M = E.M
+    T = E.T 
+    N = E.N
+    l = E.l
+
+    d_m = psi.d
+
+    Npoints = 200
+    t = np.linspace(-l/2,l/2,Npoints)
+    g = GreenFunction(k, H, M + np.outer(t,T), x0, y0)
+    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( g,exp(-1j*k*dot(d_m, T)*t), t)
+    return I
 
 
-def AssembleRHS(V, Edges, k, H, d_2, t=0, full_sides=False):
+def AssembleRHS(V, Edges, k, H, d_2, t=0):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
@@ -385,8 +425,21 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0, full_sides=False):
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
-                    b[m] += exact_RHS(psi, E, k, H, d_2, t=t)
+                    b[m] += mode_RHS(psi, E, k, H, d_2, t=t)
             case EdgeType.SIGMA_R:
                 pass
     return b
 
+def AssembleGreenRHS(V, Edges, k, H, a, y0=0):
+    N_DOF = V.N_DOF
+    b = np.zeros((N_DOF), dtype=np.complex128)
+    Psi = V.TestFunctions
+
+    for E in Edges:
+        match E.Type:                
+            case EdgeType.D_OMEGA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    b[m] += Green_RHS(psi, E, k, H, a, 0, y0)
+    return b

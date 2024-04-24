@@ -9,6 +9,7 @@ class ScattererType(Enum):
     PENETRABLE = auto()
     SOUND_SOFT = auto()
     SOUND_HARD = auto()
+    GREEN_FUNC = auto()
 
 
 
@@ -32,7 +33,7 @@ def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False
                         rightdomain=1)
             geo.SetMaterial (1, "Omega_e")
             geo.SetMaterial (2, "Omega_i")
-        case ScattererType.SOUND_SOFT | ScattererType.SOUND_HARD:
+        case ScattererType.SOUND_SOFT | ScattererType.SOUND_HARD | ScattererType.GREEN_FUNC:
             geo.AddCircle(c=c,
                         r=rad,
                         bc="D_Omega",
@@ -74,3 +75,21 @@ def toyMesh(H=1., quad=False):
     
     return Omega
 
+
+def GradientMesh(R=10., H=1.,h_max=1., h_min=0.1):
+    '''Creates a simple mesh without scatterer for testing.'''
+    geo = SplineGeometry()
+    geo.AddRectangle(p1=(-R,-H),
+                    p2=( R, H),
+                    bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
+                    leftdomain=1,
+                    rightdomain=0)
+    p5 = geo.AppendPoint(0,-0.9*H)
+    p6 = geo.AppendPoint(0,0.9*H)
+    geo.Append(["line", p5,p6], leftdomain=1, rightdomain=1, maxh=h_min)
+
+    geo.SetMaterial(1, "Omega_e")
+
+    Omega = Mesh(geo.GenerateMesh(maxh= h_max))
+    
+    return Omega
