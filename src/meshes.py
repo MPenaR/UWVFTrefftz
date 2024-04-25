@@ -84,8 +84,9 @@ def GradientMesh(R=10., H=1.,h_max=1., h_min=0.1):
                     bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
                     leftdomain=1,
                     rightdomain=0)
-    p5 = geo.AppendPoint(0,-0.9*H)
-    p6 = geo.AppendPoint(0,0.9*H)
+    factor = 0.9
+    p5 = geo.AppendPoint(0,-factor*H)
+    p6 = geo.AppendPoint(0,factor*H)
     geo.Append(["line", p5,p6], leftdomain=1, rightdomain=1, maxh=h_min)
 
     geo.SetMaterial(1, "Omega_e")

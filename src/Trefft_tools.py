@@ -434,8 +434,13 @@ def AssembleGreenRHS(V, Edges, k, H, a, y0=0):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
+    N_edges = len(Edges)
+    if np.isscalar(a):
+        a_vec = np.full(N_edges,a)
+    else:
+        a_vec = a
 
-    for E in Edges:
+    for (E, a)  in zip(Edges,a_vec):
         match E.Type:                
             case EdgeType.D_OMEGA:
                 K = E.Triangles[0]
