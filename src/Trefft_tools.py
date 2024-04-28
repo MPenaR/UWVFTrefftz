@@ -412,7 +412,7 @@ def Green_RHS(psi, E, k, H, a, x0, y0, modes=False):
     if modes:
         g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0)    
     else:
-        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0)
+        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, 400)
     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
     return I
 

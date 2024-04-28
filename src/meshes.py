@@ -10,6 +10,7 @@ class ScattererType(Enum):
     SOUND_SOFT = auto()
     SOUND_HARD = auto()
     GREEN_FUNC = auto()
+    NONE = auto()
 
 
 
