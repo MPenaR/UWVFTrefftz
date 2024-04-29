@@ -21,7 +21,7 @@ def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False
                    scatterer_type = ScattererType.PENETRABLE ):
     '''Mesh for the full waveguide.'''
     geo = SplineGeometry()
-    geo.AddRectangle(p1=(-R,-H),
+    geo.AddRectangle(p1=(-R,0),
                     p2=( R, H),
                     bcs=["Gamma","Sigma_R","Gamma","Sigma_L"], #consider defining gamma_T and gamma_D
                     leftdomain=1,
@@ -50,7 +50,7 @@ def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False
 def testMesh(h_max = 2., quad=False, R = 10., H = 1.):
     '''Creates a simple mesh without scatterer for testing.'''
     geo = SplineGeometry()
-    geo.AddRectangle(p1=(-R,-H),
+    geo.AddRectangle(p1=(-R,0),
                     p2=( R, H),
                     bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
                     leftdomain=1,
@@ -65,7 +65,7 @@ def testMesh(h_max = 2., quad=False, R = 10., H = 1.):
 def toyMesh(H=1., quad=False):
     '''Creates a toy square mesh without scatterer for testing.'''
     geo = SplineGeometry()
-    geo.AddRectangle(p1=(-H,-H),
+    geo.AddRectangle(p1=(-H,0),
                     p2=( H, H),
                     bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
                     leftdomain=1,
@@ -80,7 +80,7 @@ def toyMesh(H=1., quad=False):
 def GradientMesh(R=10., H=1.,h_max=1., h_min=0.1):
     '''Creates a simple mesh without scatterer for testing.'''
     geo = SplineGeometry()
-    geo.AddRectangle(p1=(-R,-H),
+    geo.AddRectangle(p1=(-R,0),
                     p2=( R, H),
                     bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
                     leftdomain=1,
