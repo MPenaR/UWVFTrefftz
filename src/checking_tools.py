@@ -45,7 +45,7 @@ def checkLabels(Edges, ax = None, R=10, H=1):
     d = 0.2
     ax.axis('square')
     ax.set_xlim([-R-d,R+d])
-    ax.set_ylim([-H-d,H+d])
+    ax.set_ylim([0-d,H+d])
 
 
 def checkNormals(Edges, R=10., H=1.):
@@ -57,7 +57,7 @@ def checkNormals(Edges, R=10., H=1.):
     plt.quiver( MidPoints[:,0], MidPoints[:,1], Normals[:,0], Normals[:,1], scale=40)
     plt.quiver( MidPoints[:,0], MidPoints[:,1], Tangents[:,0], Tangents[:,1], scale=40, color='b')
     plt.xlim([-R-d,R+d])
-    plt.ylim([-H-d,H+d])
+    plt.ylim([0-d,H+d])
 
 # def checkPlusMinus(Edges,Baricenters):
 #     Normals = np.array( [ E.N for E in Edges])

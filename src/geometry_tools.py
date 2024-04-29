@@ -59,8 +59,12 @@ class Edge:
 
         match self.Type: #maybe use gamma_up and gamma_down
             
-            case EdgeType.GAMMA:
-                return np.array([0., py / np.abs(py)])
+            case EdgeType.GAMMA: 
+                if py == 0:
+                    return np.array([0,-1.])
+                else: 
+                    return np.array([0,1.])
+                #return np.array([0., py / np.abs(py)])
             
             case EdgeType.SIGMA_L:
                 return np.array([-1., 0.])
