@@ -62,6 +62,41 @@ def testMesh(h_max = 2., quad=False, R = 10., H = 1.):
     return Omega
 
 
+def squareMesh(h_max = 2.,  R = 10., H = 1., c=(0,0), L = (0.2), quad = False,
+                   scatterer_type = ScattererType.PENETRABLE):
+    '''Creates a simple mesh without scatterer for testing.'''
+    geo = SplineGeometry()
+    geo.AddRectangle(p1=(-R,0),
+                    p2=( R, H),
+                    bcs=["Gamma","Sigma_R","Gamma","Sigma_L"],
+                    leftdomain=1,
+                    rightdomain=0)
+
+    match scatterer_type:
+        case ScattererType.PENETRABLE:
+            geo.AddRectangle(p1=(c[0]-L/2,c[1]-L/2),
+                    p2=( c[1]+L/2, c[1]+L/2),
+                    bcs=["D_Omega","D_Omega","D_Omega","D_Omega"],
+                    leftdomain=2,
+                    rightdomain=1)
+            geo.SetMaterial (1, "Omega_e")
+            geo.SetMaterial (2, "Omega_i")
+        case ScattererType.SOUND_SOFT | ScattererType.SOUND_HARD | ScattererType.GREEN_FUNC:
+            geo.AddRectangle(p1=(c[0]-L/2,c[1]-L/2),
+                    p2=( c[0]+L/2, c[1]+L/2),
+                    bcs=["D_Omega","D_Omega","D_Omega","D_Omega"],
+                    leftdomain=0,
+                    rightdomain=1)
+            geo.SetMaterial (1, "Omega_e")
+
+
+    Omega = Mesh(geo.GenerateMesh(maxh= h_max, quad_dominated=quad))
+    
+    return Omega
+
+
+
+
 def toyMesh(H=1., quad=False):
     '''Creates a toy square mesh without scatterer for testing.'''
     geo = SplineGeometry()

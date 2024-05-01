@@ -72,3 +72,8 @@ def checkNormals(Edges, R=10., H=1.):
 #         plt.text( m[0]-e*n[0], m[1]- e*n[1], '+')
 
 
+def plot_sparsity(A,sparse=True):
+    if sparse:
+        plt.matshow(np.abs(A.toarray()), cmap='bone')
+    else:
+        plt.matshow(np.abs(A), cmap='bone')

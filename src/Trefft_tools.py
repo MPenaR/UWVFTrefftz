@@ -217,7 +217,7 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
         exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
         for s in range(1,Np)]) )
 
-    return (I1 + I2 + I3)/2
+    return  4*I1 + 2*I2 + 2*I3
 
 
 

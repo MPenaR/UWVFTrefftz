@@ -6,3 +6,4 @@ class Case(Enum):
     PENETRABLE_SCATTERER = auto()
     SOUND_SOFT_SCATTERER = auto()
     FINE_MESH_BARRIER = auto()
+    SQUARE_SCATTERER = auto()
