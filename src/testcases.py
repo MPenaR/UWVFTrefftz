@@ -1,9 +1,9 @@
 from enum import Enum, auto
 
-class Case(Enum):
-    FUNDAMENTAL_SOLUTION = auto()
+class TestCase(Enum):
+    FUNDAMENTAL_CIRCLE = auto()
     PROPAGATING_MODE = auto()
     PENETRABLE_SCATTERER = auto()
     SOUND_SOFT_SCATTERER = auto()
     FINE_MESH_BARRIER = auto()
-    SQUARE_SCATTERER = auto()
+    FUNDAMENTAL_SQUARE = auto()
