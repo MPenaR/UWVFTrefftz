@@ -377,6 +377,30 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
 
 
 
+# def mode_RHS(psi, E, k, H, d_2, t):
+#     d = psi.d
+#     d_y = d[1]
+#     N = E.N
+#     M = E.M
+#     l = E.l
+
+
+#     beta = sqrt(complex(k**2 - (t*pi/H)**2))
+
+#     F = 1j*k*l*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*(dot(d,N) - d_2)*(exp( 1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)) + 
+#                                                                        exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) + k*l*d_y/(2*pi)))
+
+#     if t == 0:
+#         S = 2j*k*l*dot(d,N)*d_2*exp(1j*(beta*M[0]-k*dot(d,M)))*sinc(k*l/(2*pi)*d[1])
+
+#     else:
+#         S = 1j*k*l*dot(d,N)*d_2*exp(1j*(beta*M[0]-k*dot(d,M)))*( k/conj(sqrt(complex(k**2 - (t*pi/H)**2))) *
+#                                                                         (exp( 1j*t*pi*M[1]/H)*sinc(t*l/(2*H) - k*l*d[1]/(2*pi)) + 
+#                                                                          exp(-1j*t*pi*M[1]/H)*sinc(t*l/(2*H) + k*l*d[1]/(2*pi))))
+ 
+#     return (F + S*sqrt(2))
+
+
 def mode_RHS(psi, E, k, H, d_2, t):
     d = psi.d
     d_y = d[1]
@@ -398,7 +422,8 @@ def mode_RHS(psi, E, k, H, d_2, t):
                                                                         (exp( 1j*t*pi*M[1]/H)*sinc(t*l/(2*H) - k*l*d[1]/(2*pi)) + 
                                                                          exp(-1j*t*pi*M[1]/H)*sinc(t*l/(2*H) + k*l*d[1]/(2*pi))))
  
-    return F + S
+    return (F + S)
+
 
 
 def Green_RHS(psi, E, k, H, a, x0, y0, modes=False):
