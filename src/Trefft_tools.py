@@ -119,21 +119,21 @@ def Gamma_term(phi, psi, edge, d_1):
     return I
 
 
-def Inner_term(phi, psi, edge, a, b):
+# def Inner_term(phi, psi, edge, a, b):
 
-    d_m = psi.d
-    d_n = phi.d
-    k = phi.k
+#     d_m = psi.d
+#     d_n = phi.d
+#     k = phi.k
 
     
-    M = edge.M
-    N = edge.N
-    T = edge.T
-    l = edge.l
+#     M = edge.M
+#     N = edge.N
+#     T = edge.T
+#     l = edge.l
 
-    I = -1/2*1j*k*l*(dot(d_m,N) + dot(d_n,N) + 2*b*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
+#     I = -1/2*1j*k*l*(dot(d_m,N) + dot(d_n,N) + 2*b*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
 
-    return I
+#     return I
 
 def Inner_term_general(phi, psi, edge, k, a, b):
 
@@ -169,11 +169,13 @@ def sound_soft_term(phi, psi, edge, a):
     return  I
 
 
-def Sigma_local(phi, psi, edge, k, H, d_2):
+def Sigma_local(phi, psi, edge, d_2):
 
     d_n = phi.d
     d_m = psi.d
-     
+
+    k = phi.k 
+
     l = edge.l
     M = edge.M
     N = edge.N
@@ -199,25 +201,25 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
     N = edge_u.N
     T = edge_u.T
 
-    I1 = -2j*k*H*dot(d_n,N)*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/(2*H)*l_v/(2*H)*(
+    I1 = -1j*k*H*dot(d_n,N)*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/H*l_v/H*(
         sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k**2 / abs(sqrt(complex(k**2 - (s*pi/H)**2)))**2 * (
         exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
         exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
         for s in range(1,Np)]) )
     
-    I2 = 2j*k*H*dot(d_n,N)*(d_2-dot(d_m,N))*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/(2*H)*l_v/(2*H)*(
+    I2 = -1j*k*H*dot(d_n,N)*(dot(d_m,N)-d_2)*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/H*l_v/H*(
         sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / sqrt(complex(k**2 - (s*pi/H)**2)) * (
         exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
         exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
         for s in range(1,Np)]) )
     
-    I3 = 2j*k*H*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/(2*H)*l_v/(2*H)*(
+    I3 = 1j*k*H*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/H*l_v/H*(
         sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / conj(sqrt(complex(k**2 - (s*pi/H)**2))) * (
         exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
         exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
         for s in range(1,Np)]) )
 
-    return  4*I1 + 2*I2 + 2*I3
+    return  I1 + I2 + I3
 
 
 
@@ -349,7 +351,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                                 H = 1
                                 i_index.append(m)
                                 j_index.append(n)
-                                S = Sigma_local(phi, psi, E, k, H, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
+                                S = Sigma_local(phi, psi, E, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
                                 values.append(S)
                         else:
                             for m in V.DOF_range[K_other]:
