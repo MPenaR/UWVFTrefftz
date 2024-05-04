@@ -1,5 +1,5 @@
 # Waveguide with a scatterer inside
-def u_FEM_SOUNDSOFT(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k=8., X=None, Y=None):
+def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=None):
 
     from netgen.geom2d import SplineGeometry
     from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, grad, CoefficientFunction
@@ -11,19 +11,19 @@ def u_FEM_SOUNDSOFT(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k=8., X=None, Y=
     delta_PML = 2 * 2*np.pi/k
     geo = SplineGeometry()
     hmaxf = 2*np.pi/k / 10
-    p1,p2,p3,p4 = [ geo.AppendPoint(x,y) for x,y in [ (-R,-H), (R,-H),(R,H),(-R,H)]]
+    p1,p2,p3,p4 = [ geo.AppendPoint(x,y) for x,y in [ (-R,0), (R,0),(R,H),(-R,H)]]
     geo.Append (["line", p1, p2],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p2, p3],leftdomain=1,rightdomain=2)
     geo.Append (["line", p3, p4],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p4, p1],leftdomain=1,rightdomain=3)
     geo.AddCircle(c, rad, leftdomain=0, rightdomain=1,bc="dirichlet")
-    p5,p6 = [ geo.AppendPoint(x,y) for x,y in [ (-R-delta_PML,-H),
+    p5,p6 = [ geo.AppendPoint(x,y) for x,y in [ (-R-delta_PML,0),
                                                 (-R-delta_PML,H)]]
     
     geo.Append (["line", p5, p1],leftdomain=3,rightdomain=0,bc="pipe")
     geo.Append (["line", p6, p5],leftdomain=3,rightdomain=0,bc="PML")
     geo.Append (["line", p4, p6],leftdomain=3,rightdomain=0,bc="pipe")
-    p7,p8 = [ geo.AppendPoint(x,y) for x,y in [ (R+delta_PML,-H),
+    p7,p8 = [ geo.AppendPoint(x,y) for x,y in [ (R+delta_PML,0),
                                                 (R+delta_PML,H)]]
     geo.Append (["line", p2, p7],leftdomain=2,rightdomain=0,bc="pipe")
     geo.Append (["line", p7, p8],leftdomain=2,rightdomain=0,bc="PML")
@@ -92,7 +92,7 @@ def u_FEM_SOUNDSOFT(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k=8., X=None, Y=
     else:
         return u_tot, mesh
 
-def u_FEM_PENETRABLE(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k_e=8., k_i = 12.,  X=None, Y=None):
+def u_FEM_PENETRABLE(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k_e=8., k_i = 12.,  X=None, Y=None):
 
     from netgen.geom2d import SplineGeometry
     from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, grad, CoefficientFunction
@@ -105,19 +105,19 @@ def u_FEM_PENETRABLE(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k_e=8., k_i = 1
     geo = SplineGeometry()
     hmax_e = 2*np.pi/k_e / 10
     hmax_i = 2*np.pi/k_i / 10
-    p1,p2,p3,p4 = [ geo.AppendPoint(x,y) for x,y in [ (-R,-H), (R,-H),(R,H),(-R,H)]]
+    p1,p2,p3,p4 = [ geo.AppendPoint(x,y) for x,y in [ (-R,0), (R,0),(R,H),(-R,H)]]
     geo.Append (["line", p1, p2],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p2, p3],leftdomain=1,rightdomain=2)
     geo.Append (["line", p3, p4],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p4, p1],leftdomain=1,rightdomain=3)
     geo.AddCircle(c, rad, leftdomain=4, rightdomain=1)
-    p5,p6 = [ geo.AppendPoint(x,y) for x,y in [ (-R-delta_PML,-H),
+    p5,p6 = [ geo.AppendPoint(x,y) for x,y in [ (-R-delta_PML,0),
                                                 (-R-delta_PML,H)]]
     
     geo.Append (["line", p5, p1],leftdomain=3,rightdomain=0,bc="pipe")
     geo.Append (["line", p6, p5],leftdomain=3,rightdomain=0,bc="PML")
     geo.Append (["line", p4, p6],leftdomain=3,rightdomain=0,bc="pipe")
-    p7,p8 = [ geo.AppendPoint(x,y) for x,y in [ (R+delta_PML,-H),
+    p7,p8 = [ geo.AppendPoint(x,y) for x,y in [ (R+delta_PML,0),
                                                 (R+delta_PML,H)]]
     geo.Append (["line", p2, p7],leftdomain=2,rightdomain=0,bc="pipe")
     geo.Append (["line", p7, p8],leftdomain=2,rightdomain=0,bc="PML")
@@ -149,7 +149,6 @@ def u_FEM_PENETRABLE(R = 10., H=1., rad = 0.2, c = (0.,0.), n=0, k_e=8., k_i = 1
 
 
     k=CoefficientFunction([k_i if mat=="scatterer" else k_e for mat in mesh.GetMaterials()])
-    #scatter=CoefficientFunction([5 if mat=="scatter" else 1 if mat=="fluid" else 2 if mat=="PML_right" else 3  if mat=="PML_left" else 4 for mat in mesh.GetMaterials()])
 
 
     a=BilinearForm(fes)
