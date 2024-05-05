@@ -348,7 +348,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
                                 k = psi.k
-                                H = 1
+                                H = 2 ### ARRRRRG
                                 i_index.append(m)
                                 j_index.append(n)
                                 S = Sigma_local(phi, psi, E, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
@@ -357,7 +357,7 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
                                 k = psi.k
-                                H = 1
+                                H = 2 #!!!!!!!
                                 i_index.append(m)
                                 j_index.append(n)
                                 values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
