@@ -223,8 +223,8 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
 
 
 
-def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge], 
-                   a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, k=0.8, 
+def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
+                   H = 2., a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, k=0.8, 
                    Np=10, full_matrix = False) -> spmatrix:
     '''Assembles de matrix for the bilinear form.
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
@@ -348,7 +348,6 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
                                 k = psi.k
-                                H = 2 ### ARRRRRG
                                 i_index.append(m)
                                 j_index.append(n)
                                 S = Sigma_local(phi, psi, E, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
@@ -357,7 +356,6 @@ def AssembleMatrix(V : TrefftzSpace, Edges : tuple[Edge],
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
                                 k = psi.k
-                                H = 2 #!!!!!!!
                                 i_index.append(m)
                                 j_index.append(n)
                                 values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
