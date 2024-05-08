@@ -61,7 +61,7 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
 
     u_inc = CoefficientFunction(0.+0.*1j)
     beta_n = np.sqrt(complex(k**2 - (n*np.pi/H)**2))
-    u_inc += exp( 1j*beta_n*x)*cos(n*np.pi*y)
+    u_inc += exp( 1j*beta_n*x)*cos(n*np.pi*y/H)
     u_sc = GridFunction(fes)
     u_sc.vec[:]=0+0*1J
     u_sc.Set(-u_inc, BND, definedon=mesh.Boundaries("dirichlet"))
@@ -163,7 +163,7 @@ def u_FEM_PENETRABLE(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k_e=8., k_i = 1
 
     u_inc = CoefficientFunction(0.+0.*1j)
     beta_n = np.sqrt(complex(k_e**2 - (n*np.pi/H)**2))
-    u_inc += exp( 1j*beta_n*x)*cos(n*np.pi*y)
+    u_inc += exp( 1j*beta_n*x)*cos(n*np.pi*y/H)
     u_sc = GridFunction(fes)
 
     f = LinearForm(fes)

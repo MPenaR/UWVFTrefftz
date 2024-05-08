@@ -112,7 +112,7 @@ def toyMesh(H=1., quad=False):
     return Omega
 
 
-def GradientMesh(R=10., H=1.,h_max=1., h_min=0.1):
+def GradientMesh(R=10., H=2.,h_max=1., h_min=0.1):
     '''Creates a simple mesh without scatterer for testing.'''
     geo = SplineGeometry()
     geo.AddRectangle(p1=(-R,0),
@@ -121,8 +121,8 @@ def GradientMesh(R=10., H=1.,h_max=1., h_min=0.1):
                     leftdomain=1,
                     rightdomain=0)
     factor = 0.9
-    p5 = geo.AppendPoint(0,-factor*H)
-    p6 = geo.AppendPoint(0,factor*H)
+    p5 = geo.AppendPoint(0,(1 - factor)*H/2)
+    p6 = geo.AppendPoint(0,(1 + factor)*H/2)
     geo.Append(["line", p5,p6], leftdomain=1, rightdomain=1, maxh=h_min)
 
     geo.SetMaterial(1, "Omega_e")
