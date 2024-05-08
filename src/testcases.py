@@ -7,3 +7,9 @@ class TestCase(Enum):
     SOUND_SOFT_SCATTERER = auto()
     FINE_MESH_BARRIER = auto()
     FUNDAMENTAL_SQUARE = auto()
+    SOUND_SOFT_SQUARE = auto()
+
+class BoundaryCondiion(Enum): 
+    DIRICHLET = auto()
+    NEUMANN = auto()
+    TRANSMISSION = auto()

@@ -43,9 +43,9 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
 
     factor = 0.1
 
-    mesh.SetPML(pml.HalfSpace(point=(R,H),normal=(1,0),alpha=factor*(4+2*1j)),
+    mesh.SetPML(pml.HalfSpace(point=(R,H/2),normal=(1,0),alpha=factor*(4+2*1j)),
                     "PML_right")
-    mesh.SetPML(pml.HalfSpace(point=(-R,H),normal=(-1,0),alpha=factor*(4+2*1j)),
+    mesh.SetPML(pml.HalfSpace(point=(-R,H/2),normal=(-1,0),alpha=factor*(4+2*1j)),
                     "PML_left")
 
     u  = fes.TrialFunction()
@@ -72,6 +72,8 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
     res.data = f.vec - a.mat * u_sc.vec
     u_sc.vec.data += Ainv * res
     u_tot = u_sc + u_inc
+
+    print(f'NDOF: {fes.ndof}')
 
     if X is not None:
         Ny, Nx = X.shape

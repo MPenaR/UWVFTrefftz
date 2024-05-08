@@ -239,7 +239,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
     j_index = []
 
 
-    Side_edges = { EdgeType.SIGMA_L : [], EdgeType.SIGMA_R : []} 
+    Side_edges  : dict[EdgeType, list] = { EdgeType.SIGMA_L : [], EdgeType.SIGMA_R : []} 
     
     for E in Edges:
         match E.Type:
@@ -360,9 +360,9 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                                 j_index.append(n)
                                 values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
                         
-    values = np.array(values)
-    i_index = np.array(i_index)
-    j_index = np.array(j_index)
+    # values = np.array(values)
+    # i_index = np.array(i_index)
+    # j_index = np.array(j_index)
     
     
     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
@@ -373,30 +373,6 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
 
     return A
 
-
-
-# def mode_RHS(psi, E, k, H, d_2, t):
-#     d = psi.d
-#     d_y = d[1]
-#     N = E.N
-#     M = E.M
-#     l = E.l
-
-
-#     beta = sqrt(complex(k**2 - (t*pi/H)**2))
-
-#     F = 1j*k*l*exp(1j*beta*M[0])*exp(-1j*k*dot(d,M))*(dot(d,N) - d_2)*(exp( 1j*pi*t/H*M[1])*sinc(t*l/(2*H) - k*l*d_y/(2*pi)) + 
-#                                                                        exp(-1j*pi*t/H*M[1])*sinc(t*l/(2*H) + k*l*d_y/(2*pi)))
-
-#     if t == 0:
-#         S = 2j*k*l*dot(d,N)*d_2*exp(1j*(beta*M[0]-k*dot(d,M)))*sinc(k*l/(2*pi)*d[1])
-
-#     else:
-#         S = 1j*k*l*dot(d,N)*d_2*exp(1j*(beta*M[0]-k*dot(d,M)))*( k/conj(sqrt(complex(k**2 - (t*pi/H)**2))) *
-#                                                                         (exp( 1j*t*pi*M[1]/H)*sinc(t*l/(2*H) - k*l*d[1]/(2*pi)) + 
-#                                                                          exp(-1j*t*pi*M[1]/H)*sinc(t*l/(2*H) + k*l*d[1]/(2*pi))))
- 
-#     return (F + S*sqrt(2))
 
 
 def mode_RHS(psi, E, k, H, d_2, t):
@@ -420,7 +396,7 @@ def mode_RHS(psi, E, k, H, d_2, t):
                                                                         (exp( 1j*t*pi*M[1]/H)*sinc(t*l/(2*H) - k*l*d[1]/(2*pi)) + 
                                                                          exp(-1j*t*pi*M[1]/H)*sinc(t*l/(2*H) + k*l*d[1]/(2*pi))))
  
-    return (F + S)
+    return F + S
 
 
 
@@ -458,7 +434,7 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
                 pass
     return b
 
-def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=False):
+def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
@@ -476,3 +452,6 @@ def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=False):
                     psi = Psi[m]
                     b[m] += Green_RHS(psi, E, k, H, a, 0, y0, modes=modes)
     return b
+
+
+
