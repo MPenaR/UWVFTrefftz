@@ -45,14 +45,14 @@ class Edge:
         self.T = (Q - P) / self.l
         self.M = (P+Q)/2
 
-        self.N = self.getNormal()
+        self.N = self.getNormal(Omega, edge)
         self.Triangles = self.setTriangles(Omega,edge)
 
 
 
 #        probably they should be properties with getters and setters, fix later    
 
-    def getNormal(self):
+    def getNormal(self, Omega, edge):
         _, py = self.P 
         tx, ty = self.T
         c = self.c
@@ -73,10 +73,18 @@ class Edge:
                 return np.array([1., 0.])
             
             case EdgeType.D_OMEGA:
+                # N = np.array([ -ty, tx] ) 
+                # if dot(self.M - np.array(c),N) > 0:  # NEED TO FIX THIS
+                #     N = -N
+                # return N
+                V = np.array(Omega.vertices[({v.nr for v in Omega.faces[edge.faces[0].nr].vertices} - {v.nr for v in edge.vertices}).pop()].point)
                 N = np.array([ -ty, tx] ) 
-                if dot(self.M - np.array(c),N) > 0:  # NEED TO FIX THIS
+                if dot(V - self.M,N) > 0:  # NEED TO FIX THIS
                     N = -N
                 return N
+
+
+
             case _:
                 return np.array([ -ty, tx] )
 
