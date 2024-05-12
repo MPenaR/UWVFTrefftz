@@ -9,7 +9,7 @@ from labels import EdgeType
 
 
 
-def checkLabels(Edges, ax = None, R=10, H=1):
+def checkLabels(Edges, ax = None, R=10., H=2.):
     """Checks the labelling"""
 
     if ax is None:

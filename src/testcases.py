@@ -13,3 +13,4 @@ class BoundaryCondiion(Enum):
     DIRICHLET = auto()
     NEUMANN = auto()
     TRANSMISSION = auto()
+
