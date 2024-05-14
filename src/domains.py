@@ -42,7 +42,7 @@ class Waveguide:
                 c, r = params
 
                 self.scatterer_markers.append(lambda  x, y, c=c, r=r: (x-c[0])**2 + (y-c[1])**2 <= r**2)
-                self.scatterer_patchs.append( Circle(xy=c, radius=r, **kwargs))
+                self.scatterer_patchs.append( lambda c=c, r=r, kwargs=kwargs : Circle(xy=c, radius=r, **kwargs))
 
 
                 if scatterer_type == ScattererType.PENETRABLE:
@@ -54,7 +54,7 @@ class Waveguide:
                 c, width, height = params
 
                 self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])<= width/2, np.abs(y - c[1])<= height/2 ))
-                self.scatterer_patchs.append( Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
+                self.scatterer_patchs.append( lambda c=c, width=width, height=height, kwargs=kwargs :Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
 
                 if scatterer_type == ScattererType.PENETRABLE:
                     self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
@@ -82,7 +82,7 @@ class Waveguide:
         Z = np.where(mask,np.nan,Z.ravel()).reshape(Z.shape)
         ax.pcolormesh(X, Y, Z, shading="gouraud")
         for patch in self.scatterer_patchs:
-            ax.add_patch(patch)
+            ax.add_patch(patch())
 
 
     # if plot_mesh: 
