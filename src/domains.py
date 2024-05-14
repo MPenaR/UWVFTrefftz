@@ -3,7 +3,7 @@
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
 from enum import Enum, auto
-from geometry_tools import Edge
+from geometry_tools import Edge, EdgeType
 import numpy as np 
 import matplotlib.pyplot as plt 
 from matplotlib.patches import Circle, Rectangle
@@ -31,6 +31,8 @@ class Waveguide:
         self.scatterer_type = None
         self.scatterer_markers = [] 
         self.scatterer_patchs = []
+        self.Edges = None
+        self.Omega = None
 
     def add_scatterer( self, scatterer_shape : ScattererShape, scatterer_type : ScattererType, params : list) :
         self.scatterer_type = scatterer_type
@@ -71,13 +73,8 @@ class Waveguide:
         self.Omega = Mesh(self.geo.GenerateMesh(maxh= h_max))
         self.Edges = [ Edge(self.Omega, e)  for e in self.Omega.edges ]
         
-        # match self.scatterer_type:
-        #     case None:
-        #         Edges = [ Edge(Omega, e, None)  for e in Omega.edges ]
-        #     case _:
-        #         Edges = [ Edge(Omega, e, (0,1.))  for e in Omega.edges ] # HARDCODED
-        return self.Omega, self.Edges
-    
+        # return self.Omega, self.Edges
+        return  
     def plot_field(self, X, Y, Z, ax = None):
         if ax is None: 
             _, ax = plt.subplots( figsize=(15,3))
@@ -107,6 +104,38 @@ class Waveguide:
 
     # if scatterer_type != ScattererType.NONE:
     #     ax.add_patch(scatterer())
+
+    def plot_mesh(self, ax=None):
+        if ax is None:
+            _, ax = plt.subplots( figsize=(15,3))
+        lw = 2
+
+        for E in self.Edges:
+            px, py = E.P
+            qx, qy = E.Q
+            match E.Type:
+                case EdgeType.INNER:
+                    ax.plot([px, qx], [py, qy], 'k')
+
+                case EdgeType.GAMMA:
+                    ax.plot([px, qx], [py, qy], 'g', linewidth=lw)
+
+                case EdgeType.SIGMA_L:
+                    ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
+
+                case EdgeType.SIGMA_R:
+                    ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
+    
+                case EdgeType.D_OMEGA:
+                    ax.plot([px, qx], [py, qy], '--b', linewidth=lw)
+                
+
+
+        d = 0.2
+        ax.axis('square')
+        ax.set_xlim([-self.R-d,self.R+d])
+        ax.set_ylim([0-d,self.H+d])
+
 
 
 
