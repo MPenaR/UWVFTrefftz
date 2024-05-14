@@ -33,12 +33,12 @@ class Edge:
     - Type: EdgeType: {INNER, GAMMA, SIGMA_L, SIGMA_R}
     - Triangless: tuple of one or two element IDs.'''
 
-    def __init__(self, Omega, edge, c ):
+    def __init__(self, Omega, edge ):
         P = np.array( Omega.vertices[edge.vertices[0].nr].point)
         Q = np.array( Omega.vertices[edge.vertices[1].nr].point)        
         self.P = P
         self.Q = Q
-        self.c = c
+ #       self.c = c
         self.Type = computeEdgeType(Omega,edge)
 
         self.l = norm(Q-P)
@@ -55,7 +55,7 @@ class Edge:
     def getNormal(self, Omega, edge):
         _, py = self.P 
         tx, ty = self.T
-        c = self.c
+#        c = self.c
 
         match self.Type: #maybe use gamma_up and gamma_down
             
