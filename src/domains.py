@@ -136,6 +136,13 @@ class Waveguide:
         ax.set_xlim([-self.R-d,self.R+d])
         ax.set_ylim([0-d,self.H+d])
 
+    def L2_norm(self,X, Y, Z):
+        mask = self.in_scatterer(X.ravel(),Y.ravel())
+        Ny, Nx = Z.shape
+        L2 = np.sqrt(2*self.R/Nx*self.H/Ny*np.sum(np.where(mask,0.,np.abs(Z.ravel())**2)))
+        return L2
+
+
 
 
 
