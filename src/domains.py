@@ -7,6 +7,7 @@ from geometry_tools import Edge, EdgeType
 import numpy as np 
 import matplotlib.pyplot as plt 
 from matplotlib.patches import Circle, Rectangle
+from matplotlib.collections import LineCollection
 
 class ScattererType(Enum):
     '''Enumeration of the different scatterer types.'''
@@ -75,7 +76,7 @@ class Waveguide:
         
         # return self.Omega, self.Edges
         return  
-    def plot_field(self, X, Y, Z, ax = None):
+    def plot_field(self, X, Y, Z, show_edges = False, ax = None):
         if ax is None: 
             _, ax = plt.subplots( figsize=(15,3))
         mask = self.in_scatterer(X.ravel(),Y.ravel())
@@ -85,8 +86,10 @@ class Waveguide:
             ax.add_patch(patch())
 
 
-    # if plot_mesh: 
-    #     checkLabels(self.Edges, ax)
+        if show_edges: 
+            lines = [ [E.P, E.Q] for E in self.Edges]
+            ax.add_collection(LineCollection(lines, colors='k'))
+        
         R = self.R
         H = self.H
         ax.axis('square')
@@ -139,7 +142,7 @@ class Waveguide:
     def L2_norm(self,X, Y, Z):
         mask = self.in_scatterer(X.ravel(),Y.ravel())
         Ny, Nx = Z.shape
-        L2 = np.sqrt(2*self.R/Nx*self.H/Ny*np.sum(np.where(mask,0.,np.abs(Z.ravel())**2)))
+        L2 = np.sqrt( 2*self.R/Nx * self.H/Ny * np.sum(np.where(mask,0.,np.abs(Z.ravel())**2)))
         return L2
 
 

@@ -224,7 +224,7 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
 
 
 def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
-                   H = 2., a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, k=0.8, 
+                   H : float, a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, k=0.8, 
                    Np=10, full_matrix = False) -> spmatrix:
     '''Assembles de matrix for the bilinear form.
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
@@ -411,7 +411,7 @@ def Green_RHS(psi, E, k, H, a, x0, y0, modes=False):
     Npoints = 200
     t = np.linspace(-l/2,l/2,Npoints)
     if modes:
-        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0)    
+        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, 100)    
     else:
         g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, 400)
     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
