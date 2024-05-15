@@ -62,7 +62,15 @@ class Waveguide:
                     self.geo.SetMaterial (2, "Omega_i")
                 else:
                     self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1)
-                    
+
+    def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):
+            factor = 0.9
+            p5 = self.geo.AppendPoint(0,(1 - factor)*self.H/2)
+            p6 = self.geo.AppendPoint(0,(1 + factor)*self.H/2)
+            self.geo.Append(["line", p5,p6], leftdomain=1, rightdomain=1, maxh=h_min)
+
+
+
     def in_scatterer(self, x, y):
         mask = np.full_like(x,fill_value=False, dtype=np.bool_) # CHECK FOR WHAT DXR SAID, THERE IS NO LIST COPY
         for marker in self.scatterer_markers:

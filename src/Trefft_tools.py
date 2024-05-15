@@ -400,7 +400,7 @@ def mode_RHS(psi, E, k, H, d_2, t):
 
 
 
-def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, M=20):
+def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, n_modes=20):
     M = E.M
     T = E.T 
     N = E.N
@@ -411,9 +411,9 @@ def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, M=20):
     Npoints = 200
     t = np.linspace(-l/2,l/2,Npoints)
     if modes:
-        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, M=M)    
+        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, M=n_modes)    
     else:
-        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, M=M)
+        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, M=n_modes)
     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
     return I
 
@@ -422,8 +422,14 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
+    N_Edges = len(Edges)
+    if np.isscalar(d_2):
+        d_2_vec = np.full(N_Edges,d_2)
+    else:
+        d_2_vec = d_2
 
-    for E in Edges:
+
+    for (E, d_2) in zip(Edges,d_2_vec):
         match E.Type:                
             case EdgeType.SIGMA_L:
                 K = E.Triangles[0]
@@ -450,7 +456,7 @@ def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True, M=20):
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
-                    b[m] += Green_RHS(psi, E, k, H, a, 0, y0, modes=modes, M=M)
+                    b[m] += Green_RHS(psi, E, k, H, a, 0, y0, modes=modes, n_modes=M)
     return b
 
 
