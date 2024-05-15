@@ -400,7 +400,7 @@ def mode_RHS(psi, E, k, H, d_2, t):
 
 
 
-def Green_RHS(psi, E, k, H, a, x0, y0, modes=False):
+def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, M=20):
     M = E.M
     T = E.T 
     N = E.N
@@ -411,9 +411,9 @@ def Green_RHS(psi, E, k, H, a, x0, y0, modes=False):
     Npoints = 200
     t = np.linspace(-l/2,l/2,Npoints)
     if modes:
-        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, 100)    
+        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, M=M)    
     else:
-        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, 400)
+        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, M=M)
     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
     return I
 
@@ -434,7 +434,7 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
                 pass
     return b
 
-def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True):
+def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True, M=20):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
@@ -450,7 +450,7 @@ def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True):
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
-                    b[m] += Green_RHS(psi, E, k, H, a, 0, y0, modes=modes)
+                    b[m] += Green_RHS(psi, E, k, H, a, 0, y0, modes=modes, M=M)
     return b
 
 
