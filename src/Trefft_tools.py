@@ -400,24 +400,6 @@ def mode_RHS(psi, E, k, H, d_2, t):
 
 
 
-def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, n_modes=20):
-    M = E.M
-    T = E.T 
-    N = E.N
-    l = E.l
-
-    d_m = psi.d
-
-    Npoints = 200
-    t = np.linspace(-l/2,l/2,Npoints)
-    if modes:
-        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, M=n_modes)    
-    else:
-        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, M=n_modes)
-    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
-    return I
-
-
 def AssembleRHS(V, Edges, k, H, d_2, t=0):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
@@ -439,6 +421,28 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
             case EdgeType.SIGMA_R:
                 pass
     return b
+
+
+
+def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, n_modes=20):
+    M = E.M
+    T = E.T 
+    N = E.N
+    l = E.l
+
+    d_m = psi.d
+
+    Npoints = 200
+    t = np.linspace(-l/2,l/2,Npoints)
+    if modes:
+        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, M=n_modes)    
+    else:
+        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, M=n_modes)
+    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
+    return I
+
+
+
 
 def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True, M=20):
     N_DOF = V.N_DOF
