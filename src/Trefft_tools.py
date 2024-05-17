@@ -327,7 +327,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         values.append(Gamma_term(phi, psi, E, d_1))
                     
 
-            case EdgeType.D_OMEGA:
+            case EdgeType.D_OMEGA | EdgeType.COVER:
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
@@ -424,7 +424,7 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
 
 
 
-def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, n_modes=20):
+def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
     M = E.M
     T = E.T 
     N = E.N
@@ -435,16 +435,16 @@ def Green_RHS(psi, E, k, H, a, x0, y0, modes=False, n_modes=20):
     Npoints = 200
     t = np.linspace(-l/2,l/2,Npoints)
     if modes:
-        g = GreenFunctionModes(k, H, M + np.outer(t,T), x0, y0, M=n_modes)    
+        g = GreenFunctionModes(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)    
     else:
-        g = GreenFunctionImages(k, H, M + np.outer(t,T), x0, y0, M=n_modes)
+        g = GreenFunctionImages(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)
     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
     return I
 
 
 
 
-def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True, M=20):
+def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=20):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
     Psi = V.TestFunctions
@@ -456,11 +456,11 @@ def AssembleGreenRHS(V, Edges, k, H, a, y0=0, modes=True, M=20):
 
     for (E, a)  in zip(Edges,a_vec):
         match E.Type:                
-            case EdgeType.D_OMEGA:
+            case EdgeType.D_OMEGA | EdgeType.COVER:
                 K = E.Triangles[0]
                 for m in V.DOF_range[K]:
                     psi = Psi[m]
-                    b[m] += Green_RHS(psi, E, k, H, a, 0, y0, modes=modes, n_modes=M)
+                    b[m] += Green_RHS(psi, E, k, H, a, x_0, y_0, modes=modes, n_modes=M)
     return b
 
 

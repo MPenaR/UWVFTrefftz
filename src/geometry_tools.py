@@ -17,6 +17,9 @@ def computeEdgeType(Omega, edge):
     elif edge.nr in [ e.edges[0].nr for e in Omega.Boundaries("Sigma_R").Elements()]:
         return EdgeType.SIGMA_R
     
+    elif edge.nr in [ e.edges[0].nr for e in Omega.Boundaries("Cover").Elements()]:
+        return EdgeType.COVER
+    
     elif edge.nr in [ e.edges[0].nr for e in Omega.Boundaries("D_Omega").Elements()]:
         return EdgeType.D_OMEGA
     else:
@@ -66,7 +69,7 @@ class Edge:
                     return np.array([0,1.])
                 #return np.array([0., py / np.abs(py)])
             
-            case EdgeType.SIGMA_L:
+            case EdgeType.SIGMA_L | EdgeType.COVER:
                 return np.array([-1., 0.])
 
             case EdgeType.SIGMA_R:

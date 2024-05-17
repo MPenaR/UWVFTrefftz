@@ -7,5 +7,7 @@ class EdgeType(Enum):
     SIGMA_L = auto()
     SIGMA_R = auto()
     D_OMEGA = auto()
+    COVER = auto()
     # IN_OMEGA = auto()
+
 

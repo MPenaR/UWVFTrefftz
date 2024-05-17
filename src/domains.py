@@ -23,11 +23,16 @@ class ScattererShape(Enum):
 
 
 class Waveguide:
-    def __init__(self, R = 10., H = 2.):
+    def __init__(self, R = 10., H = 1., half_infinite = False):
         self.R = R 
         self.H = H
         self.geo = SplineGeometry()
-        self.geo.AddRectangle(p1=(-R,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Sigma_L"], leftdomain=1, rightdomain=0)
+        self.half_infinite = half_infinite
+        if half_infinite:
+            self.geo.AddRectangle(p1=(0,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Cover"], leftdomain=1, rightdomain=0)
+        else:
+            self.geo.AddRectangle(p1=(-R,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Sigma_L"], leftdomain=1, rightdomain=0)
+
         self.geo.SetMaterial (1, "Omega_e")
         self.scatterer_type = None
         self.scatterer_markers = [] 
@@ -101,7 +106,10 @@ class Waveguide:
         R = self.R
         H = self.H
         ax.axis('square')
-        ax.set_xlim([-R,R])
+        if self.half_infinite:
+            ax.set_xlim([0,self.R])
+        else:
+            ax.set_xlim([-self.R,self.R])
         ax.set_ylim([0,H])
 
     # match self.scatterer_type:
@@ -137,14 +145,17 @@ class Waveguide:
                 case EdgeType.SIGMA_R:
                     ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
     
-                case EdgeType.D_OMEGA:
+                case EdgeType.D_OMEGA | EdgeType.COVER:
                     ax.plot([px, qx], [py, qy], '--b', linewidth=lw)
                 
 
 
         d = 0.2
         ax.axis('square')
-        ax.set_xlim([-self.R-d,self.R+d])
+        if self.half_infinite:
+            ax.set_xlim([-d,self.R+d])
+        else:
+            ax.set_xlim([-self.R-d,self.R+d])
         ax.set_ylim([0-d,self.H+d])
 
     def L2_norm(self,X, Y, Z):
