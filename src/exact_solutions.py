@@ -19,7 +19,7 @@ def GreenFunctionModes(k, H, XY, x_0, y_0, M = 20):
     n = np.arange(0,M)
     beta_n = sqrt(k**2 - (n*np.pi/H)**2)
 #    norm = np.full_like(n,2/H)
-    norm = np.full(M, 2./H)
+    norm = np.full(M, 2./H, dtype=np.int64)
     norm[0] = 1./H 
     G = -np.sum( norm*exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (2*1j*beta_n) * cos( pi*np.outer(XY[:,1],n)/H) * cos(n* pi*y_0/H), -1)
     return G
