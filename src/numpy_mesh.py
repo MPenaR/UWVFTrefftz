@@ -18,4 +18,4 @@ edge_dtype = np.dtype( [("midpoint", np.float64,2),
                         ("length", np.float64, 1),
                         ("label", EdgeType, 1)])
 
-
+fun_dtype = np.dtype( [ ("direction", np.float64, 2), ("kappa", np.float64, 1)])
