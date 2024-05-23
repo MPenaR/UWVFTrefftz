@@ -102,6 +102,43 @@ class TrefftzFunction:
         y = sum( p*np.exp(1j*k*dot(d,r)) for (p,d) in zip(P,D) )
         return y 
 
+    # def grad(self, x, y ):  !CLEAN THIS
+    #     e = self.Element(x,y)
+    #     if e < 0: # (x,y) outside the mesh
+    #         return np.nan
+    #     def grad(v):
+    #         k = self.V.kappa[e]
+    #         P = self.DOFs[self.V.DOF_range[e]]
+    #         D = self.V.d[e]
+
+    #         r = np.array([x,y])
+    #         y = sum( 1j*k**p*np.exp(1j*k*dot(d,r))*dot(d,v) for (p,d) in zip(P,D) )
+    #     return grad 
+    def dx(self, x, y ):
+        e = self.Element(x,y)
+        if e < 0: # (x,y) outside the mesh
+            return np.nan
+
+        k = self.V.kappa[e]
+        P = self.DOFs[self.V.DOF_range[e]]
+        D = self.V.d[e]
+
+        r = np.array([x,y])
+        dudx = sum( 1j*k*p*np.exp(1j*k*dot(d,r))*d[0] for (p,d) in zip(P,D) )
+        return dudx 
+
+    def dy(self, x, y ):
+        e = self.Element(x,y)
+        if e < 0: # (x,y) outside the mesh
+            return np.nan
+
+        k = self.V.kappa[e]
+        P = self.DOFs[self.V.DOF_range[e]]
+        D = self.V.d[e]
+
+        r = np.array([x,y])
+        dudy = sum( 1j*k*p*np.exp(1j*k*dot(d,r))*d[1] for (p,d) in zip(P,D) )
+        return dudy 
 
 
 def Gamma_term(phi, psi, edge, d_1):

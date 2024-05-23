@@ -11,9 +11,17 @@ def GreenFunctionImages(k, H, XY, x_0, y_0, M = 100):
     minus_1_to_n = 1 - 2* (n%2) 
     xy_0p = np.stack([np.full(M,fill_value=x_0), 2*H*np.ceil(n/2) + minus_1_to_n*y_0],axis=1)
     xy_0m = np.stack([np.full(M,fill_value=x_0), -2*H*np.ceil(n/2) - minus_1_to_n*y_0],axis=1)
-    xy_0 = np.vstack([xy_0p, xy_0m])
+    
+    #xy_0 = np.vstack([xy_0p, xy_0m])
+    
+    #Reversing the order for accuracy
+    xy_0 = np.zeros((2*M,2), dtype=np.float64)
+    xy_0[::2, :] = xy_0p[::-1]
+    xy_0[1::2, :] = xy_0m[::-1]
+    
+    
     G = 1j/4*np.sum(H01(k*cdist(XY, xy_0)),axis=-1)
-    # return G
+    return G
 
     # return G + 0.0032*np.cos((XY[:,1]-0.39)/0.8*2*np.pi)
 
