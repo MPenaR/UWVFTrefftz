@@ -39,6 +39,7 @@ class Waveguide:
         self.scatterer_patchs = []
         self.Edges = None
         self.Omega = None
+        self.meshed = False
 
     def add_scatterer( self, scatterer_shape : ScattererShape, scatterer_type : ScattererType, params : list) :
         self.scatterer_type = scatterer_type
@@ -86,6 +87,7 @@ class Waveguide:
     def generate_mesh(self, h_max = 1.):
         self.Omega = Mesh(self.geo.GenerateMesh(maxh= h_max))
         self.Edges = [ Edge(self.Omega, e)  for e in self.Omega.edges ]
+        self.meshed = True
         
         # return self.Omega, self.Edges
         return  
@@ -101,7 +103,7 @@ class Waveguide:
 
         if show_edges: 
             lines = [ [E.P, E.Q] for E in self.Edges]
-            ax.add_collection(LineCollection(lines, colors='k'))
+            ax.add_collection(LineCollection(lines, colors='k', linewidth=0.8))
         
         R = self.R
         H = self.H
@@ -111,42 +113,39 @@ class Waveguide:
         else:
             ax.set_xlim([-self.R,self.R])
         ax.set_ylim([0,H])
+        ax.set_xlabel('$x_1$')
+        ax.set_ylabel('$\\mathbf{\\hat{x}}$')
+        
 
-    # match self.scatterer_type:
-    #     case ScattererType.PENETRABLE:
-    #         ax.set_title(f'Penetrable: mode number: {t}, {Nth} plane waves per triangle, condition number = $\\mathtt{{ {Ncond: .3f} }}$, $\\kappa={kappa_e:.1f}$')
-    #     case ScattererType.SOUND_SOFT:
-    #         ax.set_title(f'Sound-soft: mode number: {t}, {Nth} plane waves per triangle, condition number = $\\mathtt{{ {Ncond: .3f} }}$, $\\kappa={kappa_e:.1f}$')
-    #     case ScattererType.GREEN_FUNC:
-    #         ax.set_title(f'Green function case, {Nth} plane waves per triangle, condition number =   $\\mathtt{{ {Ncond: .3f} }}$, $\\kappa={kappa_e:.1f}$')
-
-
-    # if scatterer_type != ScattererType.NONE:
-    #     ax.add_patch(scatterer())
 
     def plot_mesh(self, ax=None):
+        if self.meshed == False:
+            print('cannot plot mesh before generating a mesh')
+            return
+        
         if ax is None:
             _, ax = plt.subplots( figsize=(15,3))
-        lw = 2
+        lw = 0.8
+        Lw = 2.
 
         for E in self.Edges:
             px, py = E.P
             qx, qy = E.Q
             match E.Type:
                 case EdgeType.INNER:
-                    ax.plot([px, qx], [py, qy], 'k')
+                    ax.plot([px, qx], [py, qy], 'k', linewidth=lw)
 
                 case EdgeType.GAMMA:
-                    ax.plot([px, qx], [py, qy], 'g', linewidth=lw)
+                    ax.plot([px, qx], [py, qy], 'g', linewidth=Lw)
 
                 case EdgeType.SIGMA_L:
-                    ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
+                    ax.plot([px, qx], [py, qy], '--r', linewidth=Lw)
 
                 case EdgeType.SIGMA_R:
-                    ax.plot([px, qx], [py, qy], '--r', linewidth=lw)
+                    ax.plot([px, qx], [py, qy], '--r', linewidth=Lw)
     
                 case EdgeType.D_OMEGA | EdgeType.COVER:
-                    ax.plot([px, qx], [py, qy], '--b', linewidth=lw)
+                    ax.plot([px, qx], [py, qy], '--b', linewidth=Lw)
                 
 
 
@@ -157,6 +156,12 @@ class Waveguide:
         else:
             ax.set_xlim([-self.R-d,self.R+d])
         ax.set_ylim([0-d,self.H+d])
+        ax.set_xlabel('$x_1$')
+        ax.set_ylabel('$\\mathbf{\\hat{x}}$')
+        ax.set_yticks([0,self.H])
+        ax.set_xticks([-self.R,0,self.R])
+
+
 
     def L2_norm(self,X, Y, Z):
         mask = self.in_scatterer(X.ravel(),Y.ravel())

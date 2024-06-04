@@ -12,6 +12,35 @@ from exact_solutions import GreenFunctionImages, GreenFunctionModes
 
 
 
+def fek3_int(f, r_A=(0,0), r_B=(1,0), r_C=(0,1)):
+    ABx = r_B[0] - r_A[0]
+    ABy = r_B[1] - r_A[1]
+    ACx = r_C[0] - r_A[0]
+    ACy = r_C[1] - r_A[1]
+    S = 0.5 * (ABx*ACy - ABy*ACx)
+    J = S/2.
+    points = np.array([[1./3, 1./3, 1./3],
+                    [0., 0., 1.],
+                    [0., 1., 0.],
+                    [1., 0., 0.],
+                    [0., 0.2763932023, 0.7236067977],
+                    [0.7236067977, 0.2763932023, 0.],
+                    [0.7236067977, 0., 0.2763932023],
+                    [0., 0.7236067977, 0.2763932023],
+                    [0.2763932023, 0.7236067977, 0.],
+                    [0.2763932023, 0., 0.7236067977]]) 
+    
+    x = r_A[0]*points[:,0] + r_B[0]*points[:,1] + r_C[0]*points[:,2]
+    y = r_A[1]*points[:,0] + r_B[1]*points[:,1] + r_C[1]*points[:,2]
+    
+    w = np.array([ 0.9, 0.1/3, 0.1/3, 0.1/3, 1./6, 1./6, 1./6, 1./6, 1./6, 1./6 ])
+    z = f(x,y)
+    I = np.sum(z*w)
+    return J*I 
+
+
+
+
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
 
@@ -258,6 +287,13 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
 
     return  I1 + I2 + I3
 
+
+def absorption_term( phi, psi, edge, k, a, b):
+    n_I = np.im(p)
+    I = 2*1j*k**2*fek3_int(, r_A=r_A, r_B=r_B, r_C=r_C)
+
+    return I
+    
 
 
 def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
