@@ -3,6 +3,14 @@ from scipy.special import j0 as J0, y0 as Y0
 import numpy as np
 from numpy import cos, pi, exp, abs
 from numpy.lib.scimath import sqrt
+
+
+from numpy.typing import NDArray
+
+real_array = NDArray[np.float64]
+
+
+
 def H01(x):
     return J0(x) + 1j*Y0(x)
 
@@ -39,4 +47,14 @@ def GreenFunctionMixed(k, H, XY, x_0, y_0, M = 20):
     G_modes = GreenFunctionModes(k, H, XY, x_0, y_0, M = 20)
     G_images = GreenFunctionImages(k, H, XY, x_0, y_0, M = 20)
     return G
+
+
+def Mode(k : np.float64, H : np.float64, XY : real_array, t : int):
+    x = XY[:,0]
+    y = XY[:,1]
+    beta = sqrt(k**2 - (t*pi/H)**2)
+    return exp(1j*beta*x)*cos(t*pi*y/H)
+
+    
+
 
