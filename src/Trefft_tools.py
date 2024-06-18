@@ -57,8 +57,7 @@ class TrefftzSpace:
     def __init__( self, Omega, DOF_per_element : tuple[int], kappa : dict[str, float], th0=0 ):
         self.Omega = Omega
         self.N_trig = len(Omega.faces)
-        # self.kappa = np.zeros(self.N_trig, dtype=np.float64)
-        self.kappa = np.zeros(self.N_trig, dtype=np.complex128)
+        self.kappa = np.zeros(self.N_trig, dtype=np.float64)
         
         self._elements = list(Omega.Elements())
         for e in Omega.Elements():
@@ -288,14 +287,6 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
         for s in range(1,Np)]) )
 
     return  I1 + I2 + I3
-
-
-# def absorption_term( phi, psi, r_A, r_B, r_C, k, a, b):
-#     n_I = np.imag()   
-#     I = 2*1j*k**2*fek3_int(lambda x, y : np.exp(1j*k*n), r_A=r_A, r_B=r_B, r_C=r_C)
-
-#     return I
-    
 
 
 def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
