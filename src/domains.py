@@ -23,15 +23,39 @@ class ScattererShape(Enum):
 
 
 class Waveguide:
-    def __init__(self, R = 10., H = 1., half_infinite = False):
+    def __init__(self, R = 10., H = 1., half_infinite = False, bump = False):
         self.R = R 
         self.H = H
         self.geo = SplineGeometry()
         self.half_infinite = half_infinite
-        if half_infinite:
-            self.geo.AddRectangle(p1=(0,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Cover"], leftdomain=1, rightdomain=0)
-        else:
-            self.geo.AddRectangle(p1=(-R,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Sigma_L"], leftdomain=1, rightdomain=0)
+        self.bump = bump
+        if bump:
+            h = np.sqrt(2)*0.1*H
+            p1 = self.geo.AddPoint(-R,0)
+            p2 = self.geo.AddPoint(R,0)
+
+            p3 = self.geo.AddPoint(R,H)
+            p4 = self.geo.AddPoint(-R,H)
+
+            q1 = self.geo.AddPoint(h/2,H)
+            q2 = self.geo.AddPoint(h/2,H-h)
+
+            q3 = self.geo.AddPoint(-h/2,H-h)
+            q4 = self.geo.AddPoint(-h/2,H)
+
+            bottom = self.geo.Append(["line",p1,p2],leftdomain=1,rightdomain=0, bc="Gamma")
+            s_R = self.geo.Append(["line",p2,p3],leftdomain=1,rightdomain=0, bc="Sigma_R")
+            top_R = self.geo.Append(["line",p3,q1],leftdomain=1,rightdomain=0, bc="Gamma")
+            g1 = self.geo.Append(["line",q1,q2],leftdomain=1,rightdomain=0, bc="D_Omega")
+            g2 = self.geo.Append(["line",q2,q3],leftdomain=1,rightdomain=0, bc="D_Omega")
+            g3 = self.geo.Append(["line",q3,q4],leftdomain=1,rightdomain=0, bc="D_Omega")
+            top_L = self.geo.Append(["line",q4,p4],leftdomain=1,rightdomain=0, bc="Gamma")
+            s_L = self.geo.Append(["line",p4,p1],leftdomain=1,rightdomain=0, bc="Sigma_L")
+        else:    
+            if half_infinite:
+                self.geo.AddRectangle(p1=(0,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Cover"], leftdomain=1, rightdomain=0)
+            else:
+                self.geo.AddRectangle(p1=(-R,0), p2=( R, H), bcs=["Gamma","Sigma_R","Gamma","Sigma_L"], leftdomain=1, rightdomain=0)
 
         self.geo.SetMaterial (1, "Omega_e")
         self.scatterer_type = None
@@ -81,6 +105,10 @@ class Waveguide:
         mask = np.full_like(x,fill_value=False, dtype=np.bool_) # CHECK FOR WHAT DXR SAID, THERE IS NO LIST COPY
         for marker in self.scatterer_markers:
             mask = np.logical_or(mask, marker(x,y))
+        if self.bump:
+            h_b = 0.1*np.sqrt(2)*self.H
+            bump = np.logical_and( np.logical_and( x < h_b/2, x> -h_b/2), y > self.H - h_b )  
+            mask = np.logical_or( mask, bump)
         return mask
 
 
@@ -99,6 +127,11 @@ class Waveguide:
         ax.pcolormesh(X, Y, Z, shading="gouraud")
         for patch in self.scatterer_patchs:
             ax.add_patch(patch())
+        if self.bump:
+            h_b = 0.1*np.sqrt(2)*self.H
+            kwargs = {"edgecolor" : "k", "facecolor" : "grey", "linewidth" : 4}
+    
+            ax.add_patch( Rectangle(xy=(-h_b/2,self.H - h_b), height=h_b, width=h_b, **kwargs))
 
 
         if show_edges: 
