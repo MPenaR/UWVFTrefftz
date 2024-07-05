@@ -3,10 +3,10 @@
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
 from enum import Enum, auto
-from geometry_tools import Edge, EdgeType
+from geometry_tools import Edge, EdgeType, Triangle
 import numpy as np 
 import matplotlib.pyplot as plt 
-from matplotlib.patches import Circle, Rectangle
+from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.collections import LineCollection
 
 class ScattererType(Enum):
@@ -14,6 +14,7 @@ class ScattererType(Enum):
     PENETRABLE = auto()
     SOUND_SOFT = auto()
     SOUND_HARD = auto()
+    ABSORBING = auto()
 
 class ScattererShape(Enum):
     '''Enumeration of the different scatterer shapes.'''
@@ -40,6 +41,7 @@ class Waveguide:
         self.Edges = None
         self.Omega = None
         self.meshed = False
+        self.ScattererTriangles = []
 
     def add_scatterer( self, scatterer_shape : ScattererShape, scatterer_type : ScattererType, params : list) :
         self.scatterer_type = scatterer_type
@@ -51,23 +53,25 @@ class Waveguide:
                 self.scatterer_markers.append(lambda  x, y, c=c, r=r: (x-c[0])**2 + (y-c[1])**2 <= r**2)
                 self.scatterer_patchs.append( lambda c=c, r=r, kwargs=kwargs : Circle(xy=c, radius=r, **kwargs))
 
-
-                if scatterer_type == ScattererType.PENETRABLE:
-                    self.geo.AddCircle(c=c, r=r, leftdomain=2, rightdomain=1)
-                    self.geo.SetMaterial (2, "Omega_i")
-                else:
-                    self.geo.AddCircle(c=c, r=r, bc="D_Omega", leftdomain=0, rightdomain=1)
+                match scatterer_type:
+                    case ScattererType.PENETRABLE | ScattererType.ABSORBING :
+                        self.geo.AddCircle(c=c, r=r, leftdomain=2, rightdomain=1)
+                        self.geo.SetMaterial (2, "Omega_i")
+                    case _:
+                        self.geo.AddCircle(c=c, r=r, bc="D_Omega", leftdomain=0, rightdomain=1)
             case ScattererShape.RECTANGLE:
                 c, width, height = params
 
                 self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])<= width/2, np.abs(y - c[1])<= height/2 ))
                 self.scatterer_patchs.append( lambda c=c, width=width, height=height, kwargs=kwargs :Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
-
-                if scatterer_type == ScattererType.PENETRABLE:
-                    self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
-                    self.geo.SetMaterial (2, "Omega_i")
-                else:
-                    self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1)
+                
+                match scatterer_type:
+                    case ScattererType.PENETRABLE | ScattererType.ABSORBING:
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
+                        self.geo.SetMaterial (2, "Omega_i")
+                    case _:
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1)
+                    
 
     def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):
             factor = 0.9
@@ -88,17 +92,39 @@ class Waveguide:
         self.Omega = Mesh(self.geo.GenerateMesh(maxh= h_max))
         self.Edges = [ Edge(self.Omega, e)  for e in self.Omega.edges ]
         self.meshed = True
-        
-        # return self.Omega, self.Edges
-        return  
+        if self.scatterer_type == ScattererType.ABSORBING:
+            self.ScattererTriangles = [ Triangle(self.Omega, self.Omega.faces[e.faces[0].nr]) for e in self.Omega.Elements() if e.mat == "Omega_i"]
+        return 
+    
+    def plot_scatterer_triangles(self):
+        fig, ax = plt.subplots()
+        ax.add_patch(Rectangle(xy=(-self.R, 0),width=2*self.R, height=self.H, facecolor='none', edgecolor='k'))
+        for T in self.ScattererTriangles:
+            ax.add_patch(Polygon([T.A, T.B, T.C], edgecolor='k', facecolor='b'))
+        ax.axis('square')
+
+
+
+
     def plot_field(self, X, Y, Z, show_edges = False, ax = None):
         if ax is None: 
             _, ax = plt.subplots( figsize=(15,3))
         mask = self.in_scatterer(X.ravel(),Y.ravel())
-        Z = np.where(mask,np.nan,Z.ravel()).reshape(Z.shape)
+        match self.scatterer_type:
+            case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
+                Z = np.where(mask,np.nan,Z.ravel()).reshape(Z.shape)
+            case ScattererType.PENETRABLE | ScattererType.ABSORBING:
+                pass
+
         ax.pcolormesh(X, Y, Z, shading="gouraud")
-        for patch in self.scatterer_patchs:
-            ax.add_patch(patch())
+        match self.scatterer_type:
+            case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
+                for patch in self.scatterer_patchs:
+                    ax.add_patch(patch())
+            case ScattererType.PENETRABLE | ScattererType.ABSORBING:
+                for patch in self.scatterer_patchs:
+                    pass
+                    # ax.add_patch(patch(penetrable=True))
 
 
         if show_edges: 

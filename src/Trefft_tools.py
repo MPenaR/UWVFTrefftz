@@ -9,34 +9,9 @@ from geometry_tools import Edge
 from numpy import sinc, cos
 from numpy import trapz as Int
 from exact_solutions import GreenFunctionImages, GreenFunctionModes
+from integrators import fekete3 as int2D
+from domains import ScattererType
 
-
-
-def fek3_int(f, r_A=(0,0), r_B=(1,0), r_C=(0,1)):
-    ABx = r_B[0] - r_A[0]
-    ABy = r_B[1] - r_A[1]
-    ACx = r_C[0] - r_A[0]
-    ACy = r_C[1] - r_A[1]
-    S = 0.5 * (ABx*ACy - ABy*ACx)
-    J = S/2.
-    points = np.array([[1./3, 1./3, 1./3],
-                    [0., 0., 1.],
-                    [0., 1., 0.],
-                    [1., 0., 0.],
-                    [0., 0.2763932023, 0.7236067977],
-                    [0.7236067977, 0.2763932023, 0.],
-                    [0.7236067977, 0., 0.2763932023],
-                    [0., 0.7236067977, 0.2763932023],
-                    [0.2763932023, 0.7236067977, 0.],
-                    [0.2763932023, 0., 0.7236067977]]) 
-    
-    x = r_A[0]*points[:,0] + r_B[0]*points[:,1] + r_C[0]*points[:,2]
-    y = r_A[1]*points[:,0] + r_B[1]*points[:,1] + r_C[1]*points[:,2]
-    
-    w = np.array([ 0.9, 0.1/3, 0.1/3, 0.1/3, 1./6, 1./6, 1./6, 1./6, 1./6, 1./6 ])
-    z = f(x,y)
-    I = np.sum(z*w)
-    return J*I 
 
 
 
@@ -54,8 +29,11 @@ class TrefftzSpace:
     actual functions.
     '''
 
-    def __init__( self, Omega, DOF_per_element : tuple[int], kappa : dict[str, float], th0=0 ):
+    def __init__( self, Domain, DOF_per_element : tuple[int], kappa : dict[str, float], th0=0 ):
+        Omega = Domain.Omega
         self.Omega = Omega
+        self.absorbing = Domain.scatterer_type == ScattererType.ABSORBING
+        self.ScattererTriangles = Domain.ScattererTriangles
         self.N_trig = len(Omega.faces)
         # self.kappa = np.zeros(self.N_trig, dtype=np.float64)
         self.kappa = np.zeros(self.N_trig, dtype=np.complex128)
@@ -187,21 +165,7 @@ def Gamma_term(phi, psi, edge, d_1):
     return I
 
 
-# def Inner_term(phi, psi, edge, a, b):
 
-#     d_m = psi.d
-#     d_n = phi.d
-#     k = phi.k
-
-    
-#     M = edge.M
-#     N = edge.N
-#     T = edge.T
-#     l = edge.l
-
-#     I = -1/2*1j*k*l*(dot(d_m,N) + dot(d_n,N) + 2*b*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
-
-#     return I
 
 def Inner_term_general(phi, psi, edge, k, a, b):
 
@@ -290,9 +254,12 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
     return  I1 + I2 + I3
 
 
-def absorption_term( phi, psi, r_A, r_B, r_C, k, a, b):
-    n_I = np.imag()   
-    I = 2*1j*k**2*fek3_int(lambda x, y : np.exp(1j*k*n), r_A=r_A, r_B=r_B, r_C=r_C)
+def absorption_term( phi, psi, r_A, r_B, r_C, k):
+    k_i = phi.k
+    d_n = phi.d
+    d_m = psi.d
+    N = k_i**2 / k**2
+    I = 2*1j*k**2*np.imag(N)*int2D(lambda x, y : np.exp(1j*k_i*dot(d_n - d_m,np.array((x,y)))), r_A=r_A, r_B=r_B, r_C=r_C)
 
     return I
     
@@ -434,12 +401,19 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                                 i_index.append(m)
                                 j_index.append(n)
                                 values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
-                        
-    # values = np.array(values)
-    # i_index = np.array(i_index)
-    # j_index = np.array(j_index)
-    
-    
+    if V.absorbing:                    
+        for T in V.ScattererTriangles:
+            r_A, r_B, r_C = T.A, T.B, T.C
+            T_index = T.index
+            for n in V.DOF_range[T_index]:
+                phi = Phi[n]
+                for m in V.DOF_range[T_index]:
+                    psi = Psi[m]
+                    i_index.append(m)
+                    j_index.append(n)
+                    values.append(absorption_term( phi, psi, r_A, r_B, r_C, k))
+
+          
     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
     A = csr_matrix(A)
 
