@@ -12,7 +12,7 @@ from numpy import sinc, cos
 
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
-
+tfun_dtype = np.dtype()
 
 class TrefftzSpace:
     '''Defines a finite dimensional Trefftz space given

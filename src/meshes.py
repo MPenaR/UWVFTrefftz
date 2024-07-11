@@ -3,6 +3,8 @@
 from enum import Enum, auto
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
+import numpy as np 
+
 
 class ScattererType(Enum):
     '''Enumeration of the different scatterer types.'''
@@ -11,6 +13,11 @@ class ScattererType(Enum):
     SOUND_HARD = auto()
 
 
+
+class vecMesh:
+
+    def __init__(self):
+        self.
 
 
 
