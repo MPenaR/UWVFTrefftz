@@ -9,8 +9,10 @@ matplotlib = "*"
 ipykernel = "*"
 ngsolve = "*"
 scipy = "*"
+pip = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3.11"

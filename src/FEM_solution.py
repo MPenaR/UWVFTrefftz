@@ -8,9 +8,9 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
 
 
     porder=5  # polynomial FEM order
-    delta_PML = 2 * 2*np.pi/k
+    delta_PML = 3 * 2*np.pi/k
     geo = SplineGeometry()
-    hmaxf = 2*np.pi/k / 10
+    hmaxf = 2*np.pi/k / 50
     p1,p2,p3,p4 = [ geo.AppendPoint(x,y) for x,y in [ (-R,0), (R,0),(R,H),(-R,H)]]
     geo.Append (["line", p1, p2],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p2, p3],leftdomain=1,rightdomain=2)
@@ -41,7 +41,7 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
 
     fes = H1(mesh, order=porder, complex=True, dirichlet="dirichlet|PML")
 
-    factor = 0.1
+    factor = 0.5
 
     mesh.SetPML(pml.HalfSpace(point=(R,H/2),normal=(1,0),alpha=factor*(4+2*1j)),
                     "PML_right")
