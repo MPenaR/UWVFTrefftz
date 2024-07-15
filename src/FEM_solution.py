@@ -1,10 +1,14 @@
 # Waveguide with a scatterer inside
-def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=None):
+from domains import ScattererShape
+
+def u_FEM_SOUNDSOFT(R = 10., H=2., params = { "rad" : 0.2, "c" : (0., 1.)}, scatterer_shape = ScattererShape.CIRCLE, n=0, k=8., X=None, Y=None):
 
     from netgen.geom2d import SplineGeometry
     from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, grad, CoefficientFunction
     from ngsolve import exp, cos, sqrt, GridFunction, BND, LinearForm, x, y
     import numpy as np
+
+
 
 
     porder=5  # polynomial FEM order
@@ -16,7 +20,19 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
     geo.Append (["line", p2, p3],leftdomain=1,rightdomain=2)
     geo.Append (["line", p3, p4],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p4, p1],leftdomain=1,rightdomain=3)
-    geo.AddCircle(c, rad, leftdomain=0, rightdomain=1,bc="dirichlet")
+
+    match scatterer_shape:
+        case ScattererShape.CIRCLE:
+            rad = params["rad"]
+            c = params["c"]
+            geo.AddCircle(c, rad, leftdomain=0, rightdomain=1,bc="dirichlet")
+
+        case ScattererShape.RECTANGLE:
+            height = params["height"]
+            width = params["width"]
+            c = params["c"]
+            geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=0, rightdomain=1, bc="dirichlet")
+
     p5,p6 = [ geo.AppendPoint(x,y) for x,y in [ (-R-delta_PML,0),
                                                 (-R-delta_PML,H)]]
     
@@ -81,15 +97,27 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
         y = Y[:,0]
         
         U_tot = np.full_like(X,fill_value=np.nan, dtype=np.complex128)
+        match scatterer_shape:
+            case ScattererShape.CIRCLE:
+                for i in range(Ny):
+                    for j in range(Nx):
+                        x_ = x[j]
+                        y_ = y[i]
+                        if (x_ - c[0])**2 + (y_ - c[1])**2 <= rad**2:
+                            pass
+                        else:
+                            U_tot[i,j] = u_tot(mesh(x_,y_))
 
-        for i in range(Ny):
-            for j in range(Nx):
-                x_ = x[j]
-                y_ = y[i]
-                if (x_ - c[0])**2 + (y_ - c[1])**2 <= rad**2:
-                    pass
-                else:
-                    U_tot[i,j] = u_tot(mesh(x_,y_))
+            case ScattererShape.RECTANGLE:
+                for i in range(Ny):
+                    for j in range(Nx):
+                        x_ = x[j]
+                        y_ = y[i]
+                        if np.abs(x_ - c[0]) <= width/2 and np.abs(y_ - c[1]) <= height/2:
+                            pass
+                        else:
+                            U_tot[i,j] = u_tot(mesh(x_,y_))
+            
         return U_tot
     else:
         return u_tot, mesh
