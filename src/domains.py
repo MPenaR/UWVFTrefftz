@@ -119,7 +119,7 @@ class Waveguide:
         
         # return self.Omega, self.Edges
         return  
-    def plot_field(self, X, Y, Z, show_edges = False, ax = None):
+    def plot_field(self, X, Y, Z, show_edges = False, ax = None, source = None):
         if ax is None: 
             _, ax = plt.subplots( figsize=(15,3))
         mask = self.in_scatterer(X.ravel(),Y.ravel())
@@ -145,6 +145,10 @@ class Waveguide:
             ax.set_xlim([0,self.R])
         else:
             ax.set_xlim([-self.R,self.R])
+
+        if source is not None:
+            ax.plot(source[0], source[1], '+r')
+            ax.set_xlim([source[0]-0.1,self.R])
         ax.set_ylim([0,H])
         ax.set_xlabel('$x_1$')
         ax.set_ylabel('$\\mathbf{\\hat{x}}$')

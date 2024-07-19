@@ -1,6 +1,6 @@
 
 import numpy as np
-from numpy import dot, pi, exp, sqrt, sin, abs, conj
+from numpy import dot, pi, exp, sqrt, abs, conj
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
@@ -185,22 +185,6 @@ def Gamma_term(phi, psi, edge, d_1):
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
     return I
 
-
-# def Inner_term(phi, psi, edge, a, b):
-
-#     d_m = psi.d
-#     d_n = phi.d
-#     k = phi.k
-
-    
-#     M = edge.M
-#     N = edge.N
-#     T = edge.T
-#     l = edge.l
-
-#     I = -1/2*1j*k*l*(dot(d_m,N) + dot(d_n,N) + 2*b*dot(d_m,N)*dot(d_n,N) + 2*a)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
-
-#     return I
 
 def Inner_term_general(phi, psi, edge, k, a, b):
 
@@ -424,12 +408,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                                 k = psi.k
                                 i_index.append(m)
                                 j_index.append(n)
-                                values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
-                        
-    # values = np.array(values)
-    # i_index = np.array(i_index)
-    # j_index = np.array(j_index)
-    
+                                values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))    
     
     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
     A = csr_matrix(A)
@@ -529,5 +508,34 @@ def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=20):
                     b[m] += Green_RHS(psi, E, k, H, a, x_0, y_0, modes=modes, n_modes=M)
     return b
 
+
+def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
+    N_DOF = V.N_DOF
+    b = np.zeros((N_DOF), dtype=np.complex128)
+    Psi = V.TestFunctions
+    N_Edges = len(Edges)
+    if np.isscalar(d_2):
+        d_2_vec = np.full(N_Edges, d_2)
+    else:
+        d_2_vec = d_2
+
+
+    for (E, d_2) in zip(Edges, d_2_vec):
+        match E.Type:                
+            case EdgeType.SIGMA_L:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+
+                    b[m] += -1/(2*1j*k*H)*exp(-1j*k*x_0)*mode_RHS(psi, E, k, H, d_2, t=0)
+
+                    for t in range(1,M):
+                        betaH = np.emath.sqrt( (k*H)**2 - (t*pi)**2)
+                        b[m] += -1/(1j*betaH)*exp(-1j*betaH*x_0/H)*cos(t*pi*y_0/H)*mode_RHS(psi, E, k, H, d_2, t=t)
+
+
+# G = -np.sum( norm*exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (2*1j*beta_n) * cos( pi*np.outer(XY[:,1],n)/H) * cos(n* pi*y_0/H), -1)
+
+    return b
 
 

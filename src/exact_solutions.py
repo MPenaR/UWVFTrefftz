@@ -43,10 +43,10 @@ def GreenFunctionModes(k, H, XY, x_0, y_0, M = 20):
     return G
 
 
-def GreenFunctionMixed(k, H, XY, x_0, y_0, M = 20):
-    G_modes = GreenFunctionModes(k, H, XY, x_0, y_0, M = 20)
-    G_images = GreenFunctionImages(k, H, XY, x_0, y_0, M = 20)
-    return G
+# def GreenFunctionMixed(k, H, XY, x_0, y_0, M = 20):
+#     G_modes = GreenFunctionModes(k, H, XY, x_0, y_0, M = 20)
+#     G_images = GreenFunctionImages(k, H, XY, x_0, y_0, M = 20)
+#     return G
 
 
 def Mode(k : np.float64, H : np.float64, XY : real_array, t : int):
