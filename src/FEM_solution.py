@@ -1,12 +1,11 @@
 # Waveguide with a scatterer inside
+from netgen.geom2d import SplineGeometry
+from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, SymbolicLFI, grad, CoefficientFunction
+from ngsolve import exp, cos, sqrt, GridFunction, BND, LinearForm, x, y
+import numpy as np
+
+
 def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=None):
-
-    from netgen.geom2d import SplineGeometry
-    from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, grad, CoefficientFunction
-    from ngsolve import exp, cos, sqrt, GridFunction, BND, LinearForm, x, y
-    import numpy as np
-
-
     porder=5  # polynomial FEM order
     delta_PML = 2 * 2*np.pi/k
     geo = SplineGeometry()
@@ -77,15 +76,15 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
 
     if X is not None:
         Ny, Nx = X.shape
-        x = X[0,:]
-        y = Y[:,0]
+        x_vec = X[0,:]
+        y_vec = Y[:,0]
         
         U_tot = np.full_like(X,fill_value=np.nan, dtype=np.complex128)
 
         for i in range(Ny):
             for j in range(Nx):
-                x_ = x[j]
-                y_ = y[i]
+                x_ = x_vec[j]
+                y_ = y_vec[i]
                 if (x_ - c[0])**2 + (y_ - c[1])**2 <= rad**2:
                     pass
                 else:
@@ -96,10 +95,10 @@ def u_FEM_SOUNDSOFT(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k=8., X=None, Y=
 
 def u_FEM_PENETRABLE(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k_e=8., k_i = 12.,  X=None, Y=None):
 
-    from netgen.geom2d import SplineGeometry
-    from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, grad, CoefficientFunction
-    from ngsolve import exp, cos, sqrt, GridFunction, BND, LinearForm, x, y, SymbolicLFI
-    import numpy as np
+    # from netgen.geom2d import SplineGeometry
+    # from ngsolve import Mesh, H1, pml, BilinearForm, SymbolicBFI, grad, CoefficientFunction
+    # from ngsolve import exp, cos, sqrt, GridFunction, BND, LinearForm, x, y, SymbolicLFI
+    # import numpy as np
 
 
     porder=5  # polynomial FEM order
@@ -176,15 +175,15 @@ def u_FEM_PENETRABLE(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k_e=8., k_i = 1
 
     if X is not None:
         Ny, Nx = X.shape
-        x = X[0,:]
-        y = Y[:,0]
+        x_vec = X[0,:]
+        y_vec = Y[:,0]
         
         U_tot = np.zeros_like(X, dtype=np.complex128)
 
         for i in range(Ny):
             for j in range(Nx):
-                x_ = x[j]
-                y_ = y[i]
+                x_ = x_vec[j]
+                y_ = y_vec[i]
                 U_tot[i,j] = u_tot(mesh(x_,y_))
         return U_tot
     else:
@@ -192,6 +191,7 @@ def u_FEM_PENETRABLE(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k_e=8., k_i = 1
 
 
 if __name__=='__main__':
+    from ngsolve import VTKOutput
     R = 10
     H = 1
     rad = 0.2
