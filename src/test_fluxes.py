@@ -1,4 +1,4 @@
-from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS, exact_RHS_broken, Sigma_broken
+from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS
 
 
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
