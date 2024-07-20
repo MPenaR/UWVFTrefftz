@@ -103,10 +103,10 @@ def u_FEM_PENETRABLE(R = 10., H=2., rad = 0.2, c = (0.,1.), n=0, k_e=8., k_i = 1
 
 
     porder=5  # polynomial FEM order
-    delta_PML = 2 * 2*np.pi/k_e
+    delta_PML = 4 * 2*np.pi/k_e
     geo = SplineGeometry()
     hmax_e = 2*np.pi/k_e / 10
-    hmax_i = 2*np.pi/k_i / 10
+    hmax_i = 2*np.pi/np.real(k_i) / 10
     p1,p2,p3,p4 = [ geo.AppendPoint(x,y) for x,y in [ (-R,0), (R,0),(R,H),(-R,H)]]
     geo.Append (["line", p1, p2],leftdomain=1,rightdomain=0,bc="pipe")
     geo.Append (["line", p2, p3],leftdomain=1,rightdomain=2)

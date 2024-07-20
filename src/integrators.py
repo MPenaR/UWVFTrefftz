@@ -5,7 +5,7 @@ def fekete3(f, r_A=(0,0), r_B=(1,0), r_C=(0,1)):
     ABy = r_B[1] - r_A[1]
     ACx = r_C[0] - r_A[0]
     ACy = r_C[1] - r_A[1]
-    S = 0.5 * (ABx*ACy - ABy*ACx)
+    S = 0.5 * np.abs(ABx*ACy - ABy*ACx)
     J = S/2.
     points = np.array([[1./3, 1./3, 1./3],
                     [0., 0., 1.],
