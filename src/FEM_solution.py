@@ -219,13 +219,18 @@ def FEM_solution(R : np.float64, H : np.float64,
                  scatterer_shape : ScattererShape,
                  scatterer_type : ScattererType,
                  n : np.int64,
-                 k : np.float64, 
+                 k_e : np.float64,
+                 k_i : np.float64 | None, 
                  polynomial_order = 5,
-                 X=None, Y=None):
+                 X=real_array, Y=real_array):
     """Uses a PML and a very fine mesh to solve the problem by the finite element method."""
 
-    delta_PML = 3 * 2*np.pi/k
-    hmaxf = 2*np.pi/k / 50
+    delta_PML = 3 * 2*np.pi/k_e
+    
+    hmax_e = 2*np.pi/k_e / 10
+    if scatterer_type == ScattererType.PENETRABLE:
+        hmax_i = 2*np.pi/k_i / 10
+
 
 # perhaps clean this
     geo = SplineGeometry()
@@ -275,9 +280,9 @@ def FEM_solution(R : np.float64, H : np.float64,
         case ScattererType.PENETRABLE:
                 geo.SetMaterial(4, "scatterer")
                 geo.SetDomainMaxH(4, hmax_i) 
-    geo.SetDomainMaxH(3,hmaxf)
-    geo.SetDomainMaxH(2,hmaxf)
-    geo.SetDomainMaxH(1,hmaxf)
+    geo.SetDomainMaxH(3,hmax_e)
+    geo.SetDomainMaxH(2,hmax_e)
+    geo.SetDomainMaxH(1,hmax_e)
     ngmesh=geo.GenerateMesh()
     mesh = Mesh(ngmesh)
 
@@ -346,36 +351,44 @@ def FEM_solution(R : np.float64, H : np.float64,
     u_tot = u_sc + u_inc
     print(f'NDOF: {V.ndof}')
 
-    if X is not None:
-        Ny, Nx = X.shape
-        x_vec = X[0,:]
-        y_vec = Y[:,0]
-        
-        U_tot = np.full_like(X,fill_value=np.nan, dtype=np.complex128)
-        match scatterer_shape:
-            case ScattererShape.CIRCLE:
-                for i in range(Ny):
-                    for j in range(Nx):
-                        x_ = x_vec[j]
-                        y_ = y_vec[i]
-                        if (x_ - c[0])**2 + (y_ - c[1])**2 <= rad**2:
-                            pass
-                        else:
-                            U_tot[i,j] = u_tot(mesh(x_,y_))
+    Ny, Nx = X.shape
+    x_vec = X[0,:]
+    y_vec = Y[:,0]
+    
 
-            case ScattererShape.RECTANGLE:
-                for i in range(Ny):
-                    for j in range(Nx):
-                        x_ = x_vec[j]
-                        y_ = y_vec[i]
-                        if np.abs(x_ - c[0]) <= width/2 and np.abs(y_ - c[1]) <= height/2:
-                            pass
-                        else:
-                            U_tot[i,j] = u_tot(mesh(x_,y_))
-            
-        return U_tot
-    else:
-        return u_tot, mesh
+    match scatterer_type:
+        case ScattererType.PENETRABLE:
+            U_tot = np.zeros_like(X, dtype=np.complex128)
+
+            for i in range(Ny):
+                for j in range(Nx):
+                    x_ = x_vec[j]
+                    y_ = y_vec[i]
+                    U_tot[i,j] = u_tot(mesh(x_,y_))
+        case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
+            U_tot = np.full_like(X,fill_value=np.nan, dtype=np.complex128)
+            match scatterer_shape:
+                case ScattererShape.CIRCLE:
+                    for i in range(Ny):
+                        for j in range(Nx):
+                            x_ = x_vec[j]
+                            y_ = y_vec[i]
+                            if (x_ - c[0])**2 + (y_ - c[1])**2 <= rad**2:
+                                pass
+                            else:
+                                U_tot[i,j] = u_tot(mesh(x_,y_))
+
+                case ScattererShape.RECTANGLE:
+                    for i in range(Ny):
+                        for j in range(Nx):
+                            x_ = x_vec[j]
+                            y_ = y_vec[i]
+                            if np.abs(x_ - c[0]) <= width/2 and np.abs(y_ - c[1]) <= height/2:
+                                pass
+                            else:
+                                U_tot[i,j] = u_tot(mesh(x_,y_))
+        
+    return U_tot
 
 
 
