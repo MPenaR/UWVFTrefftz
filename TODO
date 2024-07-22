@@ -1,0 +1,6 @@
+- check FEM solution both in absorbing and in main (and try to merge)
+- RESCALE basis functions in merge
+- check for vectorize evaluation in FEM solution
+- fine tune "paper_plots"
+- add fine_mesh_barrier plots
+- check if the projection and the projection error are coherent now

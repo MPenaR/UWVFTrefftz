@@ -67,7 +67,11 @@ class Waveguide:
 
     def add_scatterer( self, scatterer_shape : ScattererShape, scatterer_type : ScattererType, params : list) :
         self.scatterer_type = scatterer_type
-        kwargs = {"edgecolor" : "k", "facecolor" : "grey", "linewidth" : 4}
+        match scatterer_type:
+            case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
+                kwargs = {"edgecolor" : "k", "facecolor" : "grey", "linewidth" : 2}
+            case ScattererType.PENETRABLE:
+                kwargs = {"edgecolor" : "k", "facecolor" : "None", "linewidth" : 2}
         match scatterer_shape:
             case ScattererShape.CIRCLE:
                 c, r = params
@@ -122,8 +126,10 @@ class Waveguide:
     def plot_field(self, X, Y, Z, show_edges = False, ax = None, source = None):
         if ax is None: 
             _, ax = plt.subplots( figsize=(15,3))
-        mask = self.in_scatterer(X.ravel(),Y.ravel())
-        Z = np.where(mask,np.nan,Z.ravel()).reshape(Z.shape)
+        match self.scatterer_type:
+            case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
+                mask = self.in_scatterer(X.ravel(),Y.ravel())
+                Z = np.where(mask,np.nan,Z.ravel()).reshape(Z.shape)
         ax.pcolormesh(X, Y, Z, shading="gouraud")
         for patch in self.scatterer_patchs:
             ax.add_patch(patch())
