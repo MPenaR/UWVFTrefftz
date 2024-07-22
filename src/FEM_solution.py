@@ -15,7 +15,7 @@ def FEM_solution(R : np.float64, H : np.float64,
                  scatterer_type : ScattererType,
                  n : np.int64,
                  k_e : np.float64,
-                 k_i : np.float64 | None, 
+                 k_i : np.float64 | np.complex128, 
                  polynomial_order = 5,
                  X=real_array, Y=real_array):
     """Uses a PML and a very fine mesh to solve the problem by the finite element method."""
@@ -24,7 +24,7 @@ def FEM_solution(R : np.float64, H : np.float64,
     
     hmax_e = 2*np.pi/k_e / 10
     if scatterer_type == ScattererType.PENETRABLE:
-        hmax_i = 2*np.pi/k_i / 10
+        hmax_i = 2*np.pi/np.real(k_i) / 10
 
 
 # perhaps clean this
@@ -160,7 +160,6 @@ def FEM_solution(R : np.float64, H : np.float64,
                     x_ = x_vec[j]
                     y_ = y_vec[i]
                     U_tot[i,j] = u_tot(mesh(x_,y_))
-            print('hi')
         case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
             U_tot = np.full_like(X,fill_value=np.nan, dtype=np.complex128)
             match scatterer_shape:
@@ -187,18 +186,23 @@ def FEM_solution(R : np.float64, H : np.float64,
     return U_tot
 
 
-
-
-
-
 if __name__=='__main__':
     from ngsolve import VTKOutput
     R = 10
     H = 1
     rad = 0.2
 
+    Ny = 10
+    Nx = int(R/H)*Ny
 
-    u_tot, mesh = u_FEM_SOUNDSOFT(R=R, H=H, params = { "rad" : 0.2, "c" : (0., 1.)}, n=2)
+
+    x = np.linspace(-R,R,Nx)
+    y = np.linspace(0,R,Ny)
+    X, Y = np.meshgrid(x,y)
+
+
+    u_tot, mesh = FEM_solution(R=R, H=H, scatterer_shape=ScattererShape.CIRCLE, scatterer_type=ScattererType.SOUND_SOFT, n=2,
+                               k_e=8, k_i=8,X=X, Y = Y )
 
 
     vtk = VTKOutput(ma=mesh, coefs=[u_tot.real, sqrt(u_tot.real**2 + u_tot.imag**2)], names=['Re(u_tot)', '|u_tot|'])

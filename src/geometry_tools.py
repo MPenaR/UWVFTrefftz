@@ -6,7 +6,6 @@ from numpy.linalg import norm
 from labels import EdgeType
 
 def computeEdgeType(Omega, edge):
-    rad = 0.2
         
     if edge.nr in [ e.edges[0].nr for e in Omega.Boundaries("Gamma").Elements()]:
         return EdgeType.GAMMA
@@ -41,7 +40,6 @@ class Edge:
         Q = np.array( Omega.vertices[edge.vertices[1].nr].point)        
         self.P = P
         self.Q = Q
- #       self.c = c
         self.Type = computeEdgeType(Omega,edge)
 
         self.l = norm(Q-P)
@@ -52,13 +50,10 @@ class Edge:
         self.Triangles = self.setTriangles(Omega,edge)
 
 
-
-#        probably they should be properties with getters and setters, fix later    
-
+    #probably they should be properties with getters and setters, fix later    
     def getNormal(self, Omega, edge):
         _, py = self.P 
         tx, ty = self.T
-#        c = self.c
 
         match self.Type: #maybe use gamma_up and gamma_down
             
@@ -67,7 +62,6 @@ class Edge:
                     return np.array([0,-1.])
                 else: 
                     return np.array([0,1.])
-                #return np.array([0., py / np.abs(py)])
             
             case EdgeType.SIGMA_L | EdgeType.COVER:
                 return np.array([-1., 0.])
@@ -76,21 +70,14 @@ class Edge:
                 return np.array([1., 0.])
             
             case EdgeType.D_OMEGA:
-                # N = np.array([ -ty, tx] ) 
-                # if dot(self.M - np.array(c),N) > 0:  # NEED TO FIX THIS
-                #     N = -N
-                # return N
                 V = np.array(Omega.vertices[({v.nr for v in Omega.faces[edge.faces[0].nr].vertices} - {v.nr for v in edge.vertices}).pop()].point)
                 N = np.array([ -ty, tx] ) 
                 if dot(V - self.M,N) > 0:  # NEED TO FIX THIS
                     N = -N
                 return N
 
-
-
             case _:
                 return np.array([ -ty, tx] )
-
 
     # def getTangent(self):
     #     T = (self.Q - self.P) / self.l
@@ -108,3 +95,12 @@ class Edge:
                 return Triangles
             return [Triangles[1], Triangles[0]]
 
+class Triangle:
+    "holds al the information for a Triangle, namely r_A, r_B and r_C"
+    def __init__(self, Omega, f):
+        self.A = np.array(Omega.vertices[f.vertices[0].nr].point)
+        self.B = np.array(Omega.vertices[f.vertices[1].nr].point)
+        self.C = np.array(Omega.vertices[f.vertices[2].nr].point)
+
+        self.M = 1/3*( self.A + self.B + self.C)
+        self.index = f.nr
