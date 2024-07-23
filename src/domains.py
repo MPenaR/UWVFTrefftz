@@ -78,7 +78,7 @@ class Waveguide:
             case ScattererShape.CIRCLE:
                 c, r = params
 
-                self.scatterer_markers.append(lambda  x, y, c=c, r=r: (x-c[0])**2 + (y-c[1])**2 <= r**2)
+                self.scatterer_markers.append(lambda  x, y, c=c, r=r: (x-c[0])**2 + (y-c[1])**2 < r**2)
                 self.scatterer_patchs.append( lambda c=c, r=r, kwargs=kwargs : Circle(xy=c, radius=r, **kwargs))
 
                 match scatterer_type:
@@ -90,7 +90,7 @@ class Waveguide:
             case ScattererShape.RECTANGLE:
                 c, width, height = params
 
-                self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])<= width/2, np.abs(y - c[1])<= height/2 ))
+                self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])< width/2, np.abs(y - c[1]) < height/2 ))
                 self.scatterer_patchs.append( lambda c=c, width=width, height=height, kwargs=kwargs :Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
                 
                 match scatterer_type:
@@ -152,8 +152,7 @@ class Waveguide:
                     ax.add_patch(patch())
             case ScattererType.PENETRABLE | ScattererType.ABSORBING:
                 for patch in self.scatterer_patchs:
-                    pass
-                    # ax.add_patch(patch(penetrable=True))
+                    ax.add_patch(patch())
         if self.bump:
             h_b = 0.1*np.sqrt(2)*self.H
             kwargs = {"edgecolor" : "k", "facecolor" : "grey", "linewidth" : 4}
