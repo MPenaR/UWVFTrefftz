@@ -35,7 +35,7 @@ class TrefftzSpace:
         self.absorbing = Domain.scatterer_type == ScattererType.ABSORBING
         self.ScattererTriangles = Domain.ScattererTriangles
         self.N_trig = len(Omega.faces)
-        self.kappa = np.zeros(self.N_trig, dtype=np.float64)
+        self.kappa = np.zeros(self.N_trig, dtype=np.complex128)
         
         self._elements = list(Omega.Elements())
         for e in Omega.Elements():
@@ -258,7 +258,7 @@ def absorption_term( phi, psi, r_A, r_B, r_C, k):
     d_n = phi.d
     d_m = psi.d
     N = k_i**2 / k**2
-    I = 2*1j*k**2*np.imag(N)*int2D(lambda x, y : np.exp(1j*k_i*dot(d_n - d_m,np.array((x,y)))), r_A=r_A, r_B=r_B, r_C=r_C)
+    I = -2*1j*k**2*np.imag(N)*int2D(lambda x, y : np.exp(1j*k_i*dot(d_n - d_m,np.array((x,y)))), r_A=r_A, r_B=r_B, r_C=r_C)
 
     return I
     
