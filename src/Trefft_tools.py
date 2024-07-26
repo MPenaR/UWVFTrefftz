@@ -4,7 +4,7 @@ from numpy import dot, pi, exp, sqrt, abs, conj
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
-from scipy.sparse import coo_matrix, csr_matrix, spmatrix
+from scipy.sparse import coo_matrix, csr_matrix, spmatrix, bsr_array
 from geometry_tools import Edge
 from numpy import sinc, cos
 from numpy import trapz as Int
@@ -12,6 +12,12 @@ from exact_solutions import GreenFunctionImages, GreenFunctionModes
 from integrators import fekete3 as int2D
 from domains import ScattererType
 
+
+import numpy.typing as npt
+
+
+real_array = npt.NDArray[np.floating]
+complex_array = npt.NDArray[np.complexfloating]
 
 
 
@@ -162,6 +168,35 @@ def Gamma_term(phi, psi, edge, d_1):
 
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
     return I
+
+def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
+                 d : real_array, d_d : real_array, d_1 : np.floating) -> complex_array:
+    I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))
+    return I
+
+
+
+
+
+# lets assume they are sorted, i.e. [e_ID] appears sorted 
+def Gamma_global(k : complex, N_elems : int, N_wall_sides : int,  Edges : real_array,
+                 d : real_array, d_d : real_array, d_1 : np.floating) -> complex_array:
+    N_p = d_d.shape[0]
+    data = np.zeros((N_wall_sides, N_p, N_p), dtype=np.complex128)
+    indices = np.array([e.Triangles[0] for e in Edges])
+    indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
+                               np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
+                               np.full(N_elems - indices[-1], len(indices))])
+
+
+    for (i, edge) in enumerate(Edges):
+        data[i,:,:] = Gamma_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, d_1=d_1 )
+    G = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
+
+    # G = bsr_array((data, ij), blocksize=(N_p,N_p), shape=(N_elems*N_p, N_elems*N_p))
+    
+    return G
+
 
 
 
@@ -536,7 +571,63 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
                         betaH = np.emath.sqrt( (k*H)**2 - (t*pi)**2)
                         b[m] += -1/(1j*betaH)*exp(-1j*betaH*x_0/H)*cos(t*pi*y_0/H)*mode_RHS(psi, E, k, H, d_2, t=t)
 
-
-# G = -np.sum( norm*exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (2*1j*beta_n) * cos( pi*np.outer(XY[:,1],n)/H) * cos(n* pi*y_0/H), -1)
-
     return b
+
+
+def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge], 
+                   H : float, k=0.8, N_p = 3, d_1 = 1/2) :
+
+
+    N_DOF = V.N_DOF
+
+    values = []
+    i_index = []
+    j_index = []
+
+
+    N_Edges = len(Edges)
+
+
+    Phi = V.TrialFunctions
+    Psi = V.TestFunctions # currently the same spaces 
+
+
+    for E in Edges:
+        match E.Type:
+            case EdgeType.GAMMA:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    for n in V.DOF_range[K]:
+                        phi = Phi[n]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Gamma_term(phi, psi, E, d_1))
+          
+    A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
+    A = A.toarray()
+    wall_edges = []
+    for E in Edges:
+        match E.Type:
+            case EdgeType.GAMMA:
+                wall_edges.append(E)
+            case _:
+                pass
+    
+    wall_edges.sort(key= lambda e : e.Triangles[0])
+
+    N_wall_sides = len(wall_edges)
+
+    d_d = np.zeros( [N_p,N_p,2], dtype=np.float64)
+    d = np.zeros( [N_p,2], dtype=np.float64)
+    
+    thetas = np.linspace(0,2*np.pi,N_p,endpoint=False)
+    d_d[:,:,0] = np.subtract.outer(np.cos(thetas), np.cos(thetas)).transpose()
+    d_d[:,:,1] = np.subtract.outer(np.sin(thetas), np.sin(thetas)).transpose()
+    d[:,0] = np.cos(thetas)
+    d[:,1] = np.sin(thetas)
+
+    A_block = Gamma_global(k =k, N_elems = V.N_trig, N_wall_sides = N_wall_sides,  Edges = wall_edges, d=d, d_d=d_d, d_1=d_1 )
+
+    return A, A_block
+
