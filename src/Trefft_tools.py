@@ -212,9 +212,6 @@ def Inner_PP_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : re
     for (i, edge) in enumerate(Edges):
         data[i,:,:] = Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
     G = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
-
-    # G = bsr_array((data, ij), blocksize=(N_p,N_p), shape=(N_elems*N_p, N_elems*N_p))
-    
     return G
 
 def Inner_MM_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : real_array,
@@ -230,11 +227,27 @@ def Inner_MM_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : re
     for (i, edge) in enumerate(Edges):
         data[i,:,:] = -Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
     G = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
-
-    # G = bsr_array((data, ij), blocksize=(N_p,N_p), shape=(N_elems*N_p, N_elems*N_p))
-    
     return G
+# bsr works block by block. indprt must allways have N+1 items where N is the number of block rows
+# indices and data must have the same number of items, as they locate the blocks for each "block row"
 
+
+# plus for m, minus for n
+def Inner_PM_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : real_array,
+                 d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+    N_p = d_d.shape[0]
+    data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
+    indices_M = np.array([e.Triangles[1] for e in Edges])
+    indices_P = np.array([e.Triangles[0] for e in Edges])
+    indptr =  np.concatenate([ np.zeros(indices_P[0]+1, dtype=np.int32), 
+                                np.arange(1,len(indices_P)).repeat(indices_P[1:] - indices_P[:-1]), 
+                                np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
+
+    #  [ ., ., ., 3, 4, ., 6, ., 8, 8, ., .] -> [ 0, 0, 0, 0, 1, 2, 2, 3, 3, 5, 5, 5 ]
+    for (i, edge) in enumerate(Edges):
+        data[i,:,:] = Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+    G = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
+    return G
 
 
 
@@ -650,13 +663,20 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
                 #         i_index.append(m)
                 #         j_index.append(n)
                 #         values.append(Inner_term_general(phi, psi, E, k, a=a, b=b))
+                # for n in V.DOF_range[K_minus]:
+                #     phi = Phi[n]
+                #     for m in V.DOF_range[K_minus]:
+                #         psi = Psi[m]
+                #         i_index.append(m)
+                #         j_index.append(n)
+                #         values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
                 for n in V.DOF_range[K_minus]:
                     phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
+                    for m in V.DOF_range[K_plus]:
                         psi = Psi[m]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
+                        values.append(Inner_term_general(phi, psi, E, k, -a, -b))
 
           
     A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
@@ -693,6 +713,10 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
     I_block = Inner_MM_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+
+    inner_edges.sort(key= lambda e : e.Triangles[0])
+    I_block = Inner_PM_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+
 
 
     return A, I_block
