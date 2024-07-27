@@ -659,52 +659,54 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
     Psi = V.TestFunctions # currently the same spaces 
 
 
-    for E in Edges:
-        match E.Type:
-            # case EdgeType.GAMMA:
-            #     K = E.Triangles[0]
-            #     for m in V.DOF_range[K]:
-            #         psi = Psi[m]
-            #         for n in V.DOF_range[K]:
-            #             phi = Phi[n]
-            #             i_index.append(m)
-            #             j_index.append(n)
-            #             values.append(Gamma_term(phi, psi, E, d_1))
-            case EdgeType.INNER:
-                K_plus, K_minus = E.Triangles
-                # for n in V.DOF_range[K_plus]:
-                #     phi = Phi[n]
-                #     for m in V.DOF_range[K_plus]:
-                #         psi = Psi[m]
-                #         i_index.append(m)
-                #         j_index.append(n)
-                #         values.append(Inner_term_general(phi, psi, E, k, a=a, b=b))
-                # for n in V.DOF_range[K_minus]:
-                #     phi = Phi[n]
-                #     for m in V.DOF_range[K_minus]:
-                #         psi = Psi[m]
-                #         i_index.append(m)
-                #         j_index.append(n)
-                #         values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
-                # for n in V.DOF_range[K_minus]:
-                #     phi = Phi[n]
-                #     for m in V.DOF_range[K_plus]:
-                #         psi = Psi[m]
-                #         i_index.append(m)
-                #         j_index.append(n)
-                #         values.append(Inner_term_general(phi, psi, E, k, -a, -b))
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(-Inner_term_general(phi, psi, E, k, a, b))
+    # for E in Edges:
+    #     match E.Type:
+    #         case EdgeType.GAMMA:
+    #             K = E.Triangles[0]
+    #             for m in V.DOF_range[K]:
+    #                 psi = Psi[m]
+    #                 for n in V.DOF_range[K]:
+    #                     phi = Phi[n]
+    #                     i_index.append(m)
+    #                     j_index.append(n)
+    #                     values.append(Gamma_term(phi, psi, E, d_1))
+    #         case EdgeType.INNER:
+    #             K_plus, K_minus = E.Triangles
+    #             for n in V.DOF_range[K_plus]:
+    #                 phi = Phi[n]
+    #                 for m in V.DOF_range[K_plus]:
+    #                     psi = Psi[m]
+    #                     i_index.append(m)
+    #                     j_index.append(n)
+    #                     values.append(Inner_term_general(phi, psi, E, k, a=a, b=b))
+    #             for n in V.DOF_range[K_minus]:
+    #                 phi = Phi[n]
+    #                 for m in V.DOF_range[K_minus]:
+    #                     psi = Psi[m]
+    #                     i_index.append(m)
+    #                     j_index.append(n)
+    #                     values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
+    #             for n in V.DOF_range[K_minus]:
+    #                 phi = Phi[n]
+    #                 for m in V.DOF_range[K_plus]:
+    #                     psi = Psi[m]
+    #                     i_index.append(m)
+    #                     j_index.append(n)
+    #                     values.append(Inner_term_general(phi, psi, E, k, -a, -b))
+    #             for n in V.DOF_range[K_plus]:
+    #                 phi = Phi[n]
+    #                 for m in V.DOF_range[K_minus]:
+    #                     psi = Psi[m]
+    #                     i_index.append(m)
+    #                     j_index.append(n)
+    #                     values.append(-Inner_term_general(phi, psi, E, k, a, b))
 
 
           
-    A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
-    A = A.toarray()
+    # A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
+    # A = A.toarray()
+
+    A = None
 
     wall_edges = []
     inner_edges = []
@@ -731,20 +733,22 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
     d[:,0] = np.cos(thetas)
     d[:,1] = np.sin(thetas)
 
-    G_block = Gamma_global(k =k, N_elems = V.N_trig, N_wall_sides = N_wall_sides,  Edges = wall_edges, d=d, d_d=d_d, d_1=d_1 )
+    
+
+    A_block = Gamma_global(k =k, N_elems = V.N_trig, N_wall_sides = N_wall_sides,  Edges = wall_edges, d=d, d_d=d_d, d_1=d_1 )
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
-    I_block = Inner_PP_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    A_block += Inner_PP_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
-    I_block = Inner_MM_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    A_block += Inner_MM_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
-    I_block = Inner_PM_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    A_block += Inner_PM_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
-    I_block = Inner_MP_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    A_block += Inner_MP_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
 
 
-    return A, I_block
+    return A, A_block
 
