@@ -174,12 +174,21 @@ def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real
     I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))
     return I
 
-def Inner_PP_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
+def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
     I = -1j*k*l*( np.add.outer(dot(d, N),dot(d, N))/2 + a + b*np.outer(dot(d, N),dot(d, N)))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
     return I
 
 
+
+def Sigma_block_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
+                 d : real_array, d_d : real_array, d_2 : np.floating) -> complex_array:
+    I = -1j*k*l*(d_2 + dot(d,N))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
+    return I
+
+
+# bsr works block by block. indprt must allways have N+1 items where N is the number of block rows
+# indices and data must have the same number of items, as they locate the blocks for each "block row"
 
 
 # This assumes they are sorted, i.e. [e.Triangles[0]] appears sorted 
@@ -210,7 +219,7 @@ def Inner_PP_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : re
 
 
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
+        data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
     G = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return G
 
@@ -225,11 +234,9 @@ def Inner_MM_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : re
 
 
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = -Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+        data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
     G = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return G
-# bsr works block by block. indprt must allways have N+1 items where N is the number of block rows
-# indices and data must have the same number of items, as they locate the blocks for each "block row"
 
 
 # plus for m, minus for n
@@ -245,7 +252,7 @@ def Inner_PM_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : re
 
     #  [ ., ., ., 3, 4, ., 6, ., 8, 8, ., .] -> [ 0, 0, 0, 0, 1, 2, 2, 3, 3, 5, 5, 5 ]
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+        data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
     G = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return G
 
@@ -260,10 +267,24 @@ def Inner_MP_global(k : complex, N_elems : int, N_inner_sides : int,  Edges : re
                                 np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
 
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = -Inner_PP_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
+        data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
     G = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return G
 
+def Sigma_global(k : complex, N_elems : int, N_sigma_sides : int,  Edges : real_array,
+                 d : real_array, d_d : real_array, d_2 : np.floating) -> complex_array:
+    N_p = d_d.shape[0]
+    data = np.zeros((N_sigma_sides, N_p, N_p), dtype=np.complex128)
+    indices = np.array([e.Triangles[0] for e in Edges])
+    indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
+                               np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
+                               np.full(N_elems - indices[-1], len(indices))])
+
+
+    for (i, edge) in enumerate(Edges):
+        data[i,:,:] = Sigma_block_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, d_2=d_2 )
+    G = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
+    return G
 
 
 
@@ -642,7 +663,7 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
 
 
 def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge], 
-                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2) :
+                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2) :
 
 
     N_DOF = V.N_DOF
@@ -659,8 +680,8 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
     Psi = V.TestFunctions # currently the same spaces 
 
 
-    # for E in Edges:
-    #     match E.Type:
+    for E in Edges:
+        match E.Type:
     #         case EdgeType.GAMMA:
     #             K = E.Triangles[0]
     #             for m in V.DOF_range[K]:
@@ -700,29 +721,43 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
     #                     i_index.append(m)
     #                     j_index.append(n)
     #                     values.append(-Inner_term_general(phi, psi, E, k, a, b))
+            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+                K = E.Triangles[0]
+                for n in V.DOF_range[K]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K]:
+                        psi = Psi[m]
+                        k = psi.k
+                        i_index.append(m)
+                        j_index.append(n)
+                        S = Sigma_local(phi, psi, E, d_2)
+                        values.append(S)
+
 
 
           
-    # A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
-    # A = A.toarray()
+    A = coo_matrix( (values, (i_index, j_index)), shape=(N_DOF,N_DOF))
+    A = A.toarray()
 
-    A = None
 
     wall_edges = []
     inner_edges = []
+    sigma_edges = []
     for E in Edges:
         match E.Type:
             case EdgeType.GAMMA:
                 wall_edges.append(E)
             case EdgeType.INNER:
                 inner_edges.append(E)
+            case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
+                sigma_edges.append(E)
             case _:
                 pass
     
-    wall_edges.sort(key= lambda e : e.Triangles[0])
 
     N_wall_sides = len(wall_edges)
     N_inner_sides = len(inner_edges)
+    N_sigma_sides = len(sigma_edges)
 
     d_d = np.zeros( [N_p,N_p,2], dtype=np.float64)
     d = np.zeros( [N_p,2], dtype=np.float64)
@@ -734,7 +769,7 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
     d[:,1] = np.sin(thetas)
 
     
-
+    wall_edges.sort(key= lambda e : e.Triangles[0])
     A_block = Gamma_global(k =k, N_elems = V.N_trig, N_wall_sides = N_wall_sides,  Edges = wall_edges, d=d, d_d=d_d, d_1=d_1 )
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
@@ -749,6 +784,9 @@ def test_blocksdef(V : TrefftzSpace,  Edges : tuple[Edge],
     inner_edges.sort(key= lambda e : e.Triangles[1])
     A_block += Inner_MP_global(k =k, N_elems = V.N_trig, N_inner_sides = N_inner_sides, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
 
+    sigma_edges.sort(key= lambda e : e.Triangles[0])
+    S_block = Sigma_global(k =k, N_elems = V.N_trig, N_sigma_sides = N_sigma_sides,  Edges = sigma_edges, d=d, d_d=d_d, d_2=d_2 )
 
-    return A, A_block
+
+    return A, S_block
 
