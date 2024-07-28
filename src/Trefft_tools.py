@@ -7,7 +7,6 @@ from labels import EdgeType
 from scipy.sparse import coo_matrix, csr_matrix, spmatrix, bsr_array
 from geometry_tools import Edge
 from numpy import sinc, cos
-from numpy import trapz as Int
 from exact_solutions import GreenFunctionImages, GreenFunctionModes
 from integrators import fekete3 as int2D
 from domains import ScattererType
@@ -219,6 +218,13 @@ def Sigma_crossblock(k : complex, H : float, l_u : float, M_u : real_array, l_v 
     return I1 + I2 + I3
 
 
+def SoundSoft_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
+                 d : real_array, d_d : real_array, a : np.floating) -> complex_array:
+    
+    I = -1j*k*l*exp(1j*k*dot(d_d, M))*sinc(k*l/(2*pi)*dot(d_d,T))*(dot(d, N) + a)
+    return  I
+
+
 
 
 # bsr works block by block. indprt must allways have N+1 items where N is the number of block rows
@@ -350,6 +356,27 @@ def Sigma_cross_global(k : complex, H : float,  N_elems : int,  Edges : real_arr
                                             d = d, d_2 = d_2, N_DtN = N_DtN)
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
     return A
+
+
+
+
+def SoundSoft_global(k : complex, N_elems : int,  Edges : real_array,
+                 d : real_array, d_d : real_array, a : np.floating) -> complex_array:
+    N_p = d_d.shape[0]
+    N_dOmega_sides = len(Edges)
+    data = np.zeros((N_dOmega_sides, N_p, N_p), dtype=np.complex128)
+    indices = np.array([e.Triangles[0] for e in Edges])
+    indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
+                               np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
+                               np.full(N_elems - indices[-1], len(indices))])
+
+
+    for (i, edge) in enumerate(Edges):
+        data[i,:,:] = SoundSoft_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a )
+    A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
+    return A
+
+
 
 
 
@@ -659,44 +686,44 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
 
 
 
-def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
-    M = E.M
-    T = E.T 
-    N = E.N
-    l = E.l
+# def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
+#     M = E.M
+#     T = E.T 
+#     N = E.N
+#     l = E.l
 
-    d_m = psi.d
+#     d_m = psi.d
 
-    Npoints = 200
-    t = np.linspace(-l/2,l/2,Npoints)
-    if modes:
-        g = GreenFunctionModes(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)    
-    else:
-        g = GreenFunctionImages(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)
-    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
-    return I
-
-
+#     Npoints = 200
+#     t = np.linspace(-l/2,l/2,Npoints)
+#     if modes:
+#         g = GreenFunctionModes(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)    
+#     else:
+#         g = GreenFunctionImages(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)
+#     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
+#     return I
 
 
-def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=20):
-    N_DOF = V.N_DOF
-    b = np.zeros((N_DOF), dtype=np.complex128)
-    Psi = V.TestFunctions
-    N_edges = len(Edges)
-    if np.isscalar(a):
-        a_vec = np.full(N_edges,a)
-    else:
-        a_vec = a
 
-    for (E, a)  in zip(Edges,a_vec):
-        match E.Type:                
-            case EdgeType.D_OMEGA | EdgeType.COVER:
-                K = E.Triangles[0]
-                for m in V.DOF_range[K]:
-                    psi = Psi[m]
-                    b[m] += Green_RHS(psi, E, k, H, a, x_0, y_0, modes=modes, n_modes=M)
-    return b
+
+# def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=20):
+#     N_DOF = V.N_DOF
+#     b = np.zeros((N_DOF), dtype=np.complex128)
+#     Psi = V.TestFunctions
+#     N_edges = len(Edges)
+#     if np.isscalar(a):
+#         a_vec = np.full(N_edges,a)
+#     else:
+#         a_vec = a
+
+#     for (E, a)  in zip(Edges,a_vec):
+#         match E.Type:                
+#             case EdgeType.D_OMEGA | EdgeType.COVER:
+#                 K = E.Triangles[0]
+#                 for m in V.DOF_range[K]:
+#                     psi = Psi[m]
+#                     b[m] += Green_RHS(psi, E, k, H, a, x_0, y_0, modes=modes, n_modes=M)
+#     return b
 
 
 def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
@@ -735,6 +762,7 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
     sigma_edges = []
     sigma_edges_L = []
     sigma_edges_R = []
+    d_Omega_edges = []
     for E in Edges:
         match E.Type:
             case EdgeType.GAMMA:
@@ -747,7 +775,8 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
             case EdgeType.SIGMA_R :
                 sigma_edges.append(E)
                 sigma_edges_R.append(E)
-
+            case EdgeType.D_OMEGA:
+                d_Omega_edges.append(E)
             case _:
                 pass
     
@@ -787,6 +816,12 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
     sigma_edges_R.sort(key= lambda e : e.Triangles[0])
     A_block += Sigma_cross_global(k=k, H=H,  N_elems=V.N_trig,  Edges=sigma_edges_R, d=d,
                                    N = np.array([1,0]), d_2=d_2, N_DtN=N_DtN)    
+
+    if len(d_Omega_edges) > 0:
+        d_Omega_edges.sort(key= lambda e : e.Triangles[0])
+        A_block += SoundSoft_global(k=k, N_elems = V.N_trig, Edges = d_Omega_edges, d=d, d_d=d_d, a=a )
+
+
 
     
     return A_block
