@@ -47,12 +47,12 @@ class TrefftzSpace:
         for e in Omega.Elements():
             self.n[e.faces[0].nr] = n[e.mat]
         
-        
         if hasattr(DOF_per_element, '__iter__'):
             assert self.N_trig == len(DOF_per_element)
             self.local_N_DOF = np.array( DOF_per_element )
         else:
-            self.local_N_DOF = np.full_like(self.kappa, fill_value=DOF_per_element, dtype=np.int32)
+            self.local_N_DOF = np.full(self.N_trig, fill_value=DOF_per_element, dtype=np.int32)
+
         self.N_DOF = np.sum(self.local_N_DOF)
 
         self.d = [ np.array([[ np.cos(th0 +th), 
@@ -178,10 +178,12 @@ def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real
     I = -1j*k*l*( np.add.outer(dot(d, N),dot(d, N))/2 + a + b*np.outer(dot(d, N),dot(d, N)))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
     return I
 
-def Inner_local_general(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_p, n_m, 
-                        d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_n, n_m, 
+                        d : real_array, a : np.floating, b : np.floating) -> complex_array:
 
-    I = -1j*l/2*(2*a*k + k_n*dot(d_n,N) + k_m*dot(d_m,N) + 2*b/k*k_n*dot(d_n,N)*k_m*dot(d_m,N))*exp(1j*dot(k_n*d_n - k_m*d_m,M))*sinc(l/(2*pi)*dot(k_n*d_n - k_m*d_m,T))
+    I = -1j*k*l*(a + np.add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*np.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
+    *exp(1j*k*np.subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)).transpose())                                             \
+    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_n)*dot(d,T),sqrt(n_m)*dot(d,T)).transpose())
 
     return I
 
@@ -255,8 +257,78 @@ def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
     return A
 
 
+# def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
+#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+#     N_p = d_d.shape[0]
+#     N_inner_sides = len(Edges)
+#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
+#     indices = np.array([e.Triangles[0] for e in Edges])
+#     indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
+#                                np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
+#                                np.full(N_elems - indices[-1], len(indices))])
+
+
+#     for (i, edge) in enumerate(Edges):
+#         data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
+#     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
+#     return A
+
+# def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
+#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+#     N_p = d_d.shape[0]
+#     N_inner_sides = len(Edges)
+#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
+#     indices = np.array([e.Triangles[1] for e in Edges])
+#     indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
+#                                np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
+#                                np.full(N_elems - indices[-1], len(indices))])
+
+
+#     for (i, edge) in enumerate(Edges):
+#         data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+#     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
+#     return A
+
+
+# # plus for m, minus for n
+# def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
+#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+#     N_p = d_d.shape[0]
+#     N_inner_sides = len(Edges)
+#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
+#     indices_M = np.array([e.Triangles[1] for e in Edges])
+#     indices_P = np.array([e.Triangles[0] for e in Edges])
+#     indptr =  np.concatenate([ np.zeros(indices_P[0]+1, dtype=np.int32), 
+#                                 np.arange(1,len(indices_P)).repeat(indices_P[1:] - indices_P[:-1]), 
+#                                 np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
+
+#     #  [ ., ., ., 3, 4, ., 6, ., 8, 8, ., .] -> [ 0, 0, 0, 0, 1, 2, 2, 3, 3, 5, 5, 5 ]
+#     for (i, edge) in enumerate(Edges):
+#         data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+#     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
+#     return A
+
+# def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
+#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+#     N_p = d_d.shape[0]
+#     N_inner_sides = len(Edges)
+#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
+#     indices_M = np.array([e.Triangles[0] for e in Edges])
+#     indices_P = np.array([e.Triangles[1] for e in Edges])
+#     indptr =  np.concatenate([ np.zeros(indices_P[0]+1, dtype=np.int32), 
+#                                 np.arange(1,len(indices_P)).repeat(indices_P[1:] - indices_P[:-1]), 
+#                                 np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
+
+#     for (i, edge) in enumerate(Edges):
+#         data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
+#     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
+#     return A
+
+
+# General
+
 def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
-                 d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+                 d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -267,12 +339,12 @@ def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
 
 
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
+        data[i,:,:] = Inner_general_local(k = k, l = edge.l, M = edge.M, T = edge.T, N = edge.N, n_m=n[i], n_n=n[i], d = d, a = a, b = b)
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
 
 def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
-                 d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+                 d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -283,14 +355,14 @@ def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
 
 
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+        data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, n_m=n[i], n_n=n[i], d=d, a=-a, b=-b)
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
 
 
 # plus for m, minus for n
 def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
-                 d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+                 d : real_array, d_d : real_array, n_n : complex_array, n_m : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -302,12 +374,12 @@ def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
 
     #  [ ., ., ., 3, 4, ., 6, ., 8, 8, ., .] -> [ 0, 0, 0, 0, 1, 2, 2, 3, 3, 5, 5, 5 ]
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
+        data[i,:,:] = Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i], a=-a, b=-b)
     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
 
 def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
-                 d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+                 d : real_array, d_d : real_array, n_n : complex_array, n_m : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -318,9 +390,15 @@ def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
                                 np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
 
     for (i, edge) in enumerate(Edges):
-        data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
+        data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i], a=a, b=b)
     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
+
+
+
+
+
+
 
 def Sigma_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, d_2 : np.floating) -> complex_array:
@@ -391,7 +469,7 @@ def Inner_term_general(phi, psi, edge, k, a, b):
     d_m = psi.d
     d_n = phi.d
     k_n = k * sqrt(phi.n)
-    k_m = k * sqrt(phi.m)
+    k_m = k * sqrt(phi.n)
 
     
     M = edge.M
@@ -606,7 +684,6 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         if E_other == E:
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
-                                k = psi.k
                                 i_index.append(m)
                                 j_index.append(n)
                                 S = Sigma_local(phi, psi, k, E, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
@@ -614,7 +691,6 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         else:
                             for m in V.DOF_range[K_other]:
                                 psi = Psi[m]
-                                k = psi.k
                                 i_index.append(m)
                                 j_index.append(n)
                                 values.append(Sigma_nonlocal(phi, psi, E, E_other, k, H, d_2, Np=Np))
@@ -799,16 +875,27 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
     A_block = Gamma_global(k=k, N_elems = V.N_trig, Edges = wall_edges, d=d, d_d=d_d, d_1=d_1 )
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
-    A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    n = [V.n[e.Triangles[0]] for e in inner_edges]
+    A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
-    A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    n = [V.n[e.Triangles[1]] for e in inner_edges]
+    A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
-    A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    n_m = [V.n[e.Triangles[0]] for e in inner_edges]
+    n_n = [V.n[e.Triangles[1]] for e in inner_edges]
+
+    A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
-    A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, a=a, b=b)
+    n_n = [V.n[e.Triangles[0]] for e in inner_edges]
+    n_m = [V.n[e.Triangles[1]] for e in inner_edges]
+
+    A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
+
+
+
 
     sigma_edges.sort(key= lambda e : e.Triangles[0])
     A_block += Sigma_global(k=k, N_elems = V.N_trig,  Edges = sigma_edges, d=d, d_d=d_d, d_2=d_2 )
