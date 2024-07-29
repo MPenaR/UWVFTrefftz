@@ -753,7 +753,7 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
     return b
 
 
-def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
+def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float, 
                    H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15) :
 
 
@@ -784,7 +784,7 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
     d_d = np.zeros( [N_p,N_p,2], dtype=np.float64)
     d = np.zeros( [N_p,2], dtype=np.float64)
     
-    thetas = np.linspace(0,2*np.pi,N_p,endpoint=False)
+    thetas = np.linspace(0,2*np.pi,N_p,endpoint=False) + th_0
     d_d[:,:,0] = np.subtract.outer(np.cos(thetas), np.cos(thetas)).transpose()
     d_d[:,:,1] = np.subtract.outer(np.sin(thetas), np.sin(thetas)).transpose()
     d[:,0] = np.cos(thetas)
