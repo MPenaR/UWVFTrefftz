@@ -21,7 +21,7 @@ complex_array = npt.NDArray[np.complexfloating]
 
 
 
-TestFunction = namedtuple("TestFunction", ["k", "d"])
+TestFunction = namedtuple("TestFunction", ["n", "d"])
 
 
 
@@ -34,17 +34,18 @@ class TrefftzSpace:
     actual functions.
     '''
 
-    def __init__( self, Domain, DOF_per_element : tuple[int], kappa : dict[str, float], th0=0 ):
+    def __init__( self, Domain, DOF_per_element : tuple[int], kappa : float, n :dict[str, float | complex], th0=0 ):
         Omega = Domain.Omega
         self.Omega = Omega
         self.absorbing = Domain.scatterer_type == ScattererType.ABSORBING
         self.ScattererTriangles = Domain.ScattererTriangles
         self.N_trig = len(Omega.faces)
-        self.kappa = np.zeros(self.N_trig, dtype=np.complex128)
+        self.kappa = kappa
+        self.n = np.zeros(self.N_trig, dtype=np.array(list(n.values())).dtype)
         
         self._elements = list(Omega.Elements())
         for e in Omega.Elements():
-            self.kappa[e.faces[0].nr] = kappa[e.mat]
+            self.n[e.faces[0].nr] = n[e.mat]
         
         
         if hasattr(DOF_per_element, '__iter__'):
@@ -66,10 +67,10 @@ class TrefftzSpace:
 
     @property
     def TestFunctions( self ):
-        return [ TestFunction( k= self.kappa[self.DOF_ownership[n]], d=self.d[self.DOF_ownership[n]][self.global_to_local[n]]) for n in range(self.N_DOF)]
+        return [ TestFunction( n= self.n[self.DOF_ownership[n]], d=self.d[self.DOF_ownership[n]][self.global_to_local[n]]) for n in range(self.N_DOF)]
     @property
     def TrialFunctions( self ):
-        return [ TestFunction( k= self.kappa[self.DOF_ownership[n]], d=self.d[self.DOF_ownership[n]][self.global_to_local[n]]) for n in range(self.N_DOF)]
+        return [ TestFunction( n= self.n[self.DOF_ownership[n]], d=self.d[self.DOF_ownership[n]][self.global_to_local[n]]) for n in range(self.N_DOF)]
 
 
 
@@ -107,7 +108,7 @@ class TrefftzFunction:
         if e < 0: # (x,y) outside the mesh
             return np.nan
         
-        k = self.V.kappa[e]
+        k = np.sqrt(self.V.n[e]) * self.V.kappa
         P = self.DOFs[self.V.DOF_range[e]]
         D = self.V.d[e]
 
@@ -132,7 +133,7 @@ class TrefftzFunction:
         if e < 0: # (x,y) outside the mesh
             return np.nan
 
-        k = self.V.kappa[e]
+        k = np.sqrt(self.V.n[e]) * self.V.kappa
         P = self.DOFs[self.V.DOF_range[e]]
         D = self.V.d[e]
 
@@ -145,7 +146,7 @@ class TrefftzFunction:
         if e < 0: # (x,y) outside the mesh
             return np.nan
 
-        k = self.V.kappa[e]
+        k = np.sqrt(self.V.n[e]) * self.V.kappa
         P = self.DOFs[self.V.DOF_range[e]]
         D = self.V.d[e]
 
@@ -154,11 +155,10 @@ class TrefftzFunction:
         return dudy 
 
 
-def Gamma_term(phi, psi, edge, d_1):
+def Gamma_term(phi, psi, k, edge, d_1):
 
     d_m = psi.d
     d_n = phi.d
-    k = phi.k
     
     M = edge.M
     l = edge.l
@@ -178,6 +178,12 @@ def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real
     I = -1j*k*l*( np.add.outer(dot(d, N),dot(d, N))/2 + a + b*np.outer(dot(d, N),dot(d, N)))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
     return I
 
+def Inner_local_general(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_p, n_m, 
+                        d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+
+    I = -1j*l/2*(2*a*k + k_n*dot(d_n,N) + k_m*dot(d_m,N) + 2*b/k*k_n*dot(d_n,N)*k_m*dot(d_m,N))*exp(1j*dot(k_n*d_n - k_m*d_m,M))*sinc(l/(2*pi)*dot(k_n*d_n - k_m*d_m,T))
+
+    return I
 
 
 def Sigma_block_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
@@ -384,8 +390,8 @@ def Inner_term_general(phi, psi, edge, k, a, b):
 
     d_m = psi.d
     d_n = phi.d
-    k_n = phi.k
-    k_m = psi.k
+    k_n = k * sqrt(phi.n)
+    k_m = k * sqrt(phi.m)
 
     
     M = edge.M
@@ -397,12 +403,10 @@ def Inner_term_general(phi, psi, edge, k, a, b):
 
     return I
 
-def sound_soft_term(phi, psi, edge, a):
+def sound_soft_term(phi, psi, k, edge, a):
 
     d_m = psi.d
     d_n = phi.d
-    k = phi.k
-
     
     M = edge.M
     N = edge.N
@@ -414,12 +418,10 @@ def sound_soft_term(phi, psi, edge, a):
     return  I
 
 
-def Sigma_local(phi, psi, edge, d_2):
+def Sigma_local(phi, psi, k, edge, d_2):
 
     d_n = phi.d
     d_m = psi.d
-
-    k = phi.k 
 
     l = edge.l
     M = edge.M
@@ -468,18 +470,18 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
 
 
 def absorption_term( phi, psi, r_A, r_B, r_C, k):
-    k_i = phi.k
+    n = phi.n
+    k_i =  k * sqrt(n)
     d_n = phi.d
     d_m = psi.d
-    N = k_i**2 / k**2
-    I = -2*1j*k**2*np.imag(N)*int2D(lambda x, y : np.exp(1j*k_i*dot(d_n - d_m,np.array((x,y)))), r_A=r_A, r_B=r_B, r_C=r_C)
+    I = -2*1j*k**2*np.imag(n)*int2D(lambda x, y : np.exp(1j*k_i*dot(d_n - d_m,np.array((x,y)))), r_A=r_A, r_B=r_B, r_C=r_C)
 
     return I
     
 
 
 def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
-                   H : float, a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, k=0.8, 
+                   H : float, a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
                    Np=10, full_matrix = False) -> spmatrix:
     '''Assembles de matrix for the bilinear form.
     a, b, d_1 and d_2 are the coefficients of the regularizing terms.
@@ -533,6 +535,8 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
     Phi = V.TrialFunctions
     Psi = V.TestFunctions # currently the same spaces 
 
+    k = V.kappa
+
     for (E, a, b, d_1, d_2) in zip(Edges, a_vec, b_vec, d_1_vec, d_2_vec):
         match E.Type:
             case EdgeType.INNER:
@@ -579,7 +583,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         phi = Phi[n]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(Gamma_term(phi, psi, E, d_1))
+                        values.append(Gamma_term(phi, psi, k, E, d_1))
                     
 
             case EdgeType.D_OMEGA | EdgeType.COVER:
@@ -590,7 +594,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         phi = Phi[n]
                         i_index.append(m)
                         j_index.append(n)
-                        values.append(sound_soft_term(phi, psi, E, a))
+                        values.append(sound_soft_term(phi, psi, k, E, a))
 
 
             case EdgeType.SIGMA_L | EdgeType.SIGMA_R:
@@ -605,7 +609,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                                 k = psi.k
                                 i_index.append(m)
                                 j_index.append(n)
-                                S = Sigma_local(phi, psi, E, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
+                                S = Sigma_local(phi, psi, k, E, d_2) + Sigma_nonlocal(phi, psi, E, E, k, H, d_2, Np=Np)
                                 values.append(S)
                         else:
                             for m in V.DOF_range[K_other]:
