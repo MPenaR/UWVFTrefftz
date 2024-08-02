@@ -27,7 +27,7 @@ def FEM_solution(R : np.float64, H : np.float64,
                  polynomial_order = 5) :
     """Uses a PML and a very fine mesh to solve the problem by the finite element method."""
     # delta_PML = 3 * 2*np.pi/k_e
-    hmax_e = 2*np.pi/k_e / 10
+    hmax_e = 2*np.pi/k_e / 20
     match scatterer_type:
         case ScattererType.PENETRABLE | ScattererType.ABSORBING:
             hmax_i = 2*np.pi/np.real(k_i) / 10
@@ -61,7 +61,7 @@ def FEM_solution(R : np.float64, H : np.float64,
                 case ScattererType.PENETRABLE | ScattererType.ABSORBING:
                     geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=4, rightdomain=1)    
                 case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
-                    geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=0, rightdomain=1, bc="dirichlet")
+                    geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=0, rightdomain=1, bc="dirichlet", maxh=0.01)
 
     p5 = geo.AppendPoint(-R-delta_PML,0)
     p6 = geo.AppendPoint(-R-delta_PML,H)

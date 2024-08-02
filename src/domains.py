@@ -98,7 +98,7 @@ class Waveguide:
                         self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
                         self.geo.SetMaterial (2, "Omega_i")
                     case _:
-                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1)
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=0.05)
                     
 
     def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):

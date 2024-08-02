@@ -182,8 +182,8 @@ def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, 
                         d : real_array, a : np.floating, b : np.floating) -> complex_array:
 
     I = -1j*k*l*(a + np.add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*np.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
-    *exp(1j*k*np.subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)).transpose())                                             \
-    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_n)*dot(d,T),sqrt(n_m)*dot(d,T)).transpose())
+    *exp(-1j*k*np.subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
+    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))
 
     return I
 
@@ -627,30 +627,30 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         j_index.append(n)
                         values.append(Inner_term_general(phi, psi, E, k, a, b))
 
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_plus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(Inner_term_general(phi, psi, E, k, -a, -b))
+                # for n in V.DOF_range[K_minus]:
+                #     phi = Phi[n]
+                #     for m in V.DOF_range[K_plus]:
+                #         psi = Psi[m]
+                #         i_index.append(m)
+                #         j_index.append(n)
+                #         values.append(Inner_term_general(phi, psi, E, k, -a, -b))
 
 
-                for n in V.DOF_range[K_plus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(-Inner_term_general(phi, psi, E, k, a, b))
+                # for n in V.DOF_range[K_plus]:
+                #     phi = Phi[n]
+                #     for m in V.DOF_range[K_minus]:
+                #         psi = Psi[m]
+                #         i_index.append(m)
+                #         j_index.append(n)
+                #         values.append(-Inner_term_general(phi, psi, E, k, a, b))
 
-                for n in V.DOF_range[K_minus]:
-                    phi = Phi[n]
-                    for m in V.DOF_range[K_minus]:
-                        psi = Psi[m]
-                        i_index.append(m)
-                        j_index.append(n)
-                        values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
+                # for n in V.DOF_range[K_minus]:
+                #     phi = Phi[n]
+                #     for m in V.DOF_range[K_minus]:
+                #         psi = Psi[m]
+                #         i_index.append(m)
+                #         j_index.append(n)
+                #         values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
 
 
             case EdgeType.GAMMA:
@@ -865,8 +865,8 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
     d = np.zeros( [N_p,2], dtype=np.float64)
     
     thetas = np.linspace(0,2*np.pi,N_p,endpoint=False) + th_0
-    d_d[:,:,0] = np.subtract.outer(np.cos(thetas), np.cos(thetas)).transpose()
-    d_d[:,:,1] = np.subtract.outer(np.sin(thetas), np.sin(thetas)).transpose()
+    d_d[:,:,0] = - np.subtract.outer(np.cos(thetas), np.cos(thetas))
+    d_d[:,:,1] = - np.subtract.outer(np.sin(thetas), np.sin(thetas))
     d[:,0] = np.cos(thetas)
     d[:,1] = np.sin(thetas)
 
@@ -878,24 +878,24 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
     n = [V.n[e.Triangles[0]] for e in inner_edges]
     A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n, a=a, b=b)
 
-    inner_edges.sort(key= lambda e : e.Triangles[1])
-    n = [V.n[e.Triangles[1]] for e in inner_edges]
-    A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b)
+    # inner_edges.sort(key= lambda e : e.Triangles[1])
+    # n = [V.n[e.Triangles[1]] for e in inner_edges]
+    # A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b)
 
-    inner_edges.sort(key= lambda e : e.Triangles[0])
-    n_m = [V.n[e.Triangles[0]] for e in inner_edges]
-    n_n = [V.n[e.Triangles[1]] for e in inner_edges]
+    # inner_edges.sort(key= lambda e : e.Triangles[0])
+    # n_m = [V.n[e.Triangles[0]] for e in inner_edges]
+    # n_n = [V.n[e.Triangles[1]] for e in inner_edges]
 
-    A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
+    # A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
 
-    inner_edges.sort(key= lambda e : e.Triangles[1])
-    n_m = [V.n[e.Triangles[0]] for e in inner_edges]
-    n_n = [V.n[e.Triangles[1]] for e in inner_edges]
+    # inner_edges.sort(key= lambda e : e.Triangles[1])
+    # n_m = [V.n[e.Triangles[0]] for e in inner_edges]
+    # n_n = [V.n[e.Triangles[1]] for e in inner_edges]
 
-    # n_n = [V.n[e.Triangles[0]] for e in inner_edges]
-    # n_m = [V.n[e.Triangles[1]] for e in inner_edges]
+    # # n_n = [V.n[e.Triangles[0]] for e in inner_edges]
+    # # n_m = [V.n[e.Triangles[1]] for e in inner_edges]
 
-    A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
+    # A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
 
 
 
