@@ -889,11 +889,8 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
     A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
-    n_m = [V.n[e.Triangles[0]] for e in inner_edges]
-    n_n = [V.n[e.Triangles[1]] for e in inner_edges]
-
-    # n_n = [V.n[e.Triangles[0]] for e in inner_edges]
-    # n_m = [V.n[e.Triangles[1]] for e in inner_edges]
+    n_n = [V.n[e.Triangles[0]] for e in inner_edges]
+    n_m = [V.n[e.Triangles[1]] for e in inner_edges]
 
     A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
 
