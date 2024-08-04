@@ -861,6 +861,22 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
                 pass
     
 
+# this better for the numpy based mesh
+
+    # if not isinstance(a,np.ndarray):
+    #     a = np.full( shape=len(Edges), fill_value= a)
+
+    # if not isinstance(b,np.ndarray):
+    #     b = np.full( shape=len(Edges), fill_value= b)
+
+    # if not isinstance(d_1,np.ndarray):
+    #     d_1 = np.full( shape=len(Edges), fill_value= d_1)
+
+    # if not isinstance(d_2,np.ndarray):
+    #     d_2 = np.full( shape=len(Edges), fill_value= d_2)
+
+
+
     d_d = np.zeros( [N_p,N_p,2], dtype=np.float64)
     d = np.zeros( [N_p,2], dtype=np.float64)
     
