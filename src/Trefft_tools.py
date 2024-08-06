@@ -1,6 +1,7 @@
 
 import numpy as np
 from numpy import dot, pi, exp, sqrt, abs, conj
+from numpy.lib.scimath import sqrt
 from numpy.linalg import norm
 from collections import namedtuple
 from labels import EdgeType
@@ -183,6 +184,7 @@ def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real
 def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_n, n_m, 
                         d : real_array, a : np.floating, b : np.floating) -> complex_array:
 
+    
     I = -1j*k*l*(a + np.add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*np.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
     *exp(-1j*k*np.subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
     *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))
@@ -499,6 +501,10 @@ def Inner_term_general(phi, psi, edge, k, a, b):
 
     d_m = psi.d
     d_n = phi.d
+
+    print( f"{phi.n=}")
+    print( f"{psi.n=}")
+
     k_n = k * sqrt(phi.n)
     k_m = k * sqrt(psi.n)
 
@@ -657,21 +663,21 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
             case EdgeType.INNER:
                 K_plus, K_minus = E.Triangles
 
-                # for n in V.DOF_range[K_plus]:
-                #     phi = Phi[n]
-                #     for m in V.DOF_range[K_plus]:
-                #         psi = Psi[m]
-                #         i_index.append(m)
-                #         j_index.append(n)
-                #         values.append(Inner_term_general(phi, psi, E, k, a, b))
+                for n in V.DOF_range[K_plus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_general(phi, psi, E, k, a, b))
 
-                # for n in V.DOF_range[K_minus]:
-                #     phi = Phi[n]
-                #     for m in V.DOF_range[K_plus]:
-                #         psi = Psi[m]
-                #         i_index.append(m)
-                #         j_index.append(n)
-                #         values.append(Inner_term_general(phi, psi, E, k, -a, -b))
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_plus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(Inner_term_general(phi, psi, E, k, -a, -b))
 
 
                 for n in V.DOF_range[K_plus]:
@@ -682,13 +688,13 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
                         j_index.append(n)
                         values.append(-Inner_term_general(phi, psi, E, k, a, b))
 
-                # for n in V.DOF_range[K_minus]:
-                #     phi = Phi[n]
-                #     for m in V.DOF_range[K_minus]:
-                #         psi = Psi[m]
-                #         i_index.append(m)
-                #         j_index.append(n)
-                #         values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
+                for n in V.DOF_range[K_minus]:
+                    phi = Phi[n]
+                    for m in V.DOF_range[K_minus]:
+                        psi = Psi[m]
+                        i_index.append(m)
+                        j_index.append(n)
+                        values.append(-Inner_term_general(phi, psi, E, k, -a, -b))
 
 
             case EdgeType.GAMMA:
@@ -928,19 +934,18 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
     wall_edges.sort(key= lambda e : e.Triangles[0])
     A_block = Gamma_global(k=k, N_elems = V.N_trig, Edges = wall_edges, d=d, d_d=d_d, d_1=d_1 )
 
-    # inner_edges.sort(key= lambda e : e.Triangles[0])
-    # n = [V.n[e.Triangles[0]] for e in inner_edges]
-    # A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n, a=a, b=b)
+    inner_edges.sort(key= lambda e : e.Triangles[0])
+    n = [V.n[e.Triangles[0]] for e in inner_edges]
+    A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n, a=a, b=b)
 
-    # inner_edges.sort(key= lambda e : e.Triangles[1])
-    # n = [V.n[e.Triangles[1]] for e in inner_edges]
-    # A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b)
+    inner_edges.sort(key= lambda e : e.Triangles[1])
+    n = [V.n[e.Triangles[1]] for e in inner_edges]
+    A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b)
 
-    # inner_edges.sort(key= lambda e : e.Triangles[0])
-    # n_m = [V.n[e.Triangles[0]] for e in inner_edges]
-    # n_n = [V.n[e.Triangles[1]] for e in inner_edges]
-
-    # A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
+    inner_edges.sort(key= lambda e : e.Triangles[0])
+    n_m = [V.n[e.Triangles[0]] for e in inner_edges]
+    n_n = [V.n[e.Triangles[1]] for e in inner_edges]
+    A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
     n_n = [V.n[e.Triangles[0]] for e in inner_edges]
@@ -963,6 +968,7 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
                                    N = np.array([1,0]), d_2=d_2, N_DtN=N_DtN)    
 
     if len(d_Omega_edges) > 0:
+        print('hola')
         d_Omega_edges.sort(key= lambda e : e.Triangles[0])
         A_block += SoundSoft_global(k=k, N_elems = V.N_trig, Edges = d_Omega_edges, d=d, d_d=d_d, a=a )
 
@@ -972,9 +978,8 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
         ScattererTriangles.sort( key = lambda T  : T.index )
         n = [ V.n[T.index] for T in ScattererTriangles] 
         print('we are in the absorbing case')
-        G =   absorption_term_global( Triangles=ScattererTriangles, N_elems= V.N_trig, d_d=d_d, n=n, k=k)         
-        A_block += G 
+        A_block += absorption_term_global( Triangles=ScattererTriangles, N_elems= V.N_trig, d_d=d_d, n=n, k=k) 
 
     
-    return A_block, G
+    return A_block 
 
