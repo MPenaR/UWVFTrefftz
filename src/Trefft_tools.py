@@ -176,10 +176,10 @@ def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real
     I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))
     return I
 
-def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
-                 d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
-    I = -1j*k*l*( np.add.outer(dot(d, N),dot(d, N))/2 + a + b*np.outer(dot(d, N),dot(d, N)))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
-    return I
+# def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
+#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
+#     I = -1j*k*l*( np.add.outer(dot(d, N),dot(d, N))/2 + a + b*np.outer(dot(d, N),dot(d, N)))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
+#     return I
 
 def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_n, n_m, 
                         d : real_array, a : np.floating, b : np.floating) -> complex_array:
@@ -261,75 +261,6 @@ def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
     return A
 
 
-# def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
-#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
-#     N_p = d_d.shape[0]
-#     N_inner_sides = len(Edges)
-#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
-#     indices = np.array([e.Triangles[0] for e in Edges])
-#     indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
-#                                np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
-#                                np.full(N_elems - indices[-1], len(indices))])
-
-
-#     for (i, edge) in enumerate(Edges):
-#         data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
-#     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
-#     return A
-
-# def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
-#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
-#     N_p = d_d.shape[0]
-#     N_inner_sides = len(Edges)
-#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
-#     indices = np.array([e.Triangles[1] for e in Edges])
-#     indptr =  np.concatenate([ np.zeros(indices[0]+1, dtype=np.int32), 
-#                                np.arange(1,len(indices)).repeat(indices[1:] - indices[:-1]), 
-#                                np.full(N_elems - indices[-1], len(indices))])
-
-
-#     for (i, edge) in enumerate(Edges):
-#         data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
-#     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
-#     return A
-
-
-# # plus for m, minus for n
-# def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
-#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
-#     N_p = d_d.shape[0]
-#     N_inner_sides = len(Edges)
-#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
-#     indices_M = np.array([e.Triangles[1] for e in Edges])
-#     indices_P = np.array([e.Triangles[0] for e in Edges])
-#     indptr =  np.concatenate([ np.zeros(indices_P[0]+1, dtype=np.int32), 
-#                                 np.arange(1,len(indices_P)).repeat(indices_P[1:] - indices_P[:-1]), 
-#                                 np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
-
-#     #  [ ., ., ., 3, 4, ., 6, ., 8, 8, ., .] -> [ 0, 0, 0, 0, 1, 2, 2, 3, 3, 5, 5, 5 ]
-#     for (i, edge) in enumerate(Edges):
-#         data[i,:,:] = Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=-a, b=-b)
-#     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
-#     return A
-
-# def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
-#                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
-#     N_p = d_d.shape[0]
-#     N_inner_sides = len(Edges)
-#     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
-#     indices_M = np.array([e.Triangles[0] for e in Edges])
-#     indices_P = np.array([e.Triangles[1] for e in Edges])
-#     indptr =  np.concatenate([ np.zeros(indices_P[0]+1, dtype=np.int32), 
-#                                 np.arange(1,len(indices_P)).repeat(indices_P[1:] - indices_P[:-1]), 
-#                                 np.full(shape = N_elems - indices_P[-1], fill_value = len(indices_P))])
-
-#     for (i, edge) in enumerate(Edges):
-#         data[i,:,:] = -Inner_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, a=a, b=b)
-#     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
-#     return A
-
-
-# General
 
 def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating) -> complex_array:
@@ -501,9 +432,6 @@ def Inner_term_general(phi, psi, edge, k, a, b):
 
     d_m = psi.d
     d_n = phi.d
-
-    print( f"{phi.n=}")
-    print( f"{psi.n=}")
 
     k_n = k * sqrt(phi.n)
     k_m = k * sqrt(psi.n)
