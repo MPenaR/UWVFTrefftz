@@ -245,7 +245,7 @@ def SoundSoft_local(k : complex, l : float, M : real_array, T : real_array, N : 
 
 # This assumes they are sorted, i.e. [e.Triangles[0]] appears sorted 
 def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
-                 d : real_array, d_d : real_array, d_1 : np.floating, l_max = None) -> complex_array:
+                 d : real_array, d_d : real_array, d_1 : np.floating, l_max = None, Cm = None) -> complex_array:
     N_p = d_d.shape[0]
     N_wall_sides = len(Edges)
     data = np.zeros((N_wall_sides, N_p, N_p), dtype=np.complex128)
@@ -260,7 +260,8 @@ def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
     else:
         for (i, edge) in enumerate(Edges):
             #factor = (1+l_max/edge.l)
-            factor = l_max / edge.l
+            #factor = l_max / edge.l
+            factor = (1 + Cm*(l_max/edge.l - 1))
             data[i,:,:] = Gamma_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, d_1=d_1*factor )
     
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
@@ -269,7 +270,7 @@ def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
 
 
 def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
-                 d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating, l_max  = None) -> complex_array:
+                 d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating, l_max  = None, Cm=None) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -285,7 +286,8 @@ def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
     else:
         for (i, edge) in enumerate(Edges):
             #factor = (1+l_max/edge.l)
-            factor = l_max / edge.l
+            # factor = l_max / edge.l
+            factor = (1 + Cm*(l_max/edge.l - 1))
             data[i,:,:] = Inner_general_local(k = k, l = edge.l, M = edge.M, T = edge.T, N = edge.N, n_m=n[i], n_n=n[i], d = d,
                                             a = a*factor, b = b*factor)
 
@@ -293,7 +295,7 @@ def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
     return A
 
 def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
-                 d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating, l_max = None) -> complex_array:
+                 d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating, l_max = None, Cm=None) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -309,7 +311,8 @@ def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
     else:
         for (i, edge) in enumerate(Edges):
             #factor = (1+l_max/edge.l)
-            factor = l_max / edge.l
+            # factor = l_max / edge.l
+            factor = (1 + Cm*(l_max/edge.l - 1))
             data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, n_m=n[i], n_n=n[i], d=d,
                                             a = -a*factor, b = -b*factor)
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
@@ -319,7 +322,7 @@ def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
 # plus for m, minus for n
 def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, n_n : complex_array, n_m : complex_array,
-                 a : np.floating, b : np.floating, l_max  = None) -> complex_array:
+                 a : np.floating, b : np.floating, l_max  = None, Cm=None) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -336,7 +339,9 @@ def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
     else:
         for (i, edge) in enumerate(Edges):
             #factor = (1+l_max/edge.l)
-            factor = l_max / edge.l
+            # factor = l_max / edge.l
+            factor = (1 + Cm*(l_max/edge.l - 1))
+
             data[i,:,:] = Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i],
                                               a = -a*factor, b = -b*factor)
 
@@ -345,7 +350,7 @@ def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
 
 def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
                  d : real_array, d_d : real_array, n_n : complex_array, n_m : complex_array,
-                 a : np.floating, b : np.floating, l_max  = None) -> complex_array:
+                 a : np.floating, b : np.floating, l_max  = None, Cm=None) -> complex_array:
     N_p = d_d.shape[0]
     N_inner_sides = len(Edges)
     data = np.zeros((N_inner_sides, N_p, N_p), dtype=np.complex128)
@@ -360,7 +365,9 @@ def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
     else:
         for (i, edge) in enumerate(Edges):
             #factor = (1+l_max/edge.l)
-            factor = l_max / edge.l
+            # factor = l_max / edge.l
+            factor = (1 + Cm*(l_max/edge.l - 1))
+
             data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i],
                                                a=a*factor, b=b*factor)
     
@@ -840,7 +847,7 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
 
 
 def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float, 
-                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15, rescaled_fluxes=False):
+                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15, Cm=None):
 
 
     wall_edges = []
@@ -865,10 +872,11 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
                 d_Omega_edges.append(E)
             case _:
                 pass
-    if rescaled_fluxes:
-        l_max = max([e.l for e in Edges])
-    else:
+    if Cm is None:
         l_max = None
+    else:
+        l_max = max([e.l for e in Edges])
+
 
 # this better for the numpy based mesh
 
@@ -897,26 +905,26 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
 
     
     wall_edges.sort(key= lambda e : e.Triangles[0])
-    A_block = Gamma_global(k=k, N_elems = V.N_trig, Edges = wall_edges, d=d, d_d=d_d, d_1=d_1, l_max=l_max )
+    A_block = Gamma_global(k=k, N_elems = V.N_trig, Edges = wall_edges, d=d, d_d=d_d, d_1=d_1, l_max=l_max, Cm=Cm )
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
     n = [V.n[e.Triangles[0]] for e in inner_edges]
-    A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n, a=a, b=b, l_max=l_max)
+    A_block += Inner_PP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n, a=a, b=b, l_max=l_max, Cm=Cm)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
     n = [V.n[e.Triangles[1]] for e in inner_edges]
-    A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b, l_max=l_max)
+    A_block += Inner_MM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n=n,  a=a, b=b, l_max=l_max, Cm=Cm)
 
     inner_edges.sort(key= lambda e : e.Triangles[0])
     n_m = [V.n[e.Triangles[0]] for e in inner_edges]
     n_n = [V.n[e.Triangles[1]] for e in inner_edges]
-    A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b, l_max=l_max)
+    A_block += Inner_PM_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b, l_max=l_max, Cm=Cm)
 
     inner_edges.sort(key= lambda e : e.Triangles[1])
     n_n = [V.n[e.Triangles[0]] for e in inner_edges]
     n_m = [V.n[e.Triangles[1]] for e in inner_edges]
 
-    A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b, l_max=l_max)
+    A_block += Inner_MP_global(k=k, N_elems = V.N_trig, Edges = inner_edges, d=d, d_d=d_d, n_m=n_m, n_n=n_n, a=a, b=b, l_max=l_max, Cm=Cm)
 
 
 
