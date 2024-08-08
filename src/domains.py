@@ -138,14 +138,14 @@ class Waveguide:
 
 
 
-    def plot_field(self, X, Y, Z, show_edges = False, ax = None, source = None):
+    def plot_field(self, X, Y, Z, show_edges = False, ax = None, source = None, vmin= None, vmax=None):
         if ax is None: 
             fig, ax = plt.subplots( figsize=(15,3))
         match self.scatterer_type:
             case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
                 mask = self.in_scatterer(X.ravel(),Y.ravel())
                 Z = np.where(mask,np.nan,Z.ravel()).reshape(Z.shape)
-        s = ax.pcolormesh(X, Y, Z, shading="gouraud")
+        s = ax.pcolormesh(X, Y, Z, shading="gouraud", vmax=vmax, vmin=vmin)
         match self.scatterer_type:
             case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
                 for patch in self.scatterer_patchs:

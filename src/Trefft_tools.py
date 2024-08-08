@@ -259,7 +259,9 @@ def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
             data[i,:,:] = Gamma_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, d_1=d_1 )
     else:
         for (i, edge) in enumerate(Edges):
-            data[i,:,:] = Gamma_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, d_1=d_1*l_max/edge.l )
+            #factor = (1+l_max/edge.l)
+            factor = l_max / edge.l
+            data[i,:,:] = Gamma_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, d_d=d_d, d_1=d_1*factor )
     
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
     return A
@@ -282,8 +284,10 @@ def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
             data[i,:,:] = Inner_general_local(k = k, l = edge.l, M = edge.M, T = edge.T, N = edge.N, n_m=n[i], n_n=n[i], d = d, a = a, b = b)
     else:
         for (i, edge) in enumerate(Edges):
+            #factor = (1+l_max/edge.l)
+            factor = l_max / edge.l
             data[i,:,:] = Inner_general_local(k = k, l = edge.l, M = edge.M, T = edge.T, N = edge.N, n_m=n[i], n_n=n[i], d = d,
-                                            a = a*l_max/edge.l, b = b*l_max/edge.l)
+                                            a = a*factor, b = b*factor)
 
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
@@ -304,8 +308,10 @@ def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
             data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, n_m=n[i], n_n=n[i], d=d, a=-a, b=-b)
     else:
         for (i, edge) in enumerate(Edges):
+            #factor = (1+l_max/edge.l)
+            factor = l_max / edge.l
             data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, n_m=n[i], n_n=n[i], d=d,
-                                            a = -a*l_max/edge.l, b = -b*l_max/edge.l)
+                                            a = -a*factor, b = -b*factor)
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
 
@@ -329,8 +335,10 @@ def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
             data[i,:,:] = Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i], a=-a, b=-b)
     else:
         for (i, edge) in enumerate(Edges):
+            #factor = (1+l_max/edge.l)
+            factor = l_max / edge.l
             data[i,:,:] = Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i],
-                                              a = -a*l_max/edge.l, b = -b*l_max/edge.l)
+                                              a = -a*factor, b = -b*factor)
 
     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
@@ -351,8 +359,10 @@ def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
             data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i], a=a, b=b)
     else:
         for (i, edge) in enumerate(Edges):
+            #factor = (1+l_max/edge.l)
+            factor = l_max / edge.l
             data[i,:,:] = -Inner_general_local( k=k, l=edge.l, M=edge.M, T=edge.T, N=edge.N, d=d, n_m=n_m[i], n_n=n_n[i],
-                                               a=a*l_max/edge.l, b=b*l_max/edge.l)
+                                               a=a*factor, b=b*factor)
     
     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
@@ -830,7 +840,7 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
 
 
 def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float, 
-                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15) :
+                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15, rescaled_fluxes=False):
 
 
     wall_edges = []
@@ -855,8 +865,11 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
                 d_Omega_edges.append(E)
             case _:
                 pass
-    
-    l_max = max([e.l for e in Edges])
+    if rescaled_fluxes:
+        l_max = max([e.l for e in Edges])
+    else:
+        l_max = None
+
 # this better for the numpy based mesh
 
     # if not isinstance(a,np.ndarray):
