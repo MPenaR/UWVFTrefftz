@@ -190,7 +190,7 @@ def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, 
     
     I = -1j*k*l*(a + np.add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*np.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
     *exp(-1j*k*np.subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
-    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))/ np.exp(1j*k*np.subtract.outer(sqrt(n_n)*dot(d,M_n), sqrt(n_m)*dot(d,M_m)).transpose())
+    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))/ np.exp(1j*k*np.subtract.outer(sqrt(n_n)*dot(d,M_n), conj(sqrt(n_m))*dot(d,M_m)).transpose())
 
     return I
 
