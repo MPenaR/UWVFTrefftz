@@ -30,7 +30,7 @@ def FEM_solution(R : np.float64, H : np.float64,
     hmax_e = 2*np.pi/k_e / 20
     match scatterer_type:
         case ScattererType.PENETRABLE | ScattererType.ABSORBING:
-            hmax_i = 2*np.pi/np.real(k_i) / 10
+            hmax_i = 2*np.pi/np.real(k_i) / 20
 
     geo = SplineGeometry()
     p1 = geo.AppendPoint(-R,0) 
