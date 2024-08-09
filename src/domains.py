@@ -124,6 +124,8 @@ class Waveguide:
         self.Omega = Mesh(self.geo.GenerateMesh(maxh= h_max))
         self.Edges = [ Edge(self.Omega, e)  for e in self.Omega.edges ]
         self.meshed = True
+        self.Triangles = [ Triangle(self.Omega, self.Omega.faces[e.faces[0].nr]) for e in self.Omega.Elements()]
+        self.Triangles.sort(key= lambda t : t.index)
         if self.scatterer_type == ScattererType.ABSORBING:
             self.ScattererTriangles = [ Triangle(self.Omega, self.Omega.faces[e.faces[0].nr]) for e in self.Omega.Elements() if e.mat == "Omega_i"]
         return 
