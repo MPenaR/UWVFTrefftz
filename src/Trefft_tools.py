@@ -743,6 +743,24 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
                 pass
     return b
 
+def AssembleBlockRHS(V, Edges, k, H, d_2, t=0):
+    N_DOF = V.N_DOF
+    b = np.zeros((N_DOF), dtype=np.complex128)
+    Psi = V.TestFunctions
+    N_Edges = len(Edges)
+    
+    edges_Left = [ edge for edge in Edges if edge.Type == EdgeType.SIGMA_L]
+
+    # not blocky yet
+    for E in edges_Left:
+        K = E.Triangles[0]
+        M = V.Triangles[K].M
+        for m in V.DOF_range[K]:
+            psi = Psi[m]
+            b[m] += mode_RHS(psi, E, k, H, d_2, t=t) / np.exp(-1j*k*dot(psi.d,M))
+    return b
+
+
 
 
 # def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
