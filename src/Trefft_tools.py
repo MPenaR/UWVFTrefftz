@@ -176,7 +176,7 @@ def Gamma_term(phi, psi, k, edge, d_1):
 
 def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, d_1 : np.floating, M_trig : real_array) -> complex_array:
-    I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))/ np.outer(np.exp(1j*k*dot(d,M_trig)), np.exp(1j*k*dot(d,M_trig))) 
+    I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))/ np.exp(1j*k*np.subtract.outer(dot(d,M_trig), dot(d,M_trig)).transpose()) 
     return I
 
 # def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
@@ -190,14 +190,14 @@ def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, 
     
     I = -1j*k*l*(a + np.add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*np.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
     *exp(-1j*k*np.subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
-    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))/ np.outer(np.exp(1j*k*dot(d,M_m)), np.exp(1j*k*dot(d,M_n)))
+    *sinc(l*k/(2*pi)*np.subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))/ np.exp(1j*k*np.subtract.outer(sqrt(n_n)*dot(d,M_n), sqrt(n_m)*dot(d,M_m)).transpose())
 
     return I
 
 
 def Sigma_block_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, d_2 : np.floating, M_trig : real_array) -> complex_array:
-    I = -1j*k*l*(d_2 + dot(d,N))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))/ np.outer(np.exp(1j*k*dot(d,M_trig)), np.exp(1j*k*dot(d,M_trig)))
+    I = -1j*k*l*(d_2 + dot(d,N))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))/ np.exp(1j*k*np.subtract.outer(dot(d,M_trig), dot(d,M_trig)).transpose())
     return I
 
 
@@ -230,7 +230,7 @@ def Sigma_crossblock(k : complex, H : float, l_u : float, M_u : real_array, l_v 
         for s in range(1,N_DtN)]) )
 
  
-    return (I1 + I2 + I3)/ np.outer(np.exp(1j*k*dot(d,M_m)), np.exp(1j*k*dot(d,M_n)))
+    return (I1 + I2 + I3)/ np.exp(1j*k*np.subtract.outer(dot(d,M_n), dot(d,M_m)).transpose())
 
 
 def SoundSoft_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
