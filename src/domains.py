@@ -67,7 +67,7 @@ class Waveguide:
         self.meshed = False
         self.ScattererTriangles = []
 
-    def add_scatterer( self, scatterer_shape : ScattererShape, scatterer_type : ScattererType, params : list) :
+    def add_scatterer( self, scatterer_shape : ScattererShape, scatterer_type : ScattererType, params : list, h_s=0.01) :
         self.scatterer_type = scatterer_type
         match scatterer_type:
             case ScattererType.SOUND_HARD | ScattererType.SOUND_SOFT:
@@ -83,10 +83,12 @@ class Waveguide:
 
                 match scatterer_type:
                     case ScattererType.PENETRABLE | ScattererType.ABSORBING :
-                        self.geo.AddCircle(c=c, r=r, leftdomain=2, rightdomain=1)
+                        self.geo.AddCircle(c=c, r=r, leftdomain=2, rightdomain=1, maxh=h_s)
                         self.geo.SetMaterial (2, "Omega_i")
+                        self.geo.SetDomainMaxH(2, h_s)
+
                     case _:
-                        self.geo.AddCircle(c=c, r=r, bc="D_Omega", leftdomain=0, rightdomain=1)
+                        self.geo.AddCircle(c=c, r=r, bc="D_Omega", leftdomain=0, rightdomain=1, maxh=h_s)
             case ScattererShape.RECTANGLE:
                 c, width, height = params
 
@@ -95,10 +97,11 @@ class Waveguide:
                 
                 match scatterer_type:
                     case ScattererType.PENETRABLE | ScattererType.ABSORBING:
-                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1, maxh=h_s)
                         self.geo.SetMaterial (2, "Omega_i")
+                        self.geo.SetDomainMaxH(2, h_s)
                     case _:
-                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=0.05)
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=h_s)
                     
 
     def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):
