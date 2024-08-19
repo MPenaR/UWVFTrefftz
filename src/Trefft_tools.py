@@ -11,6 +11,12 @@ from numpy import sinc, cos
 from exact_solutions import GreenFunctionImages, GreenFunctionModes
 from integrators import fekete3 as int2D
 from integrators import vec_fekete3 as int2D_vec
+from integrators import vec_fekete_integrator as integrator2D_vec
+
+
+from functools import partial
+
+int2D_vec = partial(integrator2D_vec, level='9')
 
 from domains import ScattererType
 
@@ -921,7 +927,6 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
                                    N = np.array([1,0]), d_2=d_2, N_DtN=N_DtN, Triangles=V.Triangles)    
 
     if len(d_Omega_edges) > 0:
-        print('hola')
         d_Omega_edges.sort(key= lambda e : e.Triangles[0])
         A_block += SoundSoft_global(k=k, N_elems = V.N_trig, Edges = d_Omega_edges, d=d, d_d=d_d, a=a )
 
@@ -930,7 +935,6 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
         ScattererTriangles = V.ScattererTriangles
         ScattererTriangles.sort( key = lambda T  : T.index )
         n = [ V.n[T.index] for T in ScattererTriangles] 
-        print('we are in the absorbing case')
         A_block += absorption_term_global( Triangles=ScattererTriangles, N_elems= V.N_trig, d_d=d_d, n=n, k=k) 
 
     
