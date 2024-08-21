@@ -41,7 +41,7 @@ def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, fi
 
     ax[0].set_xlabel('Number of basis functions per element ($N_p$)')
     #ax[0].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2 \\, / \\, \\left\\Vert u \\right\\Vert_2$')
-    ax[0].set_ylabel('relative $L_2$ error')
+    ax[0].set_ylabel('Relative $L_2$ error')
     ax[0].yaxis.set_major_locator(mticker.LogLocator(numticks=999))
     ax[0].yaxis.set_minor_locator(mticker.LogLocator(numticks=999, subs="auto"))
     ax[0].set_xticks(range(3,17,2))
@@ -54,7 +54,7 @@ def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, fi
 
     ax[1].set_xlabel('Scaled mesh parameter ($kh$)')
     # ax[1].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2 \\, / \\, \\left\\Vert u \\right\\Vert_2$')
-    ax[1].set_ylabel('relative $L_2$ error')
+    ax[1].set_ylabel('Relative $L_2$ error')
 
     ax[1].legend(loc="lower right")
     ax[1].yaxis.set_major_locator(mticker.LogLocator(numticks=999))
