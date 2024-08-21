@@ -11,12 +11,12 @@ from numpy import sinc, cos
 from exact_solutions import GreenFunctionImages, GreenFunctionModes
 from integrators import fekete3 as int2D
 from integrators import vec_fekete3 as int2D_vec
-from integrators import vec_fekete_integrator as integrator2D_vec
+# from integrators import vec_fekete_integrator as integrator2D_vec
 
 
-from functools import partial
+# from functools import partial
 
-int2D_vec = partial(integrator2D_vec, level='9')
+# int2D_vec = partial(integrator2D_vec, level='9')
 
 from domains import ScattererType
 

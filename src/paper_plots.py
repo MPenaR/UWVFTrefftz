@@ -22,21 +22,25 @@ bottom_margin = 1.5*cm2inch # cm
 box_width = left_margin + figure_width + right_margin   # cm
 box_height = top_margin + figure_height + bottom_margin # cm
 
-
+from matplotlib import ticker as mticker 
 
 def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, filename=None):
 
     fig, ax = plt.subplots(nrows=2,figsize=(box_width,box_height))
 
+    f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
+    #g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
+    fmt = mticker.FuncFormatter(f)
+
     for err, h in zip(errors,hs):
-        ax[0].semilogy(N_ths,err,'.-', label=f'$h_\\mathrm{{max}} = {h: .1e}$')
+        ax[0].semilogy(N_ths,err,'.-', label=f'$h = {f.format_data(float(f'{h : .2e}'))}$')
 
 
     if title:
         fig.suptitle(title)
 
     ax[0].set_xlabel('$N_p$')
-    ax[0].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2^2 \\, / \\, \\left\\Vert u \\right\\Vert_2^2$')
+    ax[0].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2 \\, / \\, \\left\\Vert u \\right\\Vert_2$')
     ax[0].yaxis.set_major_locator(mticker.LogLocator(numticks=999))
     ax[0].yaxis.set_minor_locator(mticker.LogLocator(numticks=999, subs="auto"))
     ax[0].set_xticks(range(3,17,2))
@@ -48,7 +52,7 @@ def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, fi
         ax[1].loglog(kappa_e*hs,err,'.-', label=f'$N_P = {N_th}$')
 
     ax[1].set_xlabel('$\\kappa h$')
-    ax[1].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2^2 \\, / \\, \\left\\Vert u \\right\\Vert_2^2$')
+    ax[1].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2 \\, / \\, \\left\\Vert u \\right\\Vert_2$')
     ax[1].legend(loc="lower right")
     ax[1].yaxis.set_major_locator(mticker.LogLocator(numticks=999))
     ax[1].yaxis.set_minor_locator(mticker.LogLocator(numticks=999, subs="auto"))
