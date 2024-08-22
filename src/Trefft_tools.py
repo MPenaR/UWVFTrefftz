@@ -806,7 +806,7 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
 
 
 def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float, 
-                   H : float, k=0.8, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15) :
+                   H : float, k=8.0, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15) :
 
 
     wall_edges = []

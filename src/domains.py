@@ -179,6 +179,7 @@ class Waveguide:
         ax.set_xlabel('$x_1$')
         ax.set_ylabel('$\\mathbf{\\hat{x}}$')
         fig.colorbar(ax=ax, mappable=s )
+        return ax
         
 
 
