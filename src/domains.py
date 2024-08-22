@@ -167,7 +167,7 @@ class Waveguide:
 
         if show_edges: 
             lines = [ [E.P, E.Q] for E in self.Edges]
-            ax.add_collection(LineCollection(lines, colors='k', linewidth=0.8))
+            ax.add_collection(LineCollection(lines, colors='k', linewidth=0.3))
         
         R = self.R
         H = self.H
@@ -181,8 +181,8 @@ class Waveguide:
             ax.plot(source[0], source[1], '+r')
             ax.set_xlim([source[0]-0.1,self.R])
         ax.set_ylim([0,H])
-        ax.set_xlabel('$x_1$')
-        ax.set_ylabel('$\\mathbf{\\hat{x}}$')
+        # ax.set_xlabel('$x_1$')
+        # ax.set_ylabel('$\\mathbf{\\hat{x}}$')
         fig.colorbar(ax=ax, mappable=s )
         
 
