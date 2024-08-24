@@ -30,7 +30,10 @@ from matplotlib import ticker as mticker
 import matplotlib
 
 matplotlib.style.use({
-    "font.size" : 7
+    "font.size" : 7,
+    "lines.linewidth" : 1.0,
+    "lines.markersize":      3 
+
 })
 
 def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, filename=None, ax = None):
