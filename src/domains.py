@@ -176,8 +176,8 @@ class Waveguide:
             ax.plot(source[0], source[1], '+r')
             ax.set_xlim([source[0]-0.1,self.R])
         ax.set_ylim([0,H])
-        ax.set_xlabel('$x_1$')
-        ax.set_ylabel('$\\mathbf{\\hat{x}}$')
+        # ax.set_xlabel('$x_1$')
+        # ax.set_ylabel('$\\mathbf{\\hat{x}}$')
         fig.colorbar(ax=ax, mappable=s )
         
 
@@ -220,8 +220,8 @@ class Waveguide:
         else:
             ax.set_xlim([-self.R-d,self.R+d])
         ax.set_ylim([0-d,self.H+d])
-        ax.set_xlabel('$x_1$')
-        ax.set_ylabel('$\\mathbf{\\hat{x}}$')
+        # ax.set_xlabel('$x_1$')
+        # ax.set_ylabel('$\\mathbf{\\hat{x}}$')
         ax.set_yticks([0,self.H])
         ax.set_xticks([-self.R,0,self.R])
 
