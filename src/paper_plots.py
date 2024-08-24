@@ -9,24 +9,34 @@ cm2inch = 1/2.54 # inch per cm
 columnwidth = 630.185 * inches_per_dot
 columnwidth = 469.75502 * inches_per_dot
 #columnwidth = 524.07272*inches_per_dot
+columnwidth = 370.38374 * inches_per_dot
 
-columnwidth=columnwidth*0.9
 
 left_margin = 3. * cm2inch # cm
 right_margin = 1.*cm2inch  # cm
-figure_width = columnwidth # cm
-figure_height = columnwidth/1. # cm
+figure_width = 0.9*columnwidth # cm
+figure_height = 0.8*columnwidth # cm
 top_margin = 2.*cm2inch    # cm
 bottom_margin = 1.5*cm2inch # cm
 
 box_width = left_margin + figure_width + right_margin   # cm
 box_height = top_margin + figure_height + bottom_margin # cm
 
-from matplotlib import ticker as mticker 
+
+
+
+from matplotlib import ticker as mticker
+
+import matplotlib
+
+matplotlib.style.use({
+    "font.size" : 7
+})
+
 
 def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, filename=None):
 
-    fig, ax = plt.subplots(nrows=2,figsize=(box_width,box_height))
+    fig, ax = plt.subplots(nrows=2,figsize=(figure_width,figure_height))
 
     f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
     #g = lambda x,pos : "${}$".format(f._formatSciNotation('%1.10e' % x))
@@ -63,10 +73,11 @@ def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, fi
     plt.grid(True,which="major",ls='--')
 
 
-    fig.subplots_adjust(left   = left_margin / box_width,
-                        bottom = bottom_margin / box_height,
-                        right  = 1. - right_margin / box_width,
-                        top    = 1. - top_margin   / box_height)
+    fig.subplots_adjust(left   = 0.15,
+                        bottom = 0.15,
+                        right  = 0.98,
+                        top    = 0.98,
+                        hspace = 0.35)
 
     if filename:
         plt.savefig(filename)
