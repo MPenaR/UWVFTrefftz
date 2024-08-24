@@ -143,7 +143,7 @@ class Waveguide:
 
 
 
-    def plot_field(self, X, Y, Z, show_edges = False, ax = None, source = None, vmin = None, vmax=None):
+    def plot_field(self, X, Y, Z, show_edges = False, fig = None, ax = None, source = None, vmin = None, vmax=None):
         if ax is None: 
             fig, ax = plt.subplots( figsize=(15,3))
         match self.scatterer_type:
