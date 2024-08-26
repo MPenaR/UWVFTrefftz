@@ -138,7 +138,7 @@ class Waveguide:
 
 
 
-    def plot_field(self, X, Y, Z, show_edges = False, ax = None, source = None, vmin= None, vmax=None):
+    def plot_field(self, X, Y, Z, show_edges = False, ax = None, colorbar = False, source = None, vmin= None, vmax=None):
         if ax is None: 
             fig, ax = plt.subplots( figsize=(15,3))
         match self.scatterer_type:
@@ -178,7 +178,9 @@ class Waveguide:
         ax.set_ylim([0,H])
         # ax.set_xlabel('$x_1$')
         # ax.set_ylabel('$\\mathbf{\\hat{x}}$')
-        fig.colorbar(ax=ax, mappable=s )
+        if colorbar:
+            fig.colorbar(ax=ax, mappable=s )
+        return s
         
 
 
@@ -213,7 +215,7 @@ class Waveguide:
                 
 
 
-        d = 0.2
+        d = 0.0
         ax.axis('square')
         if self.half_infinite:
             ax.set_xlim([-d,self.R+d])

@@ -25,14 +25,28 @@ box_height = top_margin + figure_height + bottom_margin # cm
 from matplotlib import ticker as mticker
 
 
-def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, filename=None):
+def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, filename=None, ax = None, ncol=1, divided_legend=False):
 
-    fig, ax = plt.subplots(nrows=2,figsize=(box_width,box_height))
+    lcut = 4
+    if ax is None:
+        fig, ax = plt.subplots(nrows=2,figsize=(box_width,box_height))
 
     f = mticker.ScalarFormatter(useMathText=True, useOffset=False)
 
-    for err, h in zip(errors,hs):
-        ax[0].semilogy(N_ths,err,'.-', label=f'$kh= {f.format_data(float( f'{kappa_e*h: .1e}')) }$')
+    if not divided_legend:
+        for err, h in zip(errors,hs):     
+            ax[0].semilogy(N_ths,err,'.-', label=f'$kh= {f.format_data(float( f'{kappa_e*h: .1e}')) }$')
+    elif divided_legend==1:
+        for err, h in zip(errors[:lcut],hs[:lcut]):     
+            ax[0].semilogy(N_ths,err,'.-', label=f'$kh= {f.format_data(float( f'{kappa_e*h: .1e}')) }$')
+        for err, h in zip(errors[lcut:],hs[lcut:]):     
+            ax[0].semilogy(N_ths,err,'.-', label='_nolegend_')
+        
+    elif divided_legend==2:
+        for err, h in zip(errors[:lcut],hs[:lcut]):     
+            ax[0].semilogy(N_ths,err,'.-', label='_nolegend_')
+        for err, h in zip(errors[lcut:],hs[lcut:]):     
+            ax[0].semilogy(N_ths,err,'.-', label=f'$kh= {f.format_data(float( f'{kappa_e*h: .1e}')) }$')
 
 
     if title:
@@ -45,26 +59,40 @@ def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, fi
     ax[0].yaxis.set_minor_locator(mticker.LogLocator(numticks=999, subs="auto"))
     ax[0].set_xticks(range(3,17,2))
     ax[0].grid(True,which="major",ls='--')
-    ax[0].legend()
+    ax[0].legend(loc="lower left", ncol=ncol)
 
 
-    for err, N_th in zip(errors.transpose(),N_ths):
-        ax[1].loglog(kappa_e*hs,err,'.-', label=f'$N_P = {N_th}$')
+
+    if not divided_legend:       
+        for err, N_th in zip(errors.transpose(),N_ths):
+            ax[1].loglog(kappa_e*hs,err,'.-', label=f'$N_P = {N_th}$')
+    elif divided_legend == 1:
+        for err, N_th in zip(errors.transpose()[:lcut],N_ths[:lcut]):
+            ax[1].loglog(kappa_e*hs,err,'.-', label=f'$N_P = {N_th}$')
+        for err, N_th in zip(errors.transpose()[lcut:],N_ths[lcut:]):
+            ax[1].loglog(kappa_e*hs,err,'.-', label='_nolegend_')
+
+    elif divided_legend == 2:
+        for err, N_th in zip(errors.transpose()[:lcut],N_ths[:lcut]):
+            ax[1].loglog(kappa_e*hs,err,'.-', label='_nolegend_')
+        for err, N_th in zip(errors.transpose()[lcut:],N_ths[lcut:]):
+            ax[1].loglog(kappa_e*hs,err,'.-', label=f'$N_P = {N_th}$')
+
 
     ax[1].set_xlabel('Scaled mesh parameter ($kh$)')
     #ax[1].set_ylabel('$\\left\\Vert u - u_h\\right\\Vert_2^2 \\, / \\, \\left\\Vert u \\right\\Vert_2^2$')
     ax[1].set_ylabel('Relative $L_2$ error.')
-    ax[1].legend(loc="lower right")
+    ax[1].legend(loc="lower right", ncol=ncol)
     ax[1].yaxis.set_major_locator(mticker.LogLocator(numticks=999))
     ax[1].yaxis.set_minor_locator(mticker.LogLocator(numticks=999, subs="auto"))
 
-    plt.grid(True,which="major",ls='--')
+    ax[1].grid(True,which="major",ls='--')
 
-
-    fig.subplots_adjust(left   = left_margin / box_width,
-                        bottom = bottom_margin / box_height,
-                        right  = 1. - right_margin / box_width,
-                        top    = 1. - top_margin   / box_height)
+    if ax is None:
+        fig.subplots_adjust(left   = left_margin / box_width,
+                            bottom = bottom_margin / box_height,
+                            right  = 1. - right_margin / box_width,
+                            top    = 1. - top_margin   / box_height)
 
     if filename:
         plt.savefig(filename)
