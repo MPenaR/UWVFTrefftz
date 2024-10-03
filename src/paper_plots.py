@@ -5,7 +5,7 @@ import numpy as np
 
 
 inches_per_dot = 1/72.27
-cm2inch = 1/2.54 # inch per cm
+cm2inch = 1/2.54  #inch per cm
 columnwidth = 630.185 * inches_per_dot
 columnwidth = 469.75502 * inches_per_dot
 #columnwidth = 524.07272*inches_per_dot
