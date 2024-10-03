@@ -6,4 +6,5 @@ theory/*.lyx~
 theory/*.log
 theory/*.gz
 src/mode_vs_plane/
+src/*.ipynb
 results/
