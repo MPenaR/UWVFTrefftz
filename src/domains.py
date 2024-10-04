@@ -20,6 +20,7 @@ class ScattererShape(Enum):
     '''Enumeration of the different scatterer shapes.'''
     RECTANGLE = auto()
     CIRCLE = auto()
+    DIAMOND = auto()
 
 
 
@@ -100,6 +101,23 @@ class Waveguide:
                     case _:
                         self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=0.05)
                     
+
+            case ScattererShape.DIAMOND:
+                c, width, height = params
+
+                self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])< width/2, np.abs(y - c[1]) < height/2 ))
+                self.scatterer_patchs.append( lambda c=c, width=width, height=height, kwargs=kwargs :Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
+                
+                match scatterer_type:
+                    case ScattererType.PENETRABLE | ScattererType.ABSORBING:
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
+                        self.geo.SetMaterial (2, "Omega_i")
+                    case _:
+                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=0.05)
+
+
+
+
 
     def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):
             factor = 0.9
