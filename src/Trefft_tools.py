@@ -1,4 +1,4 @@
-
+# %%
 import numpy as np
 from numpy import dot, pi, exp, sqrt, abs, conj
 from numpy.lib.scimath import sqrt
@@ -12,22 +12,27 @@ from exact_solutions import GreenFunctionImages, GreenFunctionModes
 from integrators import fekete3 as int2D
 from integrators import vec_fekete3 as int2D_vec
 
+# %%
 from domains import ScattererType
 
 
+# %%
 import numpy.typing as npt
 
 
+# %%
 real_array = npt.NDArray[np.floating]
 complex_array = npt.NDArray[np.complexfloating]
 
+# %%
 
-
-
+# %%
 TestFunction = namedtuple("TestFunction", ["n", "d"])
 
 
+# %%
 
+# %%
 class TrefftzSpace:
     '''Defines a finite dimensional Trefftz space given
     a mesh, the number of plane-waves per element and 
@@ -76,8 +81,9 @@ class TrefftzSpace:
         return [ TestFunction( n= self.n[self.DOF_ownership[ID]], d=self.d[self.DOF_ownership[ID]][self.global_to_local[ID]]) for ID in range(self.N_DOF)]
 
 
+# %%
 
-
+# %%
 class TrefftzFunction:
     def __init__( self, V, DOFs = 0.):
         '''Returns a Trefftz function with degrees of freedom set to "DOFs"'''
@@ -158,6 +164,7 @@ class TrefftzFunction:
         return dudy 
 
 
+# %%
 def Gamma_term(phi, psi, k, edge, d_1):
 
     d_m = psi.d
@@ -171,16 +178,19 @@ def Gamma_term(phi, psi, k, edge, d_1):
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
     return I
 
+# %%
 def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, d_1 : np.floating) -> complex_array:
     I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))
     return I
 
+# %% [markdown]
 # def Inner_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
 #                  d : real_array, d_d : real_array, a : np.floating, b : np.floating) -> complex_array:
 #     I = -1j*k*l*( np.add.outer(dot(d, N),dot(d, N))/2 + a + b*np.outer(dot(d, N),dot(d, N)))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
 #     return I
 
+# %%
 def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_n, n_m, 
                         d : real_array, a : np.floating, b : np.floating) -> complex_array:
 
@@ -192,15 +202,14 @@ def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, 
     return I
 
 
+# %%
 def Sigma_block_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, d_2 : np.floating) -> complex_array:
     I = -1j*k*l*(d_2 + dot(d,N))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
     return I
 
 
-
-
-
+# %%
 def Sigma_crossblock(k : complex, H : float, l_u : float, M_u : real_array, l_v : float, M_v : real_array, N : real_array,
                  d : real_array, d_2 : np.floating, N_DtN : int) -> complex_array:
 
@@ -230,19 +239,21 @@ def Sigma_crossblock(k : complex, H : float, l_u : float, M_u : real_array, l_v 
     return I1 + I2 + I3
 
 
+# %%
 def SoundSoft_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, a : np.floating) -> complex_array:
     
     I = -1j*k*l*exp(1j*k*dot(d_d, M))*sinc(k*l/(2*pi)*dot(d_d,T))*(dot(d, N) + a)
     return  I
 
+# %%
 
-
-
+# %% [markdown]
 # bsr works block by block. indprt must allways have N+1 items where N is the number of block rows
 # indices and data must have the same number of items, as they locate the blocks for each "block row"
 
 
+# %%
 # This assumes they are sorted, i.e. [e.Triangles[0]] appears sorted 
 def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, d_1 : np.floating) -> complex_array:
@@ -261,7 +272,7 @@ def Gamma_global(k : complex, N_elems : int,  Edges : real_array,
     return A
 
 
-
+# %%
 def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
@@ -278,6 +289,7 @@ def Inner_PP_global(k : complex, N_elems : int,  Edges : real_array,
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
 
+# %%
 def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, n : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
@@ -295,6 +307,7 @@ def Inner_MM_global(k : complex, N_elems : int,  Edges : real_array,
     return A
 
 
+# %%
 # plus for m, minus for n
 def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, n_n : complex_array, n_m : complex_array, a : np.floating, b : np.floating) -> complex_array:
@@ -313,6 +326,7 @@ def Inner_PM_global(k : complex, N_elems : int,  Edges : real_array,
     A = bsr_array((data, indices_M, indptr), shape=(N_elems*N_p, N_elems*N_p))
     return A
 
+# %%
 def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
                  d : real_array, d_d : real_array, n_n : complex_array, n_m : complex_array, a : np.floating, b : np.floating) -> complex_array:
     N_p = d_d.shape[0]
@@ -330,11 +344,7 @@ def Inner_MP_global(k : complex, N_elems : int, Edges : real_array,
     return A
 
 
-
-
-
-
-
+# %%
 def Sigma_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, d_2 : np.floating) -> complex_array:
     N_p = d_d.shape[0]
@@ -351,6 +361,7 @@ def Sigma_global(k : complex, N_elems : int,  Edges : real_array,
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
     return A
 
+# %%
 def Sigma_cross_global(k : complex, H : float,  N_elems : int,  Edges : real_array,
                  d : real_array, N : real_array, d_2 : np.floating, N_DtN : int) -> complex_array:
     N_p = d.shape[0]
@@ -376,9 +387,7 @@ def Sigma_cross_global(k : complex, H : float,  N_elems : int,  Edges : real_arr
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
     return A
 
-
-
-
+# %%
 def SoundSoft_global(k : complex, N_elems : int,  Edges : real_array,
                  d : real_array, d_d : real_array, a : np.floating) -> complex_array:
     N_p = d_d.shape[0]
@@ -396,7 +405,7 @@ def SoundSoft_global(k : complex, N_elems : int,  Edges : real_array,
     return A
 
 
-
+# %%
 def absorption_term_local(r_A, r_B, r_C, d_d, n, k):
     k_i =  k * sqrt(n)
     def f(x,y):
@@ -408,6 +417,7 @@ def absorption_term_local(r_A, r_B, r_C, d_d, n, k):
 
     return I
 
+# %%
 def absorption_term_global(Triangles : list, N_elems : int, d_d : real_array, n : list, k : float ):
     N_p = d_d.shape[0]
     N_Triangles = len(Triangles)
@@ -423,11 +433,7 @@ def absorption_term_global(Triangles : list, N_elems : int, d_d : real_array, n 
     return A
 
 
-
-
-
-
-
+# %%
 def Inner_term_general(phi, psi, edge, k, a, b):
 
     d_m = psi.d
@@ -447,11 +453,7 @@ def Inner_term_general(phi, psi, edge, k, a, b):
     return I
 
 
-
-
-
-
-
+# %%
 def sound_soft_term(phi, psi, k, edge, a):
 
     d_m = psi.d
@@ -467,6 +469,7 @@ def sound_soft_term(phi, psi, k, edge, a):
     return  I
 
 
+# %%
 def Sigma_local(phi, psi, k, edge, d_2):
 
     d_n = phi.d
@@ -483,6 +486,7 @@ def Sigma_local(phi, psi, k, edge, d_2):
     return I
 
 
+# %%
 def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
 
     d_n = phi.d
@@ -518,6 +522,7 @@ def Sigma_nonlocal(phi, psi, edge_u, edge_v, k, H, d_2, Np=15):
     return  I1 + I2 + I3
 
 
+# %%
 def absorption_term( phi, psi, r_A, r_B, r_C, k):
     n = phi.n
     k_i =  k * sqrt(n)
@@ -526,9 +531,9 @@ def absorption_term( phi, psi, r_A, r_B, r_C, k):
     I = -2*1j*k**2*np.imag(n)*int2D(lambda x, y : np.exp(1j*k_i*dot(d_n - d_m,np.array((x,y)))), r_A=r_A, r_B=r_B, r_C=r_C)
 
     return I
-    
 
 
+# %%
 def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge], 
                    H : float, a = 0.5, b = 0.5, d_1 = 0.5, d_2 = 0.5, 
                    Np=10, full_matrix = False) -> spmatrix:
@@ -688,7 +693,7 @@ def AssembleMatrix(V : TrefftzSpace,  Edges : tuple[Edge],
     return A
 
 
-
+# %%
 def mode_RHS(psi, E, k, H, d_2, t):
     d = psi.d
     d_y = d[1]
@@ -713,7 +718,7 @@ def mode_RHS(psi, E, k, H, d_2, t):
     return F + S
 
 
-
+# %%
 def AssembleRHS(V, Edges, k, H, d_2, t=0):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
@@ -736,16 +741,17 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
                 pass
     return b
 
-
-
+# %% [markdown]
 # def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
 #     M = E.M
 #     T = E.T 
 #     N = E.N
 #     l = E.l
 
+# %% [markdown]
 #     d_m = psi.d
 
+# %% [markdown]
 #     Npoints = 200
 #     t = np.linspace(-l/2,l/2,Npoints)
 #     if modes:
@@ -755,9 +761,9 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
 #     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
 #     return I
 
+# %%
 
-
-
+# %% [markdown]
 # def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=20):
 #     N_DOF = V.N_DOF
 #     b = np.zeros((N_DOF), dtype=np.complex128)
@@ -768,6 +774,7 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
 #     else:
 #         a_vec = a
 
+# %% [markdown]
 #     for (E, a)  in zip(Edges,a_vec):
 #         match E.Type:                
 #             case EdgeType.D_OMEGA | EdgeType.COVER:
@@ -778,6 +785,7 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
 #     return b
 
 
+# %%
 def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
     N_DOF = V.N_DOF
     b = np.zeros((N_DOF), dtype=np.complex128)
@@ -805,6 +813,7 @@ def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):
     return b
 
 
+# %%
 def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float, 
                    H : float, k=8.0, N_p = 3, a = 1/2,  b = 1/2, d_1 = 1/2, d_2=1/2, N_DtN = 15) :
 
@@ -831,10 +840,12 @@ def Assemble_blockMatrix(V : TrefftzSpace,  Edges : tuple[Edge], th_0 : float,
                 d_Omega_edges.append(E)
             case _:
                 pass
-    
 
+
+# %% [markdown]
 # this better for the numpy based mesh
 
+    # %%
     # if not isinstance(a,np.ndarray):
     #     a = np.full( shape=len(Edges), fill_value= a)
 

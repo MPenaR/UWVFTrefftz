@@ -3,22 +3,23 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: src-Guvbhf-t
 #     language: python
 #     name: python3
 # ---
 
+# %%
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh, NodeId, VERTEX, ElementId, VOL
 import matplotlib.pyplot as plt 
 import numpy as np
 from typing import Optional
 
-# +
+# %%
 L = 1
 H = 0.2
 
@@ -30,7 +31,7 @@ geo.SetMaterial (1, "background")
 Omega = Mesh( geo.GenerateMesh(maxh=0.4) )
 
 
-# +
+# %%
 def plot_mesh( M : Mesh, ax : Optional[plt.Axes] = None ): 
     """Plots a mesh"""
     points = np.fromiter( (v.point for v in M.vertices), dtype=np.dtype((float, 2)), count=M.nv)
@@ -65,7 +66,7 @@ def plot_mesh( M : Mesh, ax : Optional[plt.Axes] = None ):
 plot_mesh(Omega)
 
 
-# +
+# %%
 def explore_mapping( x : float, y : float,  M : Mesh, ax : Optional[plt.Axes] = None ):
     """Plots a point in the mesh as well as in the reference domain."""
     points = np.fromiter( (v.point for v in M.vertices), dtype=np.dtype((float, 2)), count=M.nv)
@@ -115,31 +116,36 @@ def explore_mapping( x : float, y : float,  M : Mesh, ax : Optional[plt.Axes] = 
 explore_mapping( 0.1, 0,  Omega )
 
 
-# -
-
+# %%
 def eval_func( x : float, y : float, Omega : Mesh, u,  ):
     mp = Omega( x, y)
     e_ID = mp.nr
     a, b, c = mp.pnt
 
 
+# %%
 Elements = [ e for e in Omega.Elements()]
 
+# %%
 pnt = (0.4, -0.05)
 mp = Omega(*pnt)
 mp.nr
 
+# %%
 x, y, _ = mp.pnt
 p =  np.array(Omega.vertices[Elements[mp.nr].vertices[0].nr].point)
 q =  np.array(Omega.vertices[Elements[mp.nr].vertices[1].nr].point)
 r =  np.array(Omega.vertices[Elements[mp.nr].vertices[2].nr].point)
 x, y
 
+# %%
 p, q, r
 
 
+# %%
 f_p = lambda x, y : x
 f_q = lambda x, y : y
 f_r = lambda x, y : 1 - x - y
 
+# %%
 p*f_p(x,y) + q*f_q(x,y) + r*f_r(x,y)

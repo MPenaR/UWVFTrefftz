@@ -3,15 +3,16 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: src-Guvbhf-t
 #     language: python
 #     name: python3
 # ---
 
+# %%
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh, VOL, BND
 import matplotlib.pyplot as plt
@@ -19,7 +20,7 @@ import numpy as np
 from numpy.linalg import norm
 from numpy import dot, exp, sqrt, pi, sin
 
-# +
+# %%
 R = 10.
 H = 1.
 
@@ -63,7 +64,7 @@ def TestMesh( h_max = 2.):
 Omega = TestMesh()
 
 
-# +
+# %%
 def plot_mesh( M : Mesh, ax : plt.Axes | None = None): 
     """Plots a mesh"""
     points = np.fromiter( (v.point for v in M.vertices), dtype=np.dtype((float, 2)), count=M.nv)
@@ -109,11 +110,11 @@ def plot_mesh( M : Mesh, ax : plt.Axes | None = None):
 
 plot_mesh(Omega)
 
-# -
 
+# %% [markdown]
 # Lets check for counter clockwise-ness
 
-# +
+# %%
 # def cross_product(ux, uy, vx, vy):
 #     cp = ux*vy - uy*vx
 #     return cp
@@ -136,12 +137,10 @@ plot_mesh(Omega)
 # for K in triangles:
 #     print(is_counterclockwise(K))
 
-    
-# -
-
+# %% [markdown]
 # I think its easier if we force it to be counter-clockwise
 
-# +
+# %%
 # cc_triangles = []
 # for K in triangles:
 #     if is_counterclockwise(K):
@@ -149,7 +148,7 @@ plot_mesh(Omega)
 #     else:
 #         cc_triangles.append((K.vertices[1],K.vertices[0],K.vertices[2]))
 
-# +
+# %%
 # def is_counterclockwise(K):
 #     px, py = vertices[K[0].nr].point
 #     qx, qy = vertices[K[1].nr].point
@@ -165,10 +164,11 @@ plot_mesh(Omega)
 # for K in cc_triangles:
 #     print(is_counterclockwise(K))
 
-# -
 
+# %% [markdown]
 # I need to brute force the definition of K+ and K- 
 
+# %%
 Vertices = np.array([ list(v.point) for v in Omega.vertices])
 Triangles = [ [ v.nr for v in K.vertices] for K in Omega.faces ]
 Sides = [ [ v.nr for v in E.vertices] for E in Omega.edges ]
@@ -176,18 +176,18 @@ Baricenters = np.array([ 1/3 * sum([Vertices[v] for v in K]) for K in Triangles 
 MidPoints = np.array([ 1/2 * sum([Vertices[v] for v in s]) for s in Sides] )
 
 
-# +
+# %%
 def CheckPoints(Omega, Baricenters, MidPoints):
     plot_mesh(Omega)
     plt.plot( Baricenters[:,0], Baricenters[:,1],'.r')
     plt.plot( MidPoints[:,0], MidPoints[:,1],'.b')
 
 CheckPoints(Omega, Baricenters, MidPoints)
-# -
 
+# %% [markdown]
 # The vertices in each triangle are not given in a clockwise or counter-clockwise manner in general. For that reason the normal vector is hardcoded.
 
-# +
+# %%
 from enum import Enum, auto
 
 class EdgeType(Enum):
@@ -297,11 +297,11 @@ class Edge:
 
 Edges = [ Edge(Omega, e)  for e in Omega.edges ]
 
-# -
 
+# %% [markdown]
 # Checking the labels
 
-# +
+# %%
 def check_labels(Edges, ax = None): 
     """Checks the labelling"""
 
@@ -334,11 +334,11 @@ def check_labels(Edges, ax = None):
 
 check_labels(Edges)
 
-# -
 
+# %% [markdown]
 # Checking the orientation of the normals...
 
-# +
+# %%
 def CheckNormals(Omega, Vertices, Edges):
     Normals = np.array( [ E.N for E in Edges])
     Tangents = np.array( [ E.T for E in Edges])
@@ -352,7 +352,7 @@ def CheckNormals(Omega, Vertices, Edges):
 CheckNormals(Omega, Vertices, Edges)
 
 
-# +
+# %%
 # def CheckPlusMinus(Omega,Edges):
 #     Normals = np.array( [ E.N for E in Edges])
 #     MidPoints = np.array( [ E.midpoint for E in Edges])
@@ -365,7 +365,7 @@ CheckNormals(Omega, Vertices, Edges)
     
 # CheckPlusMinus(Omega,Edges) #THIS IS NOT REALLY CHECKING PLUS MINUS, ONLY REPRESENTING THE CORRECT ONES
 
-# +
+# %%
 def CheckPlusMinus(Edges,Baricenters):
     Normals = np.array( [ E.N for E in Edges])
     MidPoints = np.array( [ E.midpoint for E in Edges])
@@ -381,7 +381,7 @@ def CheckPlusMinus(Edges,Baricenters):
 CheckPlusMinus(Edges, Baricenters) 
 
 
-# +
+# %%
 class TrefftzSpace:
     '''Defines a finite dimensional Trefftz space given
     a mesh, the number of plane-waves per element and 
@@ -469,9 +469,9 @@ from collections import namedtuple
 
 TestFunction = namedtuple("TestFunction", ["k", "d"])
 
-    
 
-# +
+
+# %%
 #V = TrefftzSpace(Omega, np.tile([5,5], Omega.ne//2),{"Omega_i" : 5. , "Omega_e" : 4.})
 
 
@@ -479,7 +479,7 @@ Nth = 9
 V = TrefftzSpace(Omega, Nth, {"Omega_i" : 4. , "Omega_e" : 9.})
 
 
-# +
+# %%
 # class TrefftzFun:
 #     def __init__( self, Omega : Mesh, Np : list[int], kappa : list[float]):
 #         assert Omega.ne == len(Np)
@@ -509,20 +509,21 @@ V = TrefftzSpace(Omega, Nth, {"Omega_i" : 4. , "Omega_e" : 9.})
 
 
 
-# +
+# %%
 # Nth = 3
 # Np = np.full(Omega.ne, Nth, dtype=np.int32) #homogeneous number of plane waves
 # k_in = 70
 # k_out = 7
 # kappa = [ k_out if e.mat == "Omega_e" else k_in for e in Omega.Elements()]
 # f = TrefftzFun(Omega, Np, kappa)
-# -
 
+# %% [markdown]
 # # Naive Implementation:
 
+# %% [markdown]
 # This implementation should not be stable
 
-# +
+# %%
 # Phi = V.TrialFunctions
 # Psi = V.TestFunctions # currently the same spaces 
 # for e_ID, K in enumerate(V.Omega.Elements(VOL)):
@@ -550,12 +551,10 @@ V = TrefftzSpace(Omega, Nth, {"Omega_i" : 4. , "Omega_e" : 9.})
 #                 case EdgeType.SIGMA_R:
 #                     pass
 
-
-# -
-
+# %% [markdown]
 # #### different terms
 
-# +
+# %%
 
 def Gamma_term(phi, psi, edge):
 
@@ -651,7 +650,7 @@ def exact_RHS(psi, E, Np=15, s=0):
 
 
 
-# +
+# %%
 N_DOF = V.N_DOF
 A = np.zeros((N_DOF,N_DOF), dtype=np.complex128)
 b = np.zeros((N_DOF), dtype=np.complex128)
@@ -725,20 +724,22 @@ for E in Edges:
             pass
 
 
-# +
+# %%
 plt.imshow(np.abs(A))
 #plt.spy(A[:80,:80])
 
 print(np.linalg.cond(A))
-# -
 
+# %%
 DOFs = np.linalg.solve(A,b)
 
+# %%
 len(DOFs)
 
+# %%
 f = TrefftzFunction(V,DOFs)
 
-# +
+# %%
 Ny = 50
 Nx = 10*Ny
 x = np.linspace(-R,R,Nx)
@@ -747,8 +748,8 @@ X, Y = np.meshgrid(x,y)
 
 Z =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
 
-# -
 
+# %%
 _, ax = plt.subplots( figsize=(15,3))
 ax.imshow(np.real(Z), origin="lower", extent=[-R,R,-H,H],vmax=sqrt(2)/2,vmin=-sqrt(2)/2)
 plot_mesh(Omega, ax)
@@ -756,11 +757,13 @@ ax.axis('square')
 ax.set_xlim([-R,R])
 ax.set_ylim([-H,H])
 
+# %%
 plt.plot(np.real(DOFs[:100]),'.')
 
+# %%
 plt.plot(np.real(Z[:,0]))
 
-# +
+# %%
 # def save_field(Z,n,T,t, folder = './2nd_mode/'):
 #     w = 5*2*pi/T
 #     _, ax = plt.subplots( figsize=(15,3))
@@ -779,11 +782,11 @@ plt.plot(np.real(Z[:,0]))
 # for (n,t) in enumerate(np.linspace(0,T,N)):
 #     save_field(Z,n,T,t, folder = './2nd_mode/')
 
-# -
 
+# %% [markdown]
 # Checking numerically the integrals...
 
-# +
+# %%
 from numpy import trapz
 
 def check_gamma(E,phi,psi,M):
@@ -826,9 +829,9 @@ plt.loglog([1E-3, 2E-3], [1E-6, 1E-6],'-r')
 
 
 
-# -
 
+# %%
 for E in Edges:
     print(E.Type)
 
-
+# %%

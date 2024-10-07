@@ -3,16 +3,16 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
-# +
+# %%
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -26,7 +26,7 @@ from matplotlib.patches import Rectangle, Circle
 
 from domains import Waveguide, ScattererShape, ScattererType
 
-# +
+# %%
 R = 10.
 H = 2.
 
@@ -45,7 +45,7 @@ Domain.generate_mesh(h_max=H/3)
 Omega, Edges = Domain.Omega, Domain.Edges
 
 
-# +
+# %%
 # Numerical experiment for paper
 
 kappa_e = 8.
@@ -56,11 +56,11 @@ H = 1.
 Domain = Waveguide(R=R,H=H)
 Domain.add_scatterer( ScattererShape.CIRCLE, ScattererType.SOUND_SOFT, ((0,0.6*H), 0.1*H))
 Domain.generate_mesh()
-# -
 
+# %%
 Domain.plot_mesh()
 
-# +
+# %%
 # Ny = 50
 # Nx = 500
 # x = np.linspace(-R,R,Nx)
@@ -70,13 +70,13 @@ Domain.plot_mesh()
 
 # Domain.plot_field(X,Y,np.cos(kappa_e*X))
 
-# +
+# %%
 # checkLabels(Edges)
 
-# +
+# %%
 # test_case = TestCase.SOUND_SOFT_SCATTERER
 
-# +
+# %%
 # R = 10.
 # H = 2.
 
@@ -127,67 +127,68 @@ Domain.plot_mesh()
 
 
 
-# +
+# %%
 # match scatterer_type:
 #     case ScattererType.NONE:
 #         Edges = [ Edge(Omega, e, None)  for e in Omega.edges ]
 #     case _:
 #         Edges = [ Edge(Omega, e, c)  for e in Omega.edges ]
 
-
-# -
-
+# %%
 side_ls = np.array([E.l for E in Edges])
 h_max = np.max(side_ls)
 h_max
 
+# %% [markdown]
 # Checking the orientation of the labels...
 
-# +
+# %%
 # checkLabels(Edges, H=H)
 # if scatterer_type != ScattererType.NONE:
 #     plt.gca().add_patch(scatterer())
-# -
 
+# %% [markdown]
 # and the orientation of the normals...
 
-# +
+# %%
 # checkNormals(Edges)
 # rad = 0.1
 # c = [0.2,1.8]
 # plt.xlim([-1.5*rad,1.5*rad])
 # plt.ylim([c[1] - 1.5*rad, c[1]+1.5*rad])
-# -
 
+# %% [markdown]
 # and the definition of the "plus" and "minus" quantities...
 
+  # %%
   # checkPlusMinus(Edges, Baricenters) 
 
-# +
+# %%
 kappa_e = 8.
 #kappa_e = 7.85 # to hve a slowly first decaying mode, as 5*np.pi/2 = 7.853...
 
 kappa_i = 12.
 
 
-# +
+# %%
 # #optimal angle for mode "t" : th = arcsin( lambda /  (2H)) 
 # t = 2
 # dth = np.arcsin( t*np.pi / (kappa_e*H))
 # # optimal number of waves for mode "t":
 # Nth = int(2*np.pi / dth)
 # Nth 
-# -
 
+# %%
 Nth = 15
 th_0 = np.e/np.pi # no correct direction in the basis
 #th = 0. # right direction in the basis
 V = TrefftzSpace(Omega, Nth, {"Omega_i" : kappa_i , "Omega_e" : kappa_e}, th_0 )
 
 
+# %%
 test_case = TestCase.SOUND_SOFT_SCATTERER
 
-# +
+# %%
 NP = 20
 a = 0.5*h_max/side_ls
 b = 0.5*h_max/side_ls
@@ -200,17 +201,19 @@ d_2 = 0.5
 A = AssembleMatrix(V, Edges, Np=NP, a=a, b=b, d_1=d_1, d_2=d_2)
 NDOF = A.shape[0]
 
-# -
 
+# %%
 print(f'{NDOF=}. Matrix with {np.count_nonzero(A.toarray())} non-zero entries from a total of {NDOF**2}. "fullness" ratio: {np.count_nonzero(A.toarray())/NDOF**2 * 100 : .2f}%')
 
+# %%
 # Ncond = np.linalg.cond(A.toarray())
 Ncond = -1
 Ncond 
 
+# %%
 plot_sparsity(A)
 
-# +
+# %%
 
 match test_case:
     case TestCase.FUNDAMENTAL_CIRCLE | TestCase.FUNDAMENTAL_SQUARE:
@@ -224,8 +227,8 @@ match test_case:
         t = 0
         B = AssembleRHS(V, Edges, kappa_e, H, d_2=d_2, t=t)
 
-# -
 
+# %%
 from scipy.sparse.linalg import bicgstab 
 from scipy.sparse.linalg import spsolve 
 A = A.tocsc()
@@ -233,9 +236,10 @@ A = A.tocsc()
 DOFs = spsolve(A,B)
 f = TrefftzFunction(V,DOFs)
 
+# %%
 plt.plot(np.abs(DOFs),'.')
 
-# +
+# %%
 Ny = 50
 Nx = 10*Ny
 x = np.linspace(-R,R,Nx)
@@ -247,7 +251,7 @@ X, Y = np.meshgrid(x,y)
 u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
 
 
-# +
+# %%
 _, ax = plt.subplots( figsize=(15,3))
 
 # import matplotlib.colors as colors
@@ -279,7 +283,7 @@ if save:
     plt.savefig(f'test_{t}_{Nth}_d2.png')
 
 
-# +
+# %%
 from FEM_solution import u_FEM_SOUNDSOFT, u_FEM_PENETRABLE
 from exact_solutions import GreenFunctionImages, GreenFunctionModes
 
@@ -311,7 +315,7 @@ match test_case:
 
 
 
-# +
+# %%
 fig, ax = plt.subplots( nrows = 3, figsize=(15,6))
 
 
@@ -387,7 +391,7 @@ save = False
 if save:
     plt.savefig(f'mode_{t}_{Nth}_no_d2_no_wave_in_basis.png')
 
-# +
+# %%
 fig, ax = plt.subplots(nrows=4, figsize=(20,8), sharex=True)
 
 ax[0].plot(y,np.real(u_Trefft[:,0]), label='$\\mathfrak{Re}\\left(u_\\mathrm{sc}^\\mathrm{Trefftz}(-R,y)\\right)$')
@@ -409,8 +413,8 @@ ax[3].set_title('$\\left|u_\\mathrm{sc}^\\mathrm{Trefftz}(R,y)-u_\\mathrm{sc}^\\
 
 # plt.legend()
 
-# -
 
+# %%
 j=24
 vmin = -3
 vmax = 3
@@ -422,7 +426,7 @@ ax.set_title(f'$y_0={y[j]:.4f}$')
 plt.legend(loc="upper right")
 
 
-# +
+# %%
 # T = 5
 # fps = 20
 # Nt = int(fps*T)
@@ -444,7 +448,7 @@ plt.legend(loc="upper right")
 #     plt.savefig(f'./r02_t1/{n:02d}.png',dpi=200)
 #     plt.close()
 
-# +
+# %%
 from numpy import dot, exp, sinc, pi
 
 def Generate_proyection_system(k, r_A, r_B, r_C, d):
@@ -462,13 +466,12 @@ def Generate_proyection_system(k, r_A, r_B, r_C, d):
     return P, f
 
 
-# -
-
+# %%
 theta = th_0 + np.linspace(0,2*np.pi,Nth, endpoint=False)
 d = [ np.array([np.cos(th), np.sin(th)]) for th in theta]
 
 
-# +
+# %%
 nf = 0
 
 r_A = np.array(Omega.vertices[ Omega.faces[nf].vertices[0].nr ].point) 
@@ -477,8 +480,8 @@ r_C = np.array(Omega.vertices[ Omega.faces[nf].vertices[2].nr ].point)
 
 
 P, f = Generate_proyection_system(kappa_e, r_A, r_B, r_C, d)
-# -
 
+# %%
 plt.matshow(np.abs(P))
 
-
+# %%

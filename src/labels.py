@@ -1,6 +1,7 @@
+# %%
 from enum import Enum, auto
 
-
+# %%
 class EdgeType(Enum):
     INNER = auto()
     GAMMA = auto()
@@ -9,5 +10,3 @@ class EdgeType(Enum):
     D_OMEGA = auto()
     COVER = auto()
     # IN_OMEGA = auto()
-
-

@@ -3,16 +3,16 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
-# +
+# %%
 from paper_plots import plot_hp_convergence
 import numpy as np
 from domains import Waveguide, ScattererShape, ScattererType
@@ -24,7 +24,7 @@ from Trefft_tools import TrefftzFunction
 from scipy.sparse.linalg import spsolve 
 
 
-# +
+# %%
 kappa = 8.
 R = 2*np.pi/kappa
 H = 1.
@@ -46,7 +46,7 @@ Domain.add_scatterer( scatterer_shape=scatterer_shape, scatterer_type=scatterer_
 Domain.generate_mesh(h_max=H/5)
 Domain.plot_mesh()
 
-# +
+# %%
 Ny = 50
 Nx = 10*Ny
 x = np.linspace(-R,R,Nx)
@@ -58,11 +58,11 @@ N = 9
 
 Z = FEM_solution( R=R, H=H, params={"c":c, "height" : length, "width" : width}, scatterer_shape=scatterer_shape, scatterer_type=scatterer_type, 
                  n=t,k_e=kappa,k_i= np.sqrt(N)*kappa, X=X, Y=Y, delta_PML=0.5*R, alpha=0.5*(4+2*1j))
-# -
 
+# %%
 Domain.plot_field(X, Y, np.abs(Z))
 
-# +
+# %%
 Nth = 15
 th_0 = np.e/np.pi
 th_0 = 0.
@@ -78,8 +78,8 @@ A_block = Assemble_blockMatrix(V=V, Edges=Domain.Edges, th_0=th_0, H=H, k=kappa,
 
 NDOF = A_block.shape[0]
 print(f'{NDOF} degrees of freedom.\n Matrix with {np.count_nonzero(A.toarray())} non-zero entries from a total of {NDOF**2}.\n "fullness" ratio: {np.count_nonzero(A.toarray())/NDOF**2 * 100 : .2f}%')
-# -
 
+# %%
 B = AssembleRHS(V, Domain.Edges, kappa, H, d_2=d_2, t = t)
 from Trefft_tools import TrefftzFunction
 #this should be a "solve system"
@@ -88,31 +88,38 @@ A = A_block.tocsc()
 DOFs = spsolve(A,B)
 f = TrefftzFunction(V,DOFs)
 
+# %%
 u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
 
 
+# %%
 Domain.plot_field(X,Y,np.abs(u_Trefft), show_edges=True)
 
 
+# %%
 Domain.plot_field(X,Y,np.abs(u_Trefft - Z), show_edges=True)
 print(f'The relative error is: {Domain.L2_norm(X,Y,np.abs(u_Trefft - Z))/Domain.L2_norm(X,Y,np.abs(Z)) : .2e}')
 
+# %%
 A_old = A_old.tocsc()
 DOFs = spsolve(A_old,B)
 f = TrefftzFunction(V,DOFs)
 
+# %%
 u_Trefft_old =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
 Domain.plot_field(X,Y,np.abs(u_Trefft_old - Z), show_edges=True)
 print(f'The relative error is: {Domain.L2_norm(X,Y,np.abs(u_Trefft_old - Z))/Domain.L2_norm(X,Y,np.abs(Z)) : .2e}')
 
 
+# %%
 Domain.plot_field(X,Y,np.abs(u_Trefft_old - u_Trefft), show_edges=True)
 print(f'The relative error is: {Domain.L2_norm(X,Y,np.abs(u_Trefft_old - u_Trefft))/Domain.L2_norm(X,Y,np.abs(Z))}')
 
 
+# %%
 np.sum(np.abs(A - A_old))
 
-# +
+# %%
 kappa = 8.
 R = 2*np.pi/kappa
 H = 1.
@@ -123,7 +130,7 @@ Domain.add_fine_mesh_region(h_min=0.02)
 Domain.generate_mesh(h_max=H/5)
 Domain.plot_mesh()
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -198,16 +205,18 @@ for (i,N) in enumerate(refinements):
         u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)
 
-# -
 
+# %%
 import matplotlib.pyplot as plt 
 
+# %%
 plot_hp_convergence(errors=errors, hs=hs, N_ths=N_ths, kappa_e=kappa, N_modes=N_modes, H=H)
 #plt.savefig('fine_barrier_raw.png')
 
+# %%
 np.savez(file='fine_barrier_raw.npz', errors=errors, hs = hs, N_ths=N_ths)
 
-# +
+# %%
 from exact_solutions import GreenFunctionModes
 from Trefft_tools import AssembleGreenRHS_left
 
@@ -285,11 +294,11 @@ for (i,N) in enumerate(refinements):
         u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)
 
-# -
 
+# %%
 np.savez('green_new.npz', errors=errors, hs=hs, N_ths=N_ths)
 
-# +
+# %%
 import matplotlib.pyplot as plt
 import numpy as np 
 from paper_plots import plot_hp_convergence
@@ -315,22 +324,25 @@ N_ths = data['N_ths']
 ax = plot_hp_convergence(errors=errors, hs=hs, N_ths=N_ths, kappa_e=kappa_e, N_modes=N_modes, H=H)
 add_trend_line(IDs=[2,5],xs = [1.,1.8], ys=[2E-3, 1E-7], errors=errors, k=kappa_e, hs=hs, ax = ax[1] )
 plt.savefig('with_slopes_correct.pdf')
-# -
 
+# %%
 result = linregress(np.log(kappa_e*hs), np.log(errors[:,-1]))
 m = result.slope
 n = result.intercept
 print(f'{m=} {n=}')
 
+# %% [markdown]
 # $$\log(E) = n + m \log(kh)$$
 # $$E = e^n*(kh)^m$$
 #
 
+# %%
 Domain.plot_field(X,Y,np.real(u_Trefft), show_edges=True)
 
+# %% [markdown]
 # # NtD Dependency
 
-# +
+# %%
 from exact_solutions import GreenFunctionModes
 from Trefft_tools import AssembleGreenRHS_left
 
@@ -392,11 +404,11 @@ for i, kappa_e in enumerate(ks):
         u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)
 
-# -
 
+# %%
 np.savez("ntd_dependency.npz", ntds = ntds, errors = errors, ks = ks )
 
-# +
+# %%
 import matplotlib.pyplot as plt 
 inches_per_dot = 1/72.27
 columnwidth = 370.38374 * inches_per_dot
@@ -442,11 +454,11 @@ fig.subplots_adjust(left   = 0.15,
 
 
 plt.savefig('NtD_dependency_correct.pdf')
-# -
 
+# %%
 for k in ks:
     print(f'{k=}')
     for i in range(0,15):
         print(f'k_hat = {i*np.pi : .2f}, {k**2 - (i*np.pi)**2 : .2f}')
 
-
+# %%

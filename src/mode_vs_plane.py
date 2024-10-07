@@ -3,22 +3,23 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
 
+# %%
 import numpy as np 
 import matplotlib.pyplot as plt 
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.patches import Arc
 
 
-# +
+# %%
 H = 1
 R = 10
 Ny = 20
@@ -50,7 +51,7 @@ Z_down_w = np.exp(1j*k*(d_down[0]*X_w+d_down[1]*Y_w))
 Z_exact = np.cos(np.pi*Y/H)*np.exp(1j*(np.sqrt(k**2 - (np.pi/H)**2))*X)
 
 
-# +
+# %%
 def plot_field(Z,Z_w, d = None, ax=None, title=None,):
     if ax is None:
         _, ax = plt.subplots()
@@ -145,8 +146,8 @@ folder = './mode_vs_plane/'
 for n,t in enumerate(np.linspace(0,T,100)):
     make_figure(n,t, w, Z_up, Z_up_w, Z_down, Z_down_w, folder)
 
-# -
 
+# %%
 Z_up.shape
 
-
+# %%

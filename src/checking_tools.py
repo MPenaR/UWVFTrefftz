@@ -1,3 +1,4 @@
+# %%
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
 import matplotlib.pyplot as plt
@@ -5,10 +6,10 @@ import numpy as np
 from numpy.linalg import norm
 from numpy import dot, exp, sqrt, pi, sin
 
+# %%
 from labels import EdgeType
 
-
-
+# %%
 def checkLabels(Edges, ax = None, R=10., H=2.):
     """Checks the labelling"""
 
@@ -47,7 +48,7 @@ def checkLabels(Edges, ax = None, R=10., H=2.):
     ax.set_xlim([-R-d,R+d])
     ax.set_ylim([0-d,H+d])
 
-
+# %%
 def checkNormals(Edges, R=10., H=1.):
     Normals = np.array( [ E.N for E in Edges])
     Tangents = np.array( [ E.T for E in Edges])
@@ -59,6 +60,7 @@ def checkNormals(Edges, R=10., H=1.):
     plt.xlim([-R-d,R+d])
     plt.ylim([0-d,H+d])
 
+# %% [markdown]
 # def checkPlusMinus(Edges,Baricenters):
 #     Normals = np.array( [ E.N for E in Edges])
 #     MidPoints = np.array( [ E.midpoint for E in Edges])
@@ -72,6 +74,7 @@ def checkNormals(Edges, R=10., H=1.):
 #         plt.text( m[0]-e*n[0], m[1]- e*n[1], '+')
 
 
+# %%
 def plot_sparsity(A,sparse=True):
     if sparse:
         plt.matshow(np.abs(A.toarray()), cmap='bone')

@@ -3,21 +3,22 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
+# %%
 from FEM_solution import FEM_solution
 import matplotlib.pyplot as plt
 import numpy as np 
 from domains import ScattererShape, ScattererType
 
-# +
+# %%
 spacing = 0.02
 pad = 0.0
 plot_h = 0.28
@@ -116,8 +117,5 @@ center.axis('equal')
 center.pcolormesh(X2,Y2,np.real(u_tot2))
 center.add_patch(Rectangle(xy=(-R2,0), width=2*R2, height=H, edgecolor='r', facecolor='None', linestyle='--'))
 center.axis('equal')    
-
-
-# -
-
+# %%
 

@@ -1,10 +1,13 @@
+# %%
 import matplotlib.pyplot as plt
 from matplotlib import ticker as mticker
 
+# %%
 import matplotlib.style
 import numpy as np
 
 
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 columnwidth = 630.185 * inches_per_dot
@@ -13,6 +16,7 @@ columnwidth = 469.75502 * inches_per_dot
 columnwidth = 370.38374 * inches_per_dot
 
 
+# %%
 left_margin = 3. * cm2inch # cm
 right_margin = 1.*cm2inch  # cm
 figure_width = 0.9*columnwidth # cm
@@ -20,22 +24,27 @@ figure_height = 0.8*columnwidth # cm
 top_margin = 2.*cm2inch    # cm
 bottom_margin = 1.5*cm2inch # cm
 
+# %%
 box_width = left_margin + figure_width + right_margin   # cm
 box_height = top_margin + figure_height + bottom_margin # cm
 
+# %%
 
 
-
+# %%
 from matplotlib import ticker as mticker
 import matplotlib
 
+# %%
 matplotlib.style.use({
     "font.size" : 7,
     "lines.linewidth" : 1.0,
     "lines.markersize":      3 
 
+# %%
 })
 
+# %%
 def plot_hp_convergence(errors, hs, N_ths, kappa_e, N_modes, H, title = None, filename=None, ax = None):
 
     if ax is None:

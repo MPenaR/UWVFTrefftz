@@ -3,16 +3,16 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
-# +
+# %%
 import matplotlib.pyplot as plt
 from matplotlib import ticker as mticker
 from exact_solutions import GreenFunctionModes, Mode
@@ -23,13 +23,13 @@ from scipy.sparse.linalg import spsolve as solve
 
 
 from domains import Waveguide, ScattererShape, ScattererType
-# -
 
+# %% [markdown]
 # # Mode
 #
 #
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -107,7 +107,7 @@ for (i,N) in enumerate(refinements):
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)*100 
 
 
-# +
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 columnwidth = 469.75502 * inches_per_dot
@@ -171,11 +171,11 @@ plt.grid(True,which="major",ls='--')
 fig.subplots_adjust(wspace=0., hspace=0.)
 
 plt.savefig(f'convergence_mode_t_{t}_k={int(kappa_e)}.pdf')
-# -
 
+# %% [markdown]
 # # Cedya Slides
 
-# +
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 # virginias slides
@@ -205,7 +205,7 @@ fig.subplots_adjust(wspace=0., hspace=0.)
 
 plt.savefig(f'h-convergence_mode_t_{t}_k={int(kappa_e)}.pdf')
 
-# +
+# %%
 # p-convergence
 
 inches_per_dot = 1/72.27
@@ -238,13 +238,14 @@ ax.legend(loc="lower left")
 fig.subplots_adjust(wspace=0., hspace=0.)
 
 plt.savefig(f'p-convergence_mode_t_{t}_k={int(kappa_e)}.pdf')
-# -
 
+# %%
 Domain.plot_mesh()
 
+# %% [markdown]
 # # Scatterer hp-convergence
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -323,7 +324,7 @@ for (i,N) in enumerate(refinements):
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)*100 
 
 
-# +
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 columnwidth = 469.75502 * inches_per_dot
@@ -387,7 +388,7 @@ plt.savefig(f'convergence_fund_k_{int( kappa_e )}_SQUARE.pdf')
 
 
 
-# +
+# %%
 fig, ax = plt.subplots(ncols=2, figsize=(box_width,box_width/3))
 Domain.plot_field(X,Y,np.real(u_Trefft),ax=ax[0], show_edges=True)
 Domain.plot_field( X,Y,np.abs(u_Trefft-u_exact),ax=ax[1], show_edges=True)
@@ -400,7 +401,7 @@ fig.suptitle(f'$L_2$ error: {Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm
 plt.savefig(f'error_fund_k_{int(kappa_e)}_SQUARE.pdf')
 
 
-# +
+# %%
 max_modes = 15
 errors = np.zeros( max_modes, dtype=np.float64)
 
@@ -453,17 +454,18 @@ for (i,N_modes) in enumerate(range(1,max_modes+1)):
     u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
     errors[i] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)*100 
 
-# -
 
+# %%
 fig, ax = plt.subplots(figsize=(box_width,box_width/2))
 plt.semilogy(range(1,max_modes+1), errors, '.-')
 plt.title(f'Fundamental solution, $\\kappa={kappa_e}$, $H = {H:.0f}$, $R = 4\\lambda$, $N_p=15$, $h_\\mathrm{{max}}=0.11$')
 plt.xlabel('number of modes for the NtD map')
 plt.savefig('dependeny_on_N_modes_log.pdf')
 
+# %% [markdown]
 # # Bump
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,9,15]
 N_ths = [3,5,7,9,11,13,15]
@@ -543,7 +545,7 @@ for (i,N) in enumerate(refinements):
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)*100 
 
 
-# +
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 columnwidth = 469.75502 * inches_per_dot
@@ -606,7 +608,7 @@ fig.subplots_adjust(left   = left_margin / box_width,
 plt.savefig(f'convergence_fund_k_{int( kappa_e )}_BUMP.pdf')
 
 
-# +
+# %%
 fig, ax = plt.subplots(ncols=2, figsize=(box_width,box_width/3))
 Domain.plot_field(X,Y,np.real(u_Trefft),ax=ax[0], show_edges=True)
 Domain.plot_field( X,Y,np.abs(u_Trefft-u_exact),ax=ax[1], show_edges=True)
@@ -618,6 +620,5 @@ fig.suptitle(f'$L_2$ error: {Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm
 #plt.savefig(f'error_fund_k_{int(kappa_e)}.pdf')
 #plt.savefig(f'error_fund_k_{int(kappa_e)}_SQUARE.pdf')
 plt.savefig(f'error_fund_k_{int(kappa_e)}_bump.pdf')
-# -
-
+# %%
 

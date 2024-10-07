@@ -3,16 +3,16 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
-# +
+# %%
 import matplotlib.pyplot as plt
 
 from paper_plots import plot_hp_convergence
@@ -23,11 +23,11 @@ import numpy as np
 from testcases import TestCase
 
 from domains import Waveguide, ScattererShape, ScattererType
-# -
 
+# %% [markdown]
 # # Sandbox
 
-# +
+# %%
 kappa_e = 8.
 lambda_e = 2*np.pi/kappa_e
 R = lambda_e
@@ -54,7 +54,7 @@ Domain.add_scatterer( scatterer_shape=scatterer_shape, scatterer_type=scatterer_
 Domain.generate_mesh(h_max=H/8)
 Domain.plot_mesh()
 
-# +
+# %%
 from FEM_solution import FEM_solution
 
 Ny = 50
@@ -69,11 +69,11 @@ kappa_i = np.sqrt(N)*kappa_e
 
 Z = FEM_solution( R=R, H=H, params={"c":c, "height" : 2*rad, "width" : 2*rad}, scatterer_shape=scatterer_shape, scatterer_type=scatterer_type, 
                  n=t,k_e=kappa_e,k_i=kappa_i, X=X, Y=Y)
-# -
 
+# %%
 Domain.plot_field(X,Y,np.abs(Z))
 
-# +
+# %%
 from Trefft_tools import  TrefftzSpace
 Nth = 15
 th_0 = np.e/np.pi # no correct direction in the basis
@@ -81,8 +81,8 @@ th_0 = np.e/np.pi # no correct direction in the basis
 #th_0= 0. # right direction in the basis
 V = TrefftzSpace(Domain.Omega, Nth, {"Omega_i" : kappa_i , "Omega_e" : kappa_e}, th_0 )
 
-# -
 
+# %%
 from Trefft_tools import AssembleMatrix
 N_modes = 15 #Number of modes for the DtN map
 # "UWVF" parameters
@@ -94,19 +94,22 @@ A = AssembleMatrix(V, Domain.Edges, H, Np=N_modes, a=a, b=b, d_1=d_1, d_2=d_2)
 NDOF = A.shape[0]
 print(f'{NDOF} degrees of freedom.\n Matrix with {np.count_nonzero(A.toarray())} non-zero entries from a total of {NDOF**2}.\n "fullness" ratio: {np.count_nonzero(A.toarray())/NDOF**2 * 100 : .2f}%')
 
+# %%
 from checking_tools import plot_sparsity
 plot_sparsity(A)
 
-# +
+# %%
 # Ncond = np.linalg.cond(A.toarray())
 # Ncond
-# -
 
+# %%
 from Trefft_tools import AssembleGreenRHS, AssembleRHS
 
 
+# %%
 B = AssembleRHS(V, Domain.Edges, kappa_e, H, d_2=d_2, t = t)
 
+# %%
 from Trefft_tools import TrefftzFunction
 #this should be a "solve system"
 from scipy.sparse.linalg import spsolve 
@@ -114,9 +117,10 @@ A = A.tocsc()
 DOFs = spsolve(A,B)
 f = TrefftzFunction(V,DOFs)
 
+# %%
 plt.plot(np.abs(DOFs),'.')
 
-# +
+# %%
 Ny = 50
 Nx = 10*Ny
 if half_infinite:
@@ -132,11 +136,11 @@ u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [
 # u_exact = np.exp(1j*np.emath.sqrt(kappa_e**2 - (t*np.pi/H)**2)*X)*np.cos(t*np.pi*Y/H)
 u_exact = Z = FEM_solution( R=R, H=H, params={"c":c, "height" : 2*rad, "width" : 2*rad}, scatterer_shape=scatterer_shape, scatterer_type=scatterer_type, n=t,k_e=kappa_e,k_i=kappa_i, X=X, Y=Y)
 
-# +
+# %%
 
 Domain.plot_field(X,Y,np.real(u_Trefft), show_edges=True)
 
-# +
+# %%
 from FEM_solution import FEM_solution
 
 # u_exact = FEM_solution(R=R,H=H, params={"c":c, "rad":rad}, scatterer_shape=scatterer_shape, scatterer_type=scatterer_type, n=t, k_e=kappa_e, k_i=kappa_i,
@@ -149,7 +153,7 @@ u_exact = FEM_solution(R=R,H=H, params={"c":c, "width": rad, "height" : rad }, s
 Domain.plot_field(X,Y,np.real(u_exact))
 
 
-# +
+# %%
 fig, ax = plt.subplots(ncols=3, figsize=(18,4))
 Domain.plot_field(X,Y,np.real(u_Trefft),ax=ax[0], show_edges=True)
 Domain.plot_field( X,Y,np.real(u_exact),ax=ax[1], show_edges=False)
@@ -161,23 +165,26 @@ ax[2].set_title('$\\left|u_\\mathrm{exact}-u_\\mathrm{Trefftz}\\right|$')
 fig.suptitle(f'$L_2$ error: {Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact) : .2e}')
 
 #plt.savefig(f'error_circle_k_{kappa_e:.3f}.png')
-# -
 
+# %%
 du_Trefft_dy =  np.reshape([ f.dy(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
 fig, ax = plt.subplots(ncols=2,figsize=(16,4))
 Domain.plot_field(X,Y,np.abs(du_Trefft_dy), ax=ax[0])
 ax[1].plot(y,np.real(du_Trefft_dy)[:,36])
 
+# %%
 plt.semilogy(x,np.abs(du_Trefft_dy[0,:]))
 plt.semilogy(x,np.abs(du_Trefft_dy[-1,:]))
 # plt.plot(x,np.real(du_Trefft_dy[0,:]))
 # plt.plot(x,np.real(du_Trefft_dy[-1,:]))
 
+# %%
 plt.plot(np.real(u_exact - u_Trefft)[:,0])
 
+# %% [markdown]
 # # Fundamental solution outside
 
-# +
+# %%
 kappa_e = 8.
 lambda_e = 2*np.pi/kappa_e
 R = lambda_e
@@ -196,7 +203,7 @@ rad = 0.1*H
 Domain.generate_mesh(h_max=H/10)
 Domain.plot_mesh()
 
-# +
+# %%
 Ny = 50
 Nx = 10*Ny
 x = np.linspace(-R,R,Nx)
@@ -210,7 +217,7 @@ u_exact = np.reshape( GreenFunctionModes(np.real(kappa_e),Domain.H, np.stack([X.
 
 Domain.plot_field(X,Y,np.abs(u_exact),show_edges=False,ax=None,source=c)
 
-# +
+# %%
 Nth = 15
 th_0 = np.e/np.pi # no prefered direction in the basis
 #th_0= 0. # prefered direction in the basis
@@ -226,20 +233,20 @@ A = AssembleMatrix(V, Domain.Edges, H, Np=N_modes, a=a, b=b, d_1=d_1, d_2=d_2)
 NDOF = A.shape[0]
 print(f'{NDOF} degrees of freedom.\n Matrix with {np.count_nonzero(A.toarray())} non-zero entries from a total of {NDOF**2}.\n "fullness" ratio: {np.count_nonzero(A.toarray())/NDOF**2 * 100 : .2f}%')
 
-
-# -
-
+# %%
 from Trefft_tools import AssembleGreenRHS_left
 B = AssembleGreenRHS_left(V, Domain.Edges, kappa_e, H, d_2=1/2, x_0= c[0], y_0=c[1], M=40)
 
+# %%
 A = A.tocsc()
 DOFs = spsolve(A,B)
 f = TrefftzFunction(V,DOFs)
 
+# %%
 u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
 Domain.plot_field(X,Y,np.abs(u_Trefft),show_edges=True,ax=None,source=c)
 
-# +
+# %%
 fig, ax = plt.subplots(ncols=3, figsize=(12,4), sharey=True)
 Domain.plot_field(X,Y,np.real(u_Trefft),ax=ax[0], show_edges=True)
 Domain.plot_field( X,Y,np.real(u_exact),ax=ax[1], show_edges=False)
@@ -253,8 +260,8 @@ for i in range(1,3):
 
 fig.suptitle(f'Relative $L_2$ error: {Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact) : .2e}')
 
-# -
 
+# %% [markdown]
 # # number of propagating modes
 #
 # maximum $t$ such that $\left(\kappa H\right)^2 \ge \left(t \pi \right)^2 $, that is:
@@ -263,11 +270,12 @@ fig.suptitle(f'Relative $L_2$ error: {Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domai
 # t = \left\lfloor\frac{\kappa H}{\pi}\right\rfloor
 # $$
 
+# %%
 k = np.linspace(4,64,100)
 t = np.floor(k*H/np.pi)
 plt.plot(k,t)
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -332,18 +340,21 @@ for (i,N) in enumerate(refinements):
 
         
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)
-# -
 
+# %%
 plot_hp_convergence(errors=errors,hs=hs, N_ths=N_ths, kappa_e=kappa_e, N_modes=N_modes, H=H, filename='fundamental_outside.pdf' )
 
+# %%
 np.savez(f"fundamental_outside{int(kappa_e)}.npz", errors=errors, hs=hs, N_ths = N_ths)
 
+# %% [markdown]
 # # N_modes dependency
 
+# %%
 for k in [8, 16, 32]:
     print(np.floor(k*H/np.pi))
 
-# +
+# %%
 K_s = [8, 16, 32 ]
 len_range = 6
 N_modes_ranges = [range(1,1+len_range), range(3,3+len_range), range(8,8+len_range)]
@@ -396,8 +407,8 @@ for i, k in enumerate(K_s):
         
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)
 
-# -
 
+# %%
 for i,k in enumerate(K_s):
     plt.semilogy(N_modes_ranges[i],errors[i,:],'.-', label=f'$\\kappa = {k}$')
 plt.ylabel('relative $L^2$ error')
@@ -406,9 +417,10 @@ plt.legend()
 plt.savefig('NtD_dependency.pdf')
 
 
+# %% [markdown]
 # # Projection
 
-# +
+# %%
 def integrate_ref(f,N=100):
     t = np.linspace(0,1,N+1)
     tx, ty = np.meshgrid(t,t)
@@ -420,21 +432,22 @@ def integrate_ref(f,N=100):
 integrate_ref(lambda x, y : x**2,2000)
 #integrate_ref(lambda x, y : np.ones_like(x),2000)
 
-
-# -
-
+# %%
 from integrators import fekete3 as fek3_int
 # fek3_int(lambda x, y : np.ones_like(x), r_B=(1,0), r_C=(0,1))
 # fek3_int(lambda x, y : x**2)
 
 
+# %% [markdown]
 # # Test of the fek3 integrator
 
+# %%
 Domain = Waveguide(R=R,H=H)
 Domain.generate_mesh(h_max=0.1*H) 
 Omega = Domain.Omega
 Domain.plot_mesh()
 
+# %%
 S = 0
 for T in Omega.Elements():
     r_A = Omega.vertices[T.vertices[0].nr].point
@@ -444,17 +457,20 @@ for T in Omega.Elements():
     S += fek3_int(f,r_A,r_B,r_C)
 print(f'exact area: {2*R*H : .16f}, integrated: {S : .16f}, relative error: {np.abs(S-2*R*H)/(2*R*H) : .3e}')
 
+# %%
 Domain = Waveguide(R=R,H=H)
 Domain.add_scatterer(scatterer_shape=ScattererShape.CIRCLE, scatterer_type=ScattererType.ABSORBING, params=((0,H/2),H/4))
 Domain.generate_mesh(h_max=0.1*H) 
 Omega = Domain.Omega
 Domain.plot_mesh()
 
+# %%
 Domain.plot_scatterer_triangles()
 # f = Omega.faces[0]
 # els = list(Omega.Elements())
 # els[f.elements[0].nr].mat
 
+# %% [markdown]
 # ## Proyection of a mode
 #
 # at each triangle, the basis
@@ -471,13 +487,14 @@ Domain.plot_scatterer_triangles()
 # \sum_{n=1}^{N_p}\left\langle \varphi_n,\varphi_m\right\rangle u_n = \left\langle u_\mathrm{mode},\varphi_m \right\rangle\quad m=1,2,\dots, N_p
 # $$
 
+# %%
 Domain = Waveguide(R=R,H=H)
 Domain.generate_mesh(h_max=H) 
 Omega = Domain.Omega
 Domain.plot_mesh()
 
 
-# +
+# %%
 r_A, r_B, r_C = [ Omega.vertices[v.nr].point for v in Omega.faces[0].vertices ] 
 
 Nth = 7
@@ -498,7 +515,7 @@ for n in range(Nth):
         G[m,n] = fek3_int( lambda x, y : np.exp(1j*kappa_e*((d_n - d_m)[0]*x + (d_n - d_m)[1]*y)), r_A=r_A, r_B=r_B, r_C=r_C)
         F[m] = fek3_int( lambda x, y : np.exp(1j*(beta - kappa_e*d_m)[0]*x)*np.exp(-1j*kappa_e*d_m[1]*y)*np.cos(t*np.pi*y/H), r_A=r_A, r_B=r_B, r_C=r_C) 
 
-# +
+# %%
 coef_proy = np.linalg.solve(G,F)
 
 x = np.linspace(-R,R,Nx)
@@ -507,14 +524,17 @@ X, Y = np.meshgrid(x,y)
 
 
 u_proy = sum( [coef_proy[n]*np.exp(1j*kappa_e*(d_s[n][0]*X + d_s[n][1]*Y)) for n in range(Nth)])
-# -
 
+# %%
 Domain.plot_field(X,Y,np.real(u_proy))
 
+# %%
 Omega = Domain.Omega
 
+# %% [markdown]
 # ## condition number estimator: 
 
+# %%
 from scipy.sparse.linalg import svds
 from scipy.sparse import sparray
 def cond(A : sparray)-> np.float64:
@@ -524,11 +544,12 @@ def cond(A : sparray)-> np.float64:
     return S_max, S_min, S_max / S_min
 
 
+# %% [markdown]
 # # Convergence
 
+# %%
 
-
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -629,9 +650,9 @@ for (i,N) in enumerate(refinements):
 
 
     
-    
 
-# +
+
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 columnwidth = 630.185 * inches_per_dot
@@ -698,7 +719,7 @@ fig.subplots_adjust(left   = left_margin / box_width,
 plt.savefig(f'convergence_fundamental.pdf')
 
 
-# +
+# %%
 
 for err, N_th in zip(errors.transpose(),N_ths):
     plt.semilogy(kappa_e*hs,err,'.-', label=f'$N_P = {N_th}$')
@@ -718,7 +739,7 @@ ax.yaxis.set_minor_locator(mticker.LogLocator(numticks=999, subs="auto"))
 plt.grid(True,which="major",ls='--')
 plt.savefig(f'h-convergence_circle_k_{kappa_e:.3f}.png')
 
-# +
+# %%
 for err, h in zip(errors,hs):
     plt.semilogy(N_ths,err,'.-', label=f'$h_\\mathrm{{max}} = {h: .1e}$')
 
@@ -741,7 +762,7 @@ plt.legend()
 plt.savefig(f'p-convergence_circle_k_{kappa_e:.3f}.png')
 
 
-# +
+# %%
 # conds = []
 # refinements = range(3,10,1)
 # N_ths = [3,5,7,9,11,13,15]
@@ -835,7 +856,7 @@ plt.savefig(f'p-convergence_circle_k_{kappa_e:.3f}.png')
 
 
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -911,9 +932,9 @@ for (i,N) in enumerate(refinements):
 
 
     
-    
 
-# +
+
+# %%
 inches_per_dot = 1/72.27
 cm2inch = 1/2.54 # inch per cm
 columnwidth = 630.185 * inches_per_dot
@@ -979,12 +1000,13 @@ fig.subplots_adjust(left   = left_margin / box_width,
 #plt.savefig('p-convergence_mode_1_reescaling.png')
 plt.savefig(f'convergence.pdf')
 
-# -
 
+# %%
 plt.semilogy(conds[0,:])
 plt.semilogy(conds[1,:])
 plt.semilogy(conds[2,:])
 
+# %%
 conds.shape
 
-
+# %%

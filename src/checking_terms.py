@@ -3,15 +3,16 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
+# %%
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
 from numpy.linalg import norm
 import numpy as np 
@@ -20,8 +21,10 @@ from numpy import trapz as Int
 from collections import namedtuple
 
 
+# %% [markdown]
 # # Inner terms
 
+# %% [markdown]
 # First we are going to check the inner terms. There are $4$ situations:
 #  - $\phi^+_n$ and $\psi^+_m$: 
 # $$
@@ -41,6 +44,7 @@ from collections import namedtuple
 # $$
 #
 
+# %% [markdown]
 # For checking the central fluxes only one expression needs to be checked: 
 #
 # $$
@@ -55,8 +59,10 @@ from collections import namedtuple
 # -\frac{\left(\mathbf{d}_{m}+\mathbf{d}_{n}\right)\cdot\mathbf{n}}{\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\boldsymbol{\tau}}\frac{e^{ik\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\mathbf{Q}}-e^{ik\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\mathbf{P}}}{2}\qquad\text{otherwise}
 # $$
 
+# %% [markdown]
 # ## Exact term
 
+# %%
 def Inner_term_PP(phi, psi, edge, k, a, b):
 
     d_m = psi.d
@@ -80,9 +86,10 @@ def Inner_term_PP(phi, psi, edge, k, a, b):
         return -1/2*I/dot(d_n - d_m, T)*( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
 
+# %% [markdown]
 # ## Numerical term
 
-# +
+# %%
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     Px, Py = P[0], P[1]
     Qx, Qy = Q[0], Q[1]
@@ -101,12 +108,10 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
 
     return I
 
-
-# -
-
+# %% [markdown]
 # ### They check
 
-# +
+# %%
 # Test
 P = np.array([3,3])
 Q = np.array([1,1])
@@ -136,10 +141,10 @@ relative_error = abs(I_exact - I_num)/abs(I_exact)
 print(f'I_exact: {I_exact:.16f}\nI_num:   {I_num:.16f}\nRelative error: {relative_error :.2e}')
 
 
-# -
-
+# %% [markdown]
 # # Gamma terms
 
+# %%
 def Gamma_term(phi, psi, edge, k, d_1):
 
     d_m = psi.d
@@ -160,6 +165,7 @@ def Gamma_term(phi, psi, edge, k, d_1):
         return -I / dot(d_n - d_m, T) * ( exp(1j*k*dot(d_n - d_m, Q)) - exp(1j*k*dot(d_n - d_m, P)))
 
 
+# %%
 def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     Px, Py = P[0], P[1]
     Qx, Qy = Q[0], Q[1]
@@ -175,9 +181,10 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     return I
 
 
+# %% [markdown]
 # ### They check
 
-# +
+# %%
 P = np.array([0,1])
 Q = np.array([3,1])
 
@@ -195,10 +202,10 @@ relative_error = abs(I_exact - I_num)/abs(I_exact)
 print(f'I_exact: {I_exact:.16f}\nI_num:   {I_num:.16f}\nRelative error: {relative_error :.2e}')
 
 
-# -
-
+# %% [markdown]
 # # Sigma Terms
 
+# %%
 def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
 
     d_n = phi.d
@@ -248,7 +255,7 @@ def Sigma_term(phi, psi, edge, k, H, d_2, Np = 15):
     return F+S, F , S
 
 
-# +
+# %%
 def NewmanntoDirichlet(y, df_dy, k, H, M):
 
     dfn = np.zeros(M, dtype=np.complex128)
@@ -279,7 +286,7 @@ def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
     return I
 
 
-# +
+# %%
 H=1
 R= 10
 P = np.array([R,-H])
@@ -297,6 +304,5 @@ I_exact, _, _ = Sigma_term(phi_n, psi_m, E, k, H, d2)
 I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=int(1E4))
 relative_error = abs(I_exact - I_num)/abs(I_exact)
 print(f'I_exact: {I_exact:.16f}\nI_num:   {I_num:.16f}\nRelative error: {relative_error :.2e}')
-# -
-
+# %%
 

@@ -1,10 +1,12 @@
-
+# %%
 import numpy as np
 from numpy import dot
 from numpy.linalg import norm
 
+# %%
 from labels import EdgeType
 
+# %%
 def computeEdgeType(Omega, edge):
         
     if edge.nr in [ e.edges[0].nr for e in Omega.Boundaries("Gamma").Elements()]:
@@ -25,7 +27,7 @@ def computeEdgeType(Omega, edge):
         return EdgeType.INNER
 
 
-
+# %%
 class Edge:
     '''Holds all the information from an edge that is needed:
     - P : inital vertex
@@ -95,6 +97,7 @@ class Edge:
                 return Triangles
             return [Triangles[1], Triangles[0]]
 
+# %%
 class Triangle:
     "holds al the information for a Triangle, namely r_A, r_B and r_C"
     def __init__(self, Omega, f):

@@ -3,30 +3,32 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.4
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: UWVFTrefftz--hy3v2Qt
 #     language: python
 #     name: python3
 # ---
 
+# %%
 import numpy as np 
 from paper_plots import plot_hp_convergence
 import matplotlib.pyplot as plt 
 
+# %%
 data = np.load('fundamental_outside8.npz')
 errors = data["errors"]
 hs = data["hs"]
 N_ps = data["N_ths"]
 kappa_e  = 8
 
-# +
+# %%
 
 plot_hp_convergence(errors,hs,N_ps,kappa_e,N_modes=15,H=1)
 
-# +
+# %%
 from matplotlib import ticker as mticker
 
 import numpy as np
@@ -94,13 +96,13 @@ plt.text(x=1., y=0.001, s=r'$y\propto(\kappa h)^{\frac{3}{2}}$')
 
 #plt.savefig('with_1.5_line.pdf')
 
-# +
+# %%
 from scipy.stats import linregress
 
 results = linregress(np.log(kappa_e*hs),np.log(errors[:,2]))
 results
-# -
 
+# %% [markdown]
 # $$
 # \log(\mathrm{err})\approx  -8.5 + 4.15*\log(\kappa h)
 # $$
@@ -109,25 +111,30 @@ results
 # \mathrm{err}\approx  e^{-8.5}\left(\kappa h\right)^{4.15}
 # $$
 
+# %%
 np.e**(-8.5)
 
+# %%
 results = linregress(np.log(kappa_e*hs),np.log(errors[:,0]))
 results
 
 
+# %%
 results = linregress(np.log(kappa_e*hs),np.log(errors[:,5]))
 results
 
 
+# %%
 results = linregress(np.log(kappa_e*hs),np.log(errors[:,0]))
 results
 
 
+# %%
 results = linregress(np.log(kappa_e*hs),np.log(errors[:,1]))
 results
 
 
-# +
+# %%
 from exact_solutions import GreenFunctionModes
 from FEM_solution import FEM_solution
 from domains import Waveguide, ScattererShape, ScattererType
@@ -138,7 +145,7 @@ from scipy.sparse.linalg import spsolve as solve
 
 
 
-# +
+# %%
 refinements = range(3,10,1)
 N_ths = [3,5,7,9,11,13,15]
 
@@ -229,20 +236,24 @@ for (i,N) in enumerate(refinements):
         u_Trefft =  np.reshape([ f(x_, y_) for x_, y_ in zip( X.ravel(), Y.ravel()) ], [Ny,Nx])
         errors[i,j] = Domain.L2_norm(X,Y,u_exact-u_Trefft)/Domain.L2_norm(X,Y,u_exact)
 
-# -
 
+# %%
 plot_hp_convergence(errors=errors, hs=hs, N_ths=N_ths, kappa_e=kappa_e, N_modes=N_modes, H=H)
 # plt.loglog(kappa_e*hs, np.e**(-5)*(kappa_e*hs)**(1.5),'--')
 # plt.text(x=1., y=0.001, s=r'$y\propto(\kappa h)^{\frac{3}{2}}$')
 plt.savefig('soundsoft_square_mode_1_k_8.pdf')
 
 
+# %%
 Domain.plot_field(X,Y, np.real(u_exact))
 
+# %%
 Domain.plot_field(X,Y, np.real(u_Trefft))
 
+# %%
 Domain.plot_mesh()
 
+# %%
 Domain.plot_field(X,Y, np.abs(u_Trefft-u_exact))
 
-
+# %%

@@ -1,5 +1,7 @@
-# module for the different domains
-
+# %%
+'''
+module for the different domains
+'''
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
 from enum import Enum, auto
@@ -9,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.collections import LineCollection
 
+# %%
 class ScattererType(Enum):
     '''Enumeration of the different scatterer types.'''
     PENETRABLE = auto()
@@ -16,6 +19,7 @@ class ScattererType(Enum):
     SOUND_HARD = auto()
     ABSORBING = auto()
 
+# %%
 class ScattererShape(Enum):
     '''Enumeration of the different scatterer shapes.'''
     RECTANGLE = auto()
@@ -23,7 +27,7 @@ class ScattererShape(Enum):
     DIAMOND = auto()
 
 
-
+# %%
 class Waveguide:
     def __init__(self, R = 10., H = 1., half_infinite = False, bump = False):
         self.R = R 
@@ -85,7 +89,7 @@ class Waveguide:
                 match scatterer_type:
                     case ScattererType.PENETRABLE | ScattererType.ABSORBING :
                         self.geo.AddCircle(c=c, r=r, leftdomain=2, rightdomain=1)
-                        self.geo.SetMaterial (2, "Omega_i")
+                        self.geo.SetMaterial(2, "Omega_i")
                     case _:
                         self.geo.AddCircle(c=c, r=r, bc="D_Omega", leftdomain=0, rightdomain=1)
             case ScattererShape.RECTANGLE:
@@ -97,26 +101,33 @@ class Waveguide:
                 match scatterer_type:
                     case ScattererType.PENETRABLE | ScattererType.ABSORBING:
                         self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
-                        self.geo.SetMaterial (2, "Omega_i")
+                        self.geo.SetMaterial(2, "Omega_i")
                     case _:
                         self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=0.05)
                     
 
             case ScattererShape.DIAMOND:
                 c, width, height = params
-
-                self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])< width/2, np.abs(y - c[1]) < height/2 ))
-                self.scatterer_patchs.append( lambda c=c, width=width, height=height, kwargs=kwargs :Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
+                if type(c) is not np.ndarray:
+                    c = np.asarray(c)
+                h_ref = 0.02
+                points = np.array([[width,0],[0,height],[-width,0],[0,-height]])/2 + c
+                points = np.column_stack([points,np.full(4,fill_value=h_ref)])
+                points = [ self.geo.AppendPoint(*p) for p in points ]
                 
+                # self.scatterer_markers.append(lambda x, y, c=c, width=width, height=height: np.logical_and( np.abs(x - c[0])< width/2, np.abs(y - c[1]) < height/2 ))
+                # self.scatterer_patchs.append( lambda c=c, width=width, height=height, kwargs=kwargs :Rectangle(xy=(c[0] - width/2, c[1]-height/2), height=height, width=width, **kwargs))
                 match scatterer_type:
                     case ScattererType.PENETRABLE | ScattererType.ABSORBING:
-                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), leftdomain=2, rightdomain=1)
-                        self.geo.SetMaterial (2, "Omega_i")
+                        
+                        sides = [ ["line", points[i], points[ (i+1) % 4] ] for i in range(4)]
+                        for s in sides:
+                            self.geo.Append(s, leftdomain=2, rightdomain=1)
+                            self.geo.SetMaterial(2, "Omega_i")
                     case _:
-                        self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1, maxh=0.05)
-
-
-
+                        sides = [ [["line", points[i], points[ (i+1) % 4] ], "D_Omega"] for i in range(4)]
+                        for s, bc in sides:
+                            self.geo.Append(s, leftdomain=0, rightdomain=1,  bc=bc)
 
 
     def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):
@@ -251,10 +262,4 @@ class Waveguide:
         Ny, Nx = Z.shape
         L2 = np.sqrt( 2*self.R/Nx * self.H/Ny * np.sum(np.where(mask,0.,np.abs(Z.ravel())**2)))
         return L2
-
-
-
-
-
-    
 
