@@ -1,4 +1,3 @@
-# %%
 from scipy.spatial.distance import cdist
 from scipy.special import j0 as J0, y0 as Y0
 import numpy as np
@@ -6,15 +5,12 @@ from numpy import cos, pi, exp, abs
 from numpy.lib.scimath import sqrt
 
 
-# %%
 from numpy.typing import NDArray
 
-# %%
 real_array = NDArray[np.float64]
 def H01(x):
     return J0(x) + 1j*Y0(x)
 
-# %%
 def GreenFunctionImages(k, H, XY, x_0, y_0, M = 100):
     n = np.arange(0,M)
     minus_1_to_n = 1 - 2* (n%2) 
@@ -34,7 +30,6 @@ def GreenFunctionImages(k, H, XY, x_0, y_0, M = 100):
 
     # return G + 0.0032*np.cos((XY[:,1]-0.39)/0.8*2*np.pi)
 
-# %%
 def GreenFunctionModes(k, H, XY, x_0, y_0, M = 20):
     n = np.arange(0,M)
     beta_n = sqrt(k**2 - (n*np.pi/H)**2)
@@ -45,14 +40,12 @@ def GreenFunctionModes(k, H, XY, x_0, y_0, M = 20):
     return G
 
 
-# %% [markdown]
 # def GreenFunctionMixed(k, H, XY, x_0, y_0, M = 20):
 #     G_modes = GreenFunctionModes(k, H, XY, x_0, y_0, M = 20)
 #     G_images = GreenFunctionImages(k, H, XY, x_0, y_0, M = 20)
 #     return G
 
 
-# %%
 def Mode(k : np.float64, H : np.float64, XY : real_array, t : int):
     x = XY[:,0]
     y = XY[:,1]

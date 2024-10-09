@@ -1,8 +1,6 @@
-# %%
 from Trefft_tools import Inner_term, Gamma_term, Sigma_term, exact_RHS
 
 
-# %%
 from numpy import exp, dot, conj, sin, cos, sqrt, pi
 from numpy.linalg import norm
 import numpy as np 
@@ -12,15 +10,12 @@ from itertools import product
 import pytest
 
 
-# %%
 TOL = 1E-7
 N_points = int(1E5)
 
-# %%
 NTH = 3
 directions = list(product([(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)], [(cos(th), sin(th)) for th in np.linspace(0,np.pi/2,NTH,endpoint=False)]))
 
-# %%
 # Numerical Versions
 def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     l = norm(Q-P)
@@ -38,7 +33,6 @@ def num_inner( k, P, Q, N, d_n, d_m, a=0, b=0, Nt = 100):
     return I
 
 
-# %%
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_inner(d_m,d_n):
     P = np.array([3,3])
@@ -67,9 +61,6 @@ def test_inner(d_m,d_n):
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
-# %%
-
-# %%
 def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
@@ -81,7 +72,6 @@ def num_Gamma( k, P, Q, N, d_n, d_m, d1=0, Nt = 100):
     I = Int( (phi_n + d1/(1j*k)*grad_phi_n_N)*conj(grad_psi_m_N)*l, t)
     return I
 
-# %%
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_Gamma(d_m,d_n):
     P = np.array([0,1])
@@ -108,7 +98,6 @@ def test_Gamma(d_m,d_n):
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
-# %%
 def NewmanntoDirichlet(y, df_dy, k, H, M):
 
     dfn = np.zeros(M, dtype=np.complex128)
@@ -120,7 +109,6 @@ def NewmanntoDirichlet(y, df_dy, k, H, M):
     return f_y
 
 
-# %%
 def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
@@ -138,7 +126,6 @@ def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
     
     return I
 
-# %%
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_Sigma(d_m,d_n):
     H=1
@@ -168,7 +155,6 @@ def test_Sigma(d_m,d_n):
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
-# %%
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_Sigma_broken(d_m,d_n):
     H=1
@@ -197,7 +183,6 @@ def test_Sigma_broken(d_m,d_n):
     I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_points)
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
-# %%
 def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
     l = norm(Q-P)
     t = np.linspace(0,1,Nt)
@@ -215,7 +200,6 @@ def num_RHS( k, P, Q, N, H, s, d_m, d2=0, Nt = 100, Np=15):
     return I
 
 
-# %%
 def test_RHS():
     H=1
     R= 10
@@ -247,7 +231,6 @@ def test_RHS():
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
-# %%
 def test_RHS_broken():
     H=1
     R= 10
@@ -277,3 +260,4 @@ def test_RHS_broken():
     I_exact = exact_RHS_broken(psi_m, E, k, H, d2, t)
     I_num = num_RHS( k, P, Q, N, H, t, d_m, d2=d2, Nt=N_points)
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+

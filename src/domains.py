@@ -1,4 +1,3 @@
-# %%
 '''
 module for the different domains
 '''
@@ -11,7 +10,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.collections import LineCollection
 
-# %%
 class ScattererType(Enum):
     '''Enumeration of the different scatterer types.'''
     PENETRABLE = auto()
@@ -19,7 +17,6 @@ class ScattererType(Enum):
     SOUND_HARD = auto()
     ABSORBING = auto()
 
-# %%
 class ScattererShape(Enum):
     '''Enumeration of the different scatterer shapes.'''
     RECTANGLE = auto()
@@ -27,7 +24,6 @@ class ScattererShape(Enum):
     DIAMOND = auto()
 
 
-# %%
 class Waveguide:
     def __init__(self, R = 10., H = 1., half_infinite = False, bump = False):
         self.R = R 

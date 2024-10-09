@@ -1,7 +1,5 @@
-# %%
 import numpy as np
 
-# %%
 def fek3_int(f, r_A=(0,0), r_B=(1,0), r_C=(0,1)):
     ABx = r_B[0] - r_A[0]
     ABy = r_B[1] - r_A[1]

@@ -1,24 +1,18 @@
-# %%
 """Waveguide with a scatterer inside"""
 
-# %%
 import numpy as np
 import numpy.typing as npt
 
-# %%
 from netgen.geom2d import SplineGeometry # type: ignore
 from ngsolve import Mesh, H1, pml, SymbolicBFI, SymbolicLFI, grad, CoefficientFunction # type: ignore
 from ngsolve import exp, cos, sqrt, GridFunction, BND, LinearForm, BilinearForm, x, y # type: ignore
 
 
-# %%
 from domains import ScattererShape, ScattererType
 
 
-# %%
 real_array = npt.NDArray[np.float64]
 
-# %%
 def FEM_solution(R : np.float64, H : np.float64, 
                  params : dict[str,np.float64  | real_array],
                  scatterer_shape : ScattererShape,
@@ -201,7 +195,6 @@ def FEM_solution(R : np.float64, H : np.float64,
     return U_tot
 
 
-# %%
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle 

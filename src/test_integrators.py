@@ -1,13 +1,10 @@
-# %%
 from two_dimensional_integrators import  fek3_int
 import pytest 
 import numpy as np 
 
 
-# %%
 TOL = 1E-6
 
-# %%
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_standard():
     r_A = np.array([0,0])

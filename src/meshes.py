@@ -1,11 +1,9 @@
-# %%
 '''Module for generating the different meshes.
  Creates a netgen mesh and returns the NG-solve wrapper.'''
 from enum import Enum, auto
 from netgen.geom2d import SplineGeometry
 from ngsolve import Mesh
 
-# %%
 class ScattererType(Enum):
     '''Enumeration of the different scatterer types.'''
     PENETRABLE = auto()
@@ -14,12 +12,6 @@ class ScattererType(Enum):
     GREEN_FUNC = auto()
     NONE = auto()
 
-# %%
-
-# %%
-
-
-# %%
 def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False,
                    scatterer_type = ScattererType.PENETRABLE ):
     '''Mesh for the full waveguide.'''
@@ -50,7 +42,6 @@ def waveguideMesh( h_max = 2., R = 10., H=1., c=(0,0), rad = (0.2), quad = False
     
     return Omega
 
-# %%
 def testMesh(h_max = 2., quad=False, R = 10., H = 1.):
     '''Creates a simple mesh without scatterer for testing.'''
     geo = SplineGeometry()
@@ -66,7 +57,6 @@ def testMesh(h_max = 2., quad=False, R = 10., H = 1.):
     return Omega
 
 
-# %%
 def squareMesh(h_max = 2.,  R = 10., H = 1., c=(0,0), L = (0.2), quad = False,
                    scatterer_type = ScattererType.PENETRABLE):
     '''Creates a simple mesh without scatterer for testing.'''
@@ -99,10 +89,8 @@ def squareMesh(h_max = 2.,  R = 10., H = 1., c=(0,0), L = (0.2), quad = False,
     
     return Omega
 
-# %%
 
 
-# %%
 def toyMesh(H=1., quad=False):
     '''Creates a toy square mesh without scatterer for testing.'''
     geo = SplineGeometry()
@@ -118,7 +106,6 @@ def toyMesh(H=1., quad=False):
     return Omega
 
 
-# %%
 def GradientMesh(R=10., H=2.,h_max=1., h_min=0.1):
     '''Creates a simple mesh without scatterer for testing.'''
     geo = SplineGeometry()
