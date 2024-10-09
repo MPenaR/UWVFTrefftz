@@ -13,7 +13,7 @@
 # ---
 
 # %%
-from domains import Waveguide, ScattererShape, ScattererType
+from ..lib.domains import Waveguide, ScattererShape, ScattererType
 
 # %%
 H = 1 

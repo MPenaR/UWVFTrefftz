@@ -3,4 +3,4 @@
      rev: v1.14.7  # CURRENT_TAG/COMMIT_HASH
      hooks:
      - id: jupytext
-       args: ['--sync', './notebooks/*.ipynb']
+       args: ['--sync', './Trefftz/notebooks/*.ipynb']
