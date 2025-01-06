@@ -2,7 +2,22 @@
 from numpy import dot, sinc, pi, exp, sqrt
 
 def Gamma_term(phi, psi, k, edge, d_1):
-    """Computes the flux on a sound-hard boundary"""
+    """
+    Computes the flux on a sound-hard boundary
+    
+    Parameters
+    ----------
+    phi : namedtuple
+        Trial function.
+    psi : namedtuple
+        Test function.
+    k : float
+        Wave number.
+    edge : namedtuple
+        Edge parameters.
+    d_1 : float
+        Stabilyzing parameter.
+    """
 
     d_m = psi.d
     d_n = phi.d
