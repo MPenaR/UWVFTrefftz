@@ -423,36 +423,6 @@ def absorption_term_global(Triangles : list, N_elems : int, d_d : real_array, n 
     A = bsr_array((data, indices, indptr), shape=(N_elems*N_p, N_elems*N_p))    
     return A
 
-
-
-
-
-
-
-def Inner_term_general(phi, psi, edge, k, a, b):
-
-    d_m = psi.d
-    d_n = phi.d
-
-    k_n = k * sqrt(phi.n)
-    k_m = k * sqrt(psi.n)
-
-    
-    M = edge.M
-    N = edge.N
-    T = edge.T
-    l = edge.l
-
-    I = -1j*l/2*(2*a*k + k_n*dot(d_n,N) + k_m*dot(d_m,N) + 2*b/k*k_n*dot(d_n,N)*k_m*dot(d_m,N))*exp(1j*dot(k_n*d_n - k_m*d_m,M))*sinc(l/(2*pi)*dot(k_n*d_n - k_m*d_m,T))
-
-    return I
-
-
-
-
-
-
-
 def sound_soft_term(phi, psi, k, edge, a):
 
     d_m = psi.d

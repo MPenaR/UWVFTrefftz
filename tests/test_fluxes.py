@@ -1,4 +1,4 @@
-from fluxes import Gamma_term
+from fluxes import Gamma_term, Inner_term_general
 
 # , Gamma_term, Sigma_term, exact_RHS
 import pytest
@@ -11,7 +11,7 @@ from collections import namedtuple
 TOL = 1E-7
 N_POINTS = int(1E5)
 Edge = namedtuple('Edge', ['P', 'Q', 'N', 'T', 'M', 'l'])
-TstFunction = namedtuple('TestFunction', ['d', 'k'])
+TstFunction = namedtuple('TestFunction', ['d', 'n'])
 
 from itertools import product  ## SHOULD BE A FIXTURE IN CONFTEST.PY
 NTH = 3
@@ -20,46 +20,45 @@ directions = list(product([(cos(th), sin(th)) for th in linspace(0, pi/2, NTH, e
 
 
 
-# # Numerical Versions
-# def num_inner(k, P, Q, N, d_n, d_m, a=0, b=0, Nt=100):
-#     t = linspace(0, 1, Nt)
-#     x = P + outer(t, Q-P)
-#     phi_n = exp(1j*k*dot(x, d_n))
-#     psi_m = exp(1j*k*dot(x, d_m))
-#     grad_phi_n_N = 1j*k*dot(N, d_n)*exp(1j*k*dot(x, d_n))
-#     grad_psi_m_N = 1j*k*dot(N, d_m)*exp(1j*k*dot(x, d_m))
+def num_inner(k, P, Q, N, d_n, d_m, a=0, b=0, Nt=100):
+    t = linspace(0, 1, Nt)
+    x = P + outer(t, Q-P)
+    phi_n = exp(1j*k*dot(x, d_n))
+    psi_m = exp(1j*k*dot(x, d_m))
+    grad_phi_n_N = 1j*k*dot(N, d_n)*exp(1j*k*dot(x, d_n))
+    grad_psi_m_N = 1j*k*dot(N, d_m)*exp(1j*k*dot(x, d_m))
 
-#     I  = 1/2*Int(phi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)
-#     I += b*Int(1/(1j*k)*grad_phi_n_N * conj(grad_psi_m_N), t)
-#     I -= a*Int(1j*k*phi_n*conj(psi_m), t)
-#     I = norm(Q-P)*I
-#     return I
-
-
-# @pytest.mark.parametrize(('d_m', 'd_n'), directions )
-# def test_inner(d_m,d_n):
-#     P = np.array([3,3])
-#     Q = np.array([1,1])
-#     l = norm(Q-P)
-#     T = (Q - P)/l
-#     N = np.array([-T[1], T[0]])
-#     M = (P + Q)/2    
-#     E = Edge(P,Q,N,T,M,l)
+    I  = 1/2*Int(phi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)
+    I += b*Int(1/(1j*k)*grad_phi_n_N * conj(grad_psi_m_N), t)
+    I -= a*Int(1j*k*phi_n*conj(psi_m), t)
+    I = norm(Q-P)*I
+    return I
 
 
-#     k = 8.
-#     d_n = np.array(d_n)/norm(d_n)
-#     d_m = np.array(d_m)/norm(d_m)
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_inner(d_m,d_n):
+    P = array([3,3])
+    Q = array([1,1])
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = array([-T[1], T[0]])
+    M = (P + Q)/2    
+    E = Edge(P,Q,N,T,M,l)
 
-#     phi_n = TestFunction(d=d_n,k=k)
-#     psi_m = TestFunction(d=d_m,k=k)
 
-#     a = 0.5
-#     b = 0.5
+    k = 8.
+    d_n = array(d_n)/norm(d_n)
+    d_m = array(d_m)/norm(d_m)
 
-#     I_exact = Inner_term(phi_n, psi_m, E, a, b)
-#     I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_points)
-#     assert isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+    phi_n = TstFunction(d=d_n,n=1)
+    psi_m = TstFunction(d=d_m,n=1)
+
+    a = 0.5
+    b = 0.5
+
+    I_exact = Inner_term_general(phi_n, psi_m, E, k, a, b)
+    I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_POINTS)
+    assert isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
@@ -83,14 +82,14 @@ def test_Gamma(d_m, d_n):
     N = array([0,1])
     M = (P + Q)/2
     
-    E = Edge(P,Q,N,T,M,l)
+    E = Edge(P, Q, N, T, M, l)
 
     k = 8.
     d_n = array(d_n)/norm(d_n)
     d_m = array(d_m)/norm(d_m)
 
-    phi_n = TstFunction(d=d_n, k=k)
-    psi_m = TstFunction(d=d_m, k=k)
+    phi_n = TstFunction(d=d_n, n=1)
+    psi_m = TstFunction(d=d_m, n=1)
 
     d1 = 0.5
     I_exact = Gamma_term(phi_n, psi_m, k, E, d1)
