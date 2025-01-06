@@ -167,18 +167,6 @@ class TrefftzFunction:
         return dudy 
 
 
-def Gamma_term(phi, psi, k, edge, d_1):
-
-    d_m = psi.d
-    d_n = phi.d
-    
-    M = edge.M
-    l = edge.l
-    N = edge.N
-    T = edge.T
-
-    I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m,M))*sinc(k*l/(2*pi)*dot(d_n-d_m,T))
-    return I
 
 def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
                  d : real_array, d_d : real_array, d_1 : np.floating, M_trig : real_array) -> complex_array:
