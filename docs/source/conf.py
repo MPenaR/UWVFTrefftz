@@ -23,7 +23,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'furo'
 html_static_path = ['_static']
 
 import os
@@ -36,4 +36,10 @@ extensions = [
     'sphinx.ext.autodoc',    # For parsing docstrings
     'sphinx.ext.napoleon',   # For Google and NumPy style docstrings
     'sphinx.ext.viewcode',   # Adds links to source code
+    'myst_parser',
+    'sphinx.ext.mathjax'
 ]
+
+myst_enable_extensions = ["dollarmath"]
+
+mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"

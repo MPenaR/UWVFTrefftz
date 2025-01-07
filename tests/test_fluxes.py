@@ -1,4 +1,4 @@
-from fluxes import Gamma_term, Inner_term_general
+from fluxes import Gamma_term, Inner_term
 
 # , Gamma_term, Sigma_term, exact_RHS
 import pytest
@@ -56,7 +56,7 @@ def test_inner(d_m,d_n):
     a = 0.5
     b = 0.5
 
-    I_exact = Inner_term_general(phi_n, psi_m, E, k, a, b)
+    I_exact = Inner_term(phi_n, psi_m, E, k, a, b)
     I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_POINTS)
     assert isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 

@@ -2,8 +2,12 @@
 from numpy import dot, sinc, pi, exp, sqrt
 
 def Gamma_term(phi, psi, k, edge, d_1):
-    """
-    Computes the flux on a sound-hard boundary
+    r"""
+    Computes the flux on a sound-hard boundary, that is:
+
+    .. math::
+    
+        \int_E \phi_n(\mathbf{x})\overline{\psi_m(\mathbf{x})}\,\mathrm{d}\ell(\mathbf{x})
     
     Parameters
     ----------
@@ -17,6 +21,12 @@ def Gamma_term(phi, psi, k, edge, d_1):
         Edge parameters.
     d_1 : float
         Stabilyzing parameter.
+
+    Returns
+    -------
+    I : complex
+        The integral.
+    
     """
 
     d_m = psi.d
@@ -30,7 +40,7 @@ def Gamma_term(phi, psi, k, edge, d_1):
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m, M)) * sinc(k*l/(2*pi)*dot(d_n-d_m, T))
     return I
 
-def Inner_term_general(phi, psi, edge, k, a, b):
+def Inner_term(phi, psi, edge, k, a, b):
     """computes the flux on a facet with respect to the degrees
     of freedom from the same cell."""
 
