@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="UWVFTrefftz documentation" href="index.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>fluxes module - UWVFTrefftz documentation</title>
+        <title>single_fluxes - UWVFTrefftz documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
@@ -200,7 +200,9 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">fluxes module</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">single_fluxes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-boundary_conditions">boundary_conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-FEM">FEM</a></li>
 </ul>
 
 </div>
@@ -241,23 +243,59 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="module-fluxes">
-<span id="fluxes-module"></span><h1>fluxes module<a class="headerlink" href="#module-fluxes" title="Link to this heading">¶</a></h1>
+          <section id="module-single_fluxes">
+<span id="single-fluxes"></span><h1>single_fluxes<a class="headerlink" href="#module-single_fluxes" title="Link to this heading">¶</a></h1>
+<p>Module for the evaluation of fluxes for a single pair of test and trial functions. It was the initial
+implementation of the code and now serves as a test for the vectorized implementation. It is tested
+against numerical computations of the fluxes.</p>
+<p>All around this page, <span class="math notranslate nohighlight">\(\Phi_{n}(\mathbf{x})=\exp(ik\mathbf{x}\cdot\mathbf{d}_n)\)</span> and <span class="math notranslate nohighlight">\(\Psi_{m}(\mathbf{x})=\exp(ik\mathbf{x}\cdot\mathbf{d}_m)\)</span>
+ar the trial and test functions. <span class="math notranslate nohighlight">\(l\)</span> is the length of an edge, <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> its midpoint and <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span> and <span class="math notranslate nohighlight">\(\mathbf{n}\)</span>
+its tangent and normal unitary vectors.</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="fluxes.Gamma_term">
-<span class="sig-prename descclassname"><span class="pre">fluxes.</span></span><span class="sig-name descname"><span class="pre">Gamma_term</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fluxes.html#Gamma_term"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fluxes.Gamma_term" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="single_fluxes.Inner">
+<span class="sig-prename descclassname"><span class="pre">single_fluxes.</span></span><span class="sig-name descname"><span class="pre">Inner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_fluxes.html#Inner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#single_fluxes.Inner" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the flux on a inner facet with respect to the degrees
+of freedom from the same cell, that is:</p>
+<p>FORGOT TO INCLUDE IT.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="single_fluxes.Radiating_local">
+<span class="sig-prename descclassname"><span class="pre">single_fluxes.</span></span><span class="sig-name descname"><span class="pre">Radiating_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_fluxes.html#Radiating_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#single_fluxes.Radiating_local" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the flux on a radiating boundary with respect to the degrees
+of freedom from the same cell, that is:</p>
+<p>TODO: it is assuming that the radiating boundary consists of a vertical segment. This should be easy to generalize.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[-\int_{E}\left(d_{2}ik\Phi_n(\mathbf{x})+\nabla \Phi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\Psi_n(\mathbf{x})}\,\mathrm{d}S_{\mathbf{x}}\]</div>
+</div>
+<p>which can be computed as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\boxed{-ikl\left(d_{2}+\mathbf{d}_{n}\cdot\mathbf{n}\right)e^{ik\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\mathbf{M}}\mathrm{sinc}\left(\frac{kl}{2\pi}\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\mathbf{j}\right)}\]</div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="single_fluxes.SoundHard">
+<span class="sig-prename descclassname"><span class="pre">single_fluxes.</span></span><span class="sig-name descname"><span class="pre">SoundHard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#FEM.TrialFunction" title="FEM.TrialFunction"><span class="pre">TrialFunction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#FEM.TestFunction" title="FEM.TestFunction"><span class="pre">TestFunction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/single_fluxes.html#SoundHard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#single_fluxes.SoundHard" title="Link to this definition">¶</a></dt>
 <dd><p>Computes the flux on a sound-hard boundary, that is:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\int_E \phi_n(\mathbf{x})\overline{\psi_m(\mathbf{x})}\,\mathrm{d}\ell(\mathbf{x})\]</div>
+\[\int_{E}\left(\Phi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \Phi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \Psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}\]</div>
+</div>
+<p>This quantity can be exactly evaluated as:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\boxed{-ikl\left(1+d_{1}\mathbf{d}_{n}\cdot\mathbf{n}\right)\mathbf{d}_{m}\cdot\mathbf{n}e^{ik\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\mathbf{M}}\mathrm{sinc}\left(\frac{kl}{2\pi}\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\boldsymbol{\tau}\right)}\]</div>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>phi</strong> (<em>namedtuple</em>) – Trial function.</p></li>
-<li><p><strong>psi</strong> (<em>namedtuple</em>) – Test function.</p></li>
+<li><p><strong>phi</strong> (<a class="reference internal" href="#FEM.TrialFunction" title="FEM.TrialFunction"><em>TrialFunction</em></a>) – Trial function.</p></li>
+<li><p><strong>psi</strong> (<a class="reference internal" href="#FEM.TestFunction" title="FEM.TestFunction"><em>TestFunction</em></a>) – Test function.</p></li>
 <li><p><strong>k</strong> (<em>float</em>) – Wave number.</p></li>
-<li><p><strong>edge</strong> (<em>namedtuple</em>) – Edge parameters.</p></li>
+<li><p><strong>edge</strong> (<em>Edge</em>) – Edge parameters.</p></li>
 <li><p><strong>d_1</strong> (<em>float</em>) – Stabilyzing parameter.</p></li>
 </ul>
 </dd>
@@ -270,11 +308,70 @@
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="fluxes.Inner_term">
-<span class="sig-prename descclassname"><span class="pre">fluxes.</span></span><span class="sig-name descname"><span class="pre">Inner_term</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fluxes.html#Inner_term"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fluxes.Inner_term" title="Link to this definition">¶</a></dt>
-<dd><p>computes the flux on a facet with respect to the degrees
-of freedom from the same cell.</p>
+</section>
+<section id="module-boundary_conditions">
+<span id="boundary-conditions"></span><h1>boundary_conditions<a class="headerlink" href="#module-boundary_conditions" title="Link to this heading">¶</a></h1>
+<p>Module for defining boundary conditions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="boundary_conditions.BoundaryCondition">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">boundary_conditions.</span></span><span class="sig-name descname"><span class="pre">BoundaryCondition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/boundary_conditions.html#BoundaryCondition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#boundary_conditions.BoundaryCondition" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Types of boundary condition. (transmission conditions are not “boundary” conditions)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="boundary_conditions.BoundaryCondition.DIRICHLET">
+<span class="sig-name descname"><span class="pre">DIRICHLET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#boundary_conditions.BoundaryCondition.DIRICHLET" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="boundary_conditions.BoundaryCondition.NEUMANN">
+<span class="sig-name descname"><span class="pre">NEUMANN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#boundary_conditions.BoundaryCondition.NEUMANN" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="boundary_conditions.BoundaryCondition.RADIATING">
+<span class="sig-name descname"><span class="pre">RADIATING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#boundary_conditions.BoundaryCondition.RADIATING" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-FEM">
+<span id="fem"></span><h1>FEM<a class="headerlink" href="#module-FEM" title="Link to this heading">¶</a></h1>
+<p>Module for FEM related definitions and functions</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="FEM.TestFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FEM.</span></span><span class="sig-name descname"><span class="pre">TestFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FEM.html#TestFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FEM.TestFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FEM.TestFunction.d">
+<span class="sig-name descname"><span class="pre">d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#FEM.TestFunction.d" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FEM.TestFunction.n">
+<span class="sig-name descname"><span class="pre">n</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#FEM.TestFunction.n" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="FEM.TrialFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FEM.</span></span><span class="sig-name descname"><span class="pre">TrialFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/FEM.html#TrialFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FEM.TrialFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FEM.TrialFunction.d">
+<span class="sig-name descname"><span class="pre">d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#FEM.TrialFunction.d" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FEM.TrialFunction.n">
+<span class="sig-name descname"><span class="pre">n</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#FEM.TrialFunction.n" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -326,9 +423,32 @@ of freedom from the same cell.</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">fluxes module</a><ul>
-<li><a class="reference internal" href="#fluxes.Gamma_term"><code class="docutils literal notranslate"><span class="pre">Gamma_term()</span></code></a></li>
-<li><a class="reference internal" href="#fluxes.Inner_term"><code class="docutils literal notranslate"><span class="pre">Inner_term()</span></code></a></li>
+<li><a class="reference internal" href="#">single_fluxes</a><ul>
+<li><a class="reference internal" href="#single_fluxes.Inner"><code class="docutils literal notranslate"><span class="pre">Inner()</span></code></a></li>
+<li><a class="reference internal" href="#single_fluxes.Radiating_local"><code class="docutils literal notranslate"><span class="pre">Radiating_local()</span></code></a></li>
+<li><a class="reference internal" href="#single_fluxes.SoundHard"><code class="docutils literal notranslate"><span class="pre">SoundHard()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-boundary_conditions">boundary_conditions</a><ul>
+<li><a class="reference internal" href="#boundary_conditions.BoundaryCondition"><code class="docutils literal notranslate"><span class="pre">BoundaryCondition</span></code></a><ul>
+<li><a class="reference internal" href="#boundary_conditions.BoundaryCondition.DIRICHLET"><code class="docutils literal notranslate"><span class="pre">BoundaryCondition.DIRICHLET</span></code></a></li>
+<li><a class="reference internal" href="#boundary_conditions.BoundaryCondition.NEUMANN"><code class="docutils literal notranslate"><span class="pre">BoundaryCondition.NEUMANN</span></code></a></li>
+<li><a class="reference internal" href="#boundary_conditions.BoundaryCondition.RADIATING"><code class="docutils literal notranslate"><span class="pre">BoundaryCondition.RADIATING</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-FEM">FEM</a><ul>
+<li><a class="reference internal" href="#FEM.TestFunction"><code class="docutils literal notranslate"><span class="pre">TestFunction</span></code></a><ul>
+<li><a class="reference internal" href="#FEM.TestFunction.d"><code class="docutils literal notranslate"><span class="pre">TestFunction.d</span></code></a></li>
+<li><a class="reference internal" href="#FEM.TestFunction.n"><code class="docutils literal notranslate"><span class="pre">TestFunction.n</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#FEM.TrialFunction"><code class="docutils literal notranslate"><span class="pre">TrialFunction</span></code></a><ul>
+<li><a class="reference internal" href="#FEM.TrialFunction.d"><code class="docutils literal notranslate"><span class="pre">TrialFunction.d</span></code></a></li>
+<li><a class="reference internal" href="#FEM.TrialFunction.n"><code class="docutils literal notranslate"><span class="pre">TrialFunction.n</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

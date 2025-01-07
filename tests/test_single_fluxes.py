@@ -1,4 +1,4 @@
-from fluxes import Gamma_term, Inner_term
+from single_fluxes import SoundHard, Inner, Radiating_local
 
 # , Gamma_term, Sigma_term, exact_RHS
 import pytest
@@ -20,7 +20,7 @@ directions = list(product([(cos(th), sin(th)) for th in linspace(0, pi/2, NTH, e
 
 
 
-def num_inner(k, P, Q, N, d_n, d_m, a=0, b=0, Nt=100):
+def num_Inner(k, P, Q, N, d_n, d_m, a=0, b=0, Nt=100):
     t = linspace(0, 1, Nt)
     x = P + outer(t, Q-P)
     phi_n = exp(1j*k*dot(x, d_n))
@@ -36,7 +36,7 @@ def num_inner(k, P, Q, N, d_n, d_m, a=0, b=0, Nt=100):
 
 
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
-def test_inner(d_m,d_n):
+def test_Inner(d_m,d_n):
     P = array([3,3])
     Q = array([1,1])
     l = norm(Q-P)
@@ -56,14 +56,14 @@ def test_inner(d_m,d_n):
     a = 0.5
     b = 0.5
 
-    I_exact = Inner_term(phi_n, psi_m, E, k, a, b)
-    I_num = num_inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_POINTS)
+    I_exact = Inner(phi_n, psi_m, E, k, a, b)
+    I_num = num_Inner( k, P, Q, N, d_n, d_m, a = a, b = b,  Nt=N_POINTS)
     assert isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
 
-def num_Gamma(k, P, Q, N, d_n, d_m, d1, Nt):
+def num_SoundHard(k, P, Q, N, d_n, d_m, d1, Nt):
     t = linspace(0, 1, Nt)
     x = P + outer(t, Q-P)
     phi_n = exp(1j*k*dot(x, d_n))
@@ -74,7 +74,7 @@ def num_Gamma(k, P, Q, N, d_n, d_m, d1, Nt):
     return I
 
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
-def test_Gamma(d_m, d_n):
+def test_SoundHard(d_m, d_n):
     P = array([0,1])
     Q = array([3,1])
     l = norm(P-Q)
@@ -92,41 +92,41 @@ def test_Gamma(d_m, d_n):
     psi_m = TstFunction(d=d_m, n=1)
 
     d1 = 0.5
-    I_exact = Gamma_term(phi_n, psi_m, k, E, d1)
-    I_num = num_Gamma(k, P, Q, N, d_n, d_m, d1=d1,  Nt=N_POINTS)
+    I_exact = SoundHard(phi_n, psi_m, k, E, d1)
+    I_num = num_SoundHard(k, P, Q, N, d_n, d_m, d1=d1,  Nt=N_POINTS)
     assert isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
 
 
 
-# def NewmanntoDirichlet(y, df_dy, k, H, M):
+def NewmanntoDirichlet(y, df_dy, k, H, M):
 
-#     dfn = np.zeros(M, dtype=np.complex128)
-#     dfn[0] = Int( df_dy*1/sqrt(2*H), y )
-#     for n in range(1,M):
-#         dfn[n] = Int( df_dy*cos(n*pi*y/H)/sqrt(H), y )
+    dfn = np.zeros(M, dtype=np.complex128)
+    dfn[0] = Int( df_dy*1/sqrt(2*H), y )
+    for n in range(1,M):
+        dfn[n] = Int( df_dy*cos(n*pi*y/H)/sqrt(H), y )
     
-#     f_y = 1/(1j*k)*dfn[0]/sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/sqrt(H) for n in range(1,M)])
-#     return f_y
+    f_y = 1/(1j*k)*dfn[0]/sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/sqrt(H) for n in range(1,M)])
+    return f_y
 
 
-# def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
-#     l = norm(Q-P)
-#     t = np.linspace(0,1,Nt)
-#     x = P + np.outer(t,Q-P)
-#     phi_n = exp(1j*k*dot(x,d_n))
-#     psi_m = exp(1j*k*dot(x,d_m))
-#     grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
-#     grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
+    l = norm(Q-P)
+    t = np.linspace(0,1,Nt)
+    x = P + np.outer(t,Q-P)
+    phi_n = exp(1j*k*dot(x,d_n))
+    psi_m = exp(1j*k*dot(x,d_m))
+    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
+    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
 
-#     N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, Np)
-#     N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
+    N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, Np)
+    N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
 
-#     I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
-#     I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
+    I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
+    I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
     
-#     return I
+    return I
 
 # @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 # def test_Sigma(d_m,d_n):

@@ -21,16 +21,10 @@ from integrators import vec_fekete3 as int2D_vec
 from domains import ScattererType
 
 
-import numpy.typing as npt
 
 
-real_array = npt.NDArray[np.floating]
-complex_array = npt.NDArray[np.complexfloating]
-
-
-
-
-TestFunction = namedtuple("TestFunction", ["n", "d"])
+from numpy_types import real_array, complex_array
+from FEM import TestFunction, TrialFunction
 
 
 
