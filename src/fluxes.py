@@ -1,7 +1,17 @@
 # module for evaluation of simple fluxes
 from numpy import dot, sinc, pi, exp, sqrt
+from FEM import TestFunction, TrialFunction
+from numpy_types import real_array
 
-def Gamma_term(phi, psi, k, edge, d_1):
+from typing import NamedTuple
+class Edge(NamedTuple):
+    M : real_array
+    N : real_array
+    l : float 
+    T : real_array
+
+
+def Gamma_term( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, d_1 : float):
     r"""
     Computes the flux on a sound-hard boundary, that is:
 
@@ -11,13 +21,13 @@ def Gamma_term(phi, psi, k, edge, d_1):
     
     Parameters
     ----------
-    phi : namedtuple
+    phi : TrialFunction
         Trial function.
-    psi : namedtuple
+    psi : TestFunction
         Test function.
     k : float
         Wave number.
-    edge : namedtuple
+    edge : Edge
         Edge parameters.
     d_1 : float
         Stabilyzing parameter.
