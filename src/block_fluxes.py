@@ -4,7 +4,7 @@ given pair of cells.
 """
 
 from numpy_types import real_array, complex_array
-from numpy import dot, exp, sqrt, sinc, subtract, add, newaxis, pi, outer
+from numpy import dot, exp, sqrt, sinc, subtract, add, pi, outer
 from geometry import Edge
 
 def SoundHard_block(k : complex, edge : Edge, d : real_array, d_d : real_array, d_1 : float) -> complex_array: #, M_trig : real_array) -> complex_array:
@@ -65,6 +65,10 @@ def Inner_block(k : complex, edge : Edge, d : real_array, a : float, b : float, 
     N = edge.N
     M = edge.M
     T = edge.T
+
+    #change later
+    n_m = 1
+    n_n = 1
     
     I = -1j*k*l*(a + add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
     *exp(-1j*k* subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
