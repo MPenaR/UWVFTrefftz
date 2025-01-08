@@ -256,7 +256,7 @@
 
 <div class="viewcode-block" id="SoundHard">
 <a class="viewcode-back" href="../modules.html#single_fluxes.SoundHard">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">SoundHard</span><span class="p">(</span> <span class="n">phi</span> <span class="p">:</span> <span class="n">TrialFunction</span><span class="p">,</span> <span class="n">psi</span> <span class="p">:</span> <span class="n">TestFunction</span><span class="p">,</span> <span class="n">k</span> <span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">edge</span> <span class="p">:</span> <span class="n">Edge</span><span class="p">,</span> <span class="n">d_1</span> <span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">SoundHard</span><span class="p">(</span> <span class="n">phi</span> <span class="p">:</span> <span class="n">TrialFunction</span><span class="p">,</span> <span class="n">psi</span> <span class="p">:</span> <span class="n">TestFunction</span><span class="p">,</span> <span class="n">k</span> <span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">edge</span> <span class="p">:</span> <span class="n">Edge</span><span class="p">,</span> <span class="n">d_1</span> <span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the flux on a sound-hard boundary, that is:</span>
 
@@ -305,7 +305,7 @@
 
 <div class="viewcode-block" id="Inner">
 <a class="viewcode-back" href="../modules.html#single_fluxes.Inner">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">Inner</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">psi</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">Inner</span><span class="p">(</span><span class="n">phi</span> <span class="p">:</span> <span class="n">TrialFunction</span><span class="p">,</span> <span class="n">psi</span> <span class="p">:</span> <span class="n">TestFunction</span><span class="p">,</span> <span class="n">edge</span> <span class="p">:</span> <span class="n">Edge</span><span class="p">,</span> <span class="n">k</span> <span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span> <span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span> <span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the flux on a inner facet with respect to the degrees</span>
 <span class="sd">    of freedom from the same cell, that is:</span>
@@ -334,7 +334,7 @@
 
 <div class="viewcode-block" id="Radiating_local">
 <a class="viewcode-back" href="../modules.html#single_fluxes.Radiating_local">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">Radiating_local</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">psi</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">d_2</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">Radiating_local</span><span class="p">(</span><span class="n">phi</span> <span class="p">:</span> <span class="n">TrialFunction</span><span class="p">,</span> <span class="n">psi</span> <span class="p">:</span> <span class="n">TestFunction</span><span class="p">,</span> <span class="n">k</span> <span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">edge</span> <span class="p">:</span> <span class="n">Edge</span><span class="p">,</span> <span class="n">d_2</span> <span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the flux on a radiating boundary with respect to the degrees</span>
 <span class="sd">    of freedom from the same cell, that is:</span>

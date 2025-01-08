@@ -15,7 +15,7 @@ from FEM import TestFunction, TrialFunction
 from geometry import Edge
 
 
-def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, d_1 : float):
+def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, d_1 : float) -> complex:
     r"""
     Computes the flux on a sound-hard boundary, that is:
 
@@ -61,7 +61,7 @@ def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, 
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m, M)) * sinc(k*l/(2*pi)*dot(d_n-d_m, T))
     return I
 
-def Inner(phi, psi, edge, k, a, b):
+def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : float, b : float) -> complex:
     r"""
     Computes the flux on a inner facet with respect to the degrees
     of freedom from the same cell, that is:
@@ -87,7 +87,7 @@ def Inner(phi, psi, edge, k, a, b):
     return I
 
 
-def Radiating_local(phi, psi, k, edge, d_2):
+def Radiating_local(phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, d_2 : float) -> complex:
     r"""
     Computes the flux on a radiating boundary with respect to the degrees
     of freedom from the same cell, that is:

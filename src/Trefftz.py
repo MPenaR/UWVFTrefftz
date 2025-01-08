@@ -162,10 +162,10 @@ class TrefftzFunction:
 
 
 
-def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
-                 d : real_array, d_d : real_array, d_1 : np.floating, M_trig : real_array) -> complex_array:
-    I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))/ np.exp(1j*k*np.subtract.outer(dot(d,M_trig), dot(d,M_trig)).transpose()) 
-    return I
+# def Gamma_local(k : complex, l : float, M : real_array, T : real_array, N : real_array,
+#                  d : real_array, d_d : real_array, d_1 : np.floating, M_trig : real_array) -> complex_array:
+#     I = -1j*k*l*dot(d, N)[:,np.newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))/ np.exp(1j*k*np.subtract.outer(dot(d,M_trig), dot(d,M_trig)).transpose()) 
+#     return I
 
 
 def Inner_general_local(k : complex, l : float, M : real_array, T : real_array, N : real_array, n_n, n_m, 
