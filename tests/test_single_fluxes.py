@@ -2,9 +2,10 @@ from single_fluxes import SoundHard, Inner, Radiating_local
 
 # , Gamma_term, Sigma_term, exact_RHS
 import pytest
-from numpy import linspace, outer, sin, cos, pi, exp, dot, conj, isclose, array
+from numpy import linspace, outer, sqrt, sin, cos, pi, exp, dot, conj, isclose, array
 from numpy.linalg import norm
 from numpy import trapezoid as Int
+import numpy as np
 
 
 from collections import namedtuple
@@ -100,33 +101,33 @@ def test_SoundHard(d_m, d_n):
 
 
 
-def NewmanntoDirichlet(y, df_dy, k, H, M):
+# def NewmanntoDirichlet(y, df_dy, k, H, M):
 
-    dfn = np.zeros(M, dtype=np.complex128)
-    dfn[0] = Int( df_dy*1/sqrt(2*H), y )
-    for n in range(1,M):
-        dfn[n] = Int( df_dy*cos(n*pi*y/H)/sqrt(H), y )
+#     dfn = np.zeros(M, dtype=np.complex128)
+#     dfn[0] = Int( df_dy*1/np.sqrt(2*H), y )
+#     for n in range(1,M):
+#         dfn[n] = Int( df_dy*cos(n*pi*y/H)/np.sqrt(H), y )
     
-    f_y = 1/(1j*k)*dfn[0]/sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/sqrt(H) for n in range(1,M)])
-    return f_y
+#     f_y = 1/(1j*k)*dfn[0]/np.sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*np.sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/np.sqrt(H) for n in range(1,M)])
+#     return f_y
 
 
-def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
-    l = norm(Q-P)
-    t = np.linspace(0,1,Nt)
-    x = P + np.outer(t,Q-P)
-    phi_n = exp(1j*k*dot(x,d_n))
-    psi_m = exp(1j*k*dot(x,d_m))
-    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
-    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+# def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
+#     l = norm(Q-P)
+#     t = np.linspace(0,1,Nt)
+#     x = P + np.outer(t,Q-P)
+#     phi_n = exp(1j*k*dot(x,d_n))
+#     psi_m = exp(1j*k*dot(x,d_m))
+#     grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
+#     grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
 
-    N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, Np)
-    N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
+#     N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, Np)
+#     N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, Np)
 
-    I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
-    I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
+#     I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
+#     I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
     
-    return I
+#     return I
 
 # @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 # def test_Sigma(d_m,d_n):
@@ -155,6 +156,49 @@ def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
 #     I_exact = Sigma_term(phi_n, psi_m, E, d2)
 #     I_num = num_Sigma( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_points)
 #     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+
+
+def num_Radiating_local( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
+    l = norm(Q-P)
+    t = np.linspace(0,1,Nt)
+    x = P + np.outer(t,Q-P)
+    phi_n = exp(1j*k*dot(x,d_n))
+    psi_m = exp(1j*k*dot(x,d_m))
+    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
+    # grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+
+
+    I = -Int(grad_phi_n_N*conj(psi_m) + d2*1j*k*phi_n*conj(psi_m), t)*l
+    
+    return I
+
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_Radiating_local(d_m,d_n):
+    H=1
+    R= 10
+    P = np.array([R,-H])
+    Q = np.array([R,H])
+
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([1,0])
+    M = (P+Q)/2
+
+    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
+    E = Edge(P,Q,N,T,M,l)
+
+    k = 8.
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = np.array(d_m)/norm(d_m)
+
+    TestFunction = namedtuple('TestFunction',['d','k'])
+    phi_n = TestFunction(d=d_n,k=k)
+    psi_m = TestFunction(d=d_m,k=k)
+    d2 = 0.5
+    I_exact = Radiating_local(phi_n, psi_m, k, E, d2)
+    I_num = num_Radiating_local( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_POINTS)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+
 
 
 
