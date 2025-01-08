@@ -31,3 +31,11 @@ FEM
     :members:
     :undoc-members:
     :show-inheritance: 
+
+geometry
+====================
+
+.. automodule:: geometry
+    :members:
+    :undoc-members:
+    :show-inheritance: 
