@@ -41,10 +41,6 @@ def SoundHard_block(k : complex, edge : Edge, d : real_array, d_d : real_array, 
 
 
     I = -1j*k*l*outer(dot(d, N), (1 + d_1*dot(d, N)))*exp(1j*k*dot(d_d, M))*sinc(k*l/(2*pi)*dot(d_d,T))
-
-# this is with basis function normalization
-#    I = -1j*k*l*dot(d, N)[:,newaxis]*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))*(1 + d_1*dot(d, N))/ exp(1j*k*subtract.outer(dot(d,M_trig), dot(d,M_trig)).transpose()) 
-
     return I
 
 def Inner_block(k : complex, edge : Edge, d : real_array, a : float, b : float) -> complex_array:
@@ -70,9 +66,15 @@ def Inner_block(k : complex, edge : Edge, d : real_array, a : float, b : float) 
     M = edge.M
     T = edge.T
     
-    I = -1j*k*l*(a + add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*np.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
-    *exp(-1j*k* subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
-    *sinc(l*k/(2*pi)*subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))/ np.exp(1j*k*np.subtract.outer(sqrt(n_n)*dot(d,M_n), conj(sqrt(n_m))*dot(d,M_m)).transpose())
+    # I = -1j*k*l*(a + add.outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))/2 + b*outer(sqrt(n_m)*dot(d,N),sqrt(n_n)*dot(d,N))) \
+    # *exp(-1j*k* subtract.outer(sqrt(n_m)*dot(d,M),sqrt(n_n)*dot(d,M)))                                             \
+    # *sinc(l*k/(2*pi)*subtract.outer(sqrt(n_m)*dot(d,T),sqrt(n_n)*dot(d,T)))
+
+    I = 1/(1j*k)*l*(k**2*a + k*add.outer(k_m*dot(d,N),k_n*dot(d,N))/2 + b*outer(k_m*dot(d,N),k_n*dot(d,N))) \
+    *exp(-1j* subtract.outer(k_m*dot(d,M),k_n*dot(d,M)))                                             \
+    *sinc(l/(2*pi)*subtract.outer(k*sqrt(n_m)*dot(d,T),k*sqrt(n_n)*dot(d,T)))
+
+
 
     return I
 
