@@ -201,6 +201,7 @@
   <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">single_fluxes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-block_fluxes">block_fluxes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#module-boundary_conditions">boundary_conditions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#module-FEM">FEM</a></li>
 </ul>
@@ -306,6 +307,88 @@ of freedom from the same cell, that is:</p>
 <dd class="field-odd"><p>complex</p>
 </dd>
 </dl>
+</dd></dl>
+
+</section>
+<section id="module-block_fluxes">
+<span id="block-fluxes"></span><h1>block_fluxes<a class="headerlink" href="#module-block_fluxes" title="Link to this heading">¶</a></h1>
+<p>module for implementing blocks of fluxes, i.e. matrices containing all the fluxes of the same type for a
+given pair of cells.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="block_fluxes.Inner_block">
+<span class="sig-prename descclassname"><span class="pre">block_fluxes.</span></span><span class="sig-name descname"><span class="pre">Inner_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/block_fluxes.html#Inner_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#block_fluxes.Inner_block" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the block for an inner edge.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>k<span class="classifier">complex</span></dt><dd><p>Wavenumber</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>edge<span class="classifier">Edge</span></dt><dd><p>Edge</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>d<span class="classifier">real_array</span></dt><dd><p>Set of directions</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>a<span class="classifier">float</span></dt><dd><p>Stabilyzing parameter.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>b<span class="classifier">float</span></dt><dd><p>Stabilyzing parameter.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="block_fluxes.SoundHard_block">
+<span class="sig-prename descclassname"><span class="pre">block_fluxes.</span></span><span class="sig-name descname"><span class="pre">SoundHard_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">complex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/block_fluxes.html#SoundHard_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#block_fluxes.SoundHard_block" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the block for an edge in a sound hard boundary.
+That is it computes the matrix <span class="math notranslate nohighlight">\(\mathbf{M}=(M_{mn})\)</span> with:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[M_{mn}=\boxed{(-ikl\left(1+d_{1}\mathbf{d}_{n}\cdot\mathbf{n}\right)\mathbf{d}_{m}\cdot\mathbf{n}e^{ik\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\mathbf{M}}\mathrm{sinc}\left(\frac{kl}{2\pi}\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\boldsymbol{\tau}\right)}\]</div>
+</div>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>k<span class="classifier">complex</span></dt><dd><p>Wavenumber</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>edge<span class="classifier">Edge</span></dt><dd><p>Edge</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>d<span class="classifier">real_array</span></dt><dd><p>Set of directions</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>d_d<span class="classifier">real_array</span></dt><dd><p>Nd x Nd x 2 “Matrix” of differences of directions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>d_1<span class="classifier">float</span></dt><dd><p>Stabilyzing parameter.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 </dd></dl>
 
 </section>
@@ -427,6 +510,11 @@ of freedom from the same cell, that is:</p>
 <li><a class="reference internal" href="#single_fluxes.Inner"><code class="docutils literal notranslate"><span class="pre">Inner()</span></code></a></li>
 <li><a class="reference internal" href="#single_fluxes.Radiating_local"><code class="docutils literal notranslate"><span class="pre">Radiating_local()</span></code></a></li>
 <li><a class="reference internal" href="#single_fluxes.SoundHard"><code class="docutils literal notranslate"><span class="pre">SoundHard()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-block_fluxes">block_fluxes</a><ul>
+<li><a class="reference internal" href="#block_fluxes.Inner_block"><code class="docutils literal notranslate"><span class="pre">Inner_block()</span></code></a></li>
+<li><a class="reference internal" href="#block_fluxes.SoundHard_block"><code class="docutils literal notranslate"><span class="pre">SoundHard_block()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-boundary_conditions">boundary_conditions</a><ul>

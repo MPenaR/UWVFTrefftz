@@ -6,6 +6,16 @@ single_fluxes
     :undoc-members:
     :show-inheritance: 
 
+block_fluxes
+====================
+
+.. automodule:: block_fluxes
+    :members:
+    :undoc-members:
+    :show-inheritance: 
+
+
+
 boundary_conditions
 ====================
 
