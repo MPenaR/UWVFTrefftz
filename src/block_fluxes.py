@@ -102,5 +102,5 @@ def Radiating_local_block(k : complex, edge : Edge, d : real_array, d_d : real_a
 
 
 
-    I = -1j*k*l*(d_2 + dot(d,N))*exp(1j*k*dot(d_d,M))*sinc(k*l/(2*pi)*dot(d_d,T))
+    I = -1j*k*l*(d_2 + dot(d, N))*exp(1j*k*dot(d_d, M))*sinc(k*l/(2*pi)*dot(d_d, T))
     return I

@@ -323,6 +323,37 @@
     <span class="k">return</span> <span class="n">I</span></div>
 
 
+<div class="viewcode-block" id="Radiating_local_block">
+<a class="viewcode-back" href="../modules.html#block_fluxes.Radiating_local_block">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Radiating_local_block</span><span class="p">(</span><span class="n">k</span> <span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">edge</span> <span class="p">:</span> <span class="n">Edge</span><span class="p">,</span> <span class="n">d</span> <span class="p">:</span> <span class="n">real_array</span><span class="p">,</span> <span class="n">d_d</span> <span class="p">:</span> <span class="n">real_array</span><span class="p">,</span> <span class="n">d_2</span> <span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">complex_array</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the same triangle block for a radiating edge.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+
+<span class="sd">    - k : complex</span>
+<span class="sd">        Wavenumber</span>
+<span class="sd">    - edge : Edge</span>
+<span class="sd">        Edge</span>
+<span class="sd">    - d : real_array</span>
+<span class="sd">        Set of directions</span>
+<span class="sd">    - d_d : real_array</span>
+<span class="sd">        Nd x Nd x 2 &quot;Matrix&quot; of differences of directions.</span>
+<span class="sd">    - d_2 : float</span>
+<span class="sd">        Stabilyzing parameter.    </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">l</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">N</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">M</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">edge</span><span class="o">.</span><span class="n">T</span>
+
+
+
+    <span class="n">I</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">l</span><span class="o">*</span><span class="p">(</span><span class="n">d_2</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">N</span><span class="p">))</span><span class="o">*</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">dot</span><span class="p">(</span><span class="n">d_d</span><span class="p">,</span><span class="n">M</span><span class="p">))</span><span class="o">*</span><span class="n">sinc</span><span class="p">(</span><span class="n">k</span><span class="o">*</span><span class="n">l</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">dot</span><span class="p">(</span><span class="n">d_d</span><span class="p">,</span><span class="n">T</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">I</span></div>
+
 </pre></div>
         </article>
       </div>

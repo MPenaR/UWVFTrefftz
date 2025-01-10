@@ -10,7 +10,7 @@ its tangent and normal unitary vectors.
 
 
 
-from numpy import dot, sinc, pi, exp, sqrt
+from numpy import dot, sinc, pi, exp, sqrt, conj
 from FEM import TestFunction, TrialFunction
 from geometry import Edge
 
@@ -67,7 +67,28 @@ def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : f
     of freedom from the same cell, that is:
     
     FORGOT TO INCLUDE IT.    
-    
+
+    Parameters
+    ----------
+    phi : TrialFunction
+        Trial function.
+    psi : TestFunction
+        Test function.
+    k : float
+        Wave number.
+    edge : Edge
+        Edge parameters.
+    a : float
+        Stabilyzing parameter.
+    b : float
+        Stabilyzing parameter.
+
+    Returns
+    -------
+    I : complex
+        The integral.
+
+
     """
 
     d_m = psi.d
@@ -104,6 +125,23 @@ def Radiating_local(phi : TrialFunction, psi : TestFunction, k : float, edge : E
     
         \boxed{-ikl\left(d_{2}+\mathbf{d}_{n}\cdot\mathbf{n}\right)e^{ik\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\cdot\mathbf{M}}\mathrm{sinc}\left(\frac{kl}{2\pi}\left(\mathbf{d}_{n}-\mathbf{d}_{m}\right)\mathbf{j}\right)}
 
+    Parameters
+    ----------
+    phi : TrialFunction
+        Trial function.
+    psi : TestFunction
+        Test function.
+    k : float
+        Wave number.
+    edge : Edge
+        Edge parameters.
+    d_2 : float
+        Stabilyzing parameter.
+
+    Returns
+    -------
+    I : complex
+        The integral.
     
     """
 
@@ -119,3 +157,70 @@ def Radiating_local(phi : TrialFunction, psi : TestFunction, k : float, edge : E
     I = -1j*k*l*(d_2 + dot(d_n, N))*exp(1j*k*dot(d_n - d_m, M))*sinc(k*l/(2*pi)*dot(d_n-d_m, T))
 
     return I
+
+
+def Radiating_nonlocal(phi : TrialFunction, psi : TestFunction, k : float, edge_u : Edge, edge_v : Edge, d_2 : float, N_modes : int, H : float) -> complex:
+    r"""
+    Computes the flux on a radiating boundary with respect to the degrees
+    of freedom from another cell, that is:
+
+    TODO: it is assuming that the radiating boundary consists of a vertical segment. This should be easy to generalize.
+    
+    Parameters
+    ----------
+    phi : TrialFunction
+        Trial function.
+    psi : TestFunction
+        Test function.
+    k : float
+        Wave number.
+    edge_u : Edge
+        Edge of the triangle associated to the trial function.
+    edge_v : Edge
+        Edge of the triangle associated to the test function.
+    d_2 : float
+        Stabilyzing parameter.
+    N_modes : int
+        Number of modes for the approximation of the NtD map.
+    H : float
+        height of the waveguide. 
+
+    Returns
+    -------
+    I : complex
+        The integral.
+
+    
+    """
+    d_n = phi.d
+    d_m = psi.d
+     
+    l_u = edge_u.l
+    M_u = edge_u.M
+    l_v = edge_v.l
+    M_v = edge_v.M
+
+
+    N = edge_u.N
+    T = edge_u.T
+
+    I1 = -1j*k*H*dot(d_n,N)*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/H*l_v/H*(
+        sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k**2 / abs(sqrt(complex(k**2 - (s*pi/H)**2)))**2 * (
+        exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
+        exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
+        for s in range(1,N_modes)]) )
+    
+    I2 = -1j*k*H*dot(d_n,N)*(dot(d_m,N)-d_2)*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/H*l_v/H*(
+        sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / sqrt(complex(k**2 - (s*pi/H)**2)) * (
+        exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
+        exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
+        for s in range(1,N_modes)]) )
+    
+    I3 = 1j*k*H*dot(d_m,N)*d_2*exp(1j*k*(dot(d_n,M_u) - dot(d_m,M_v)))*l_u/H*l_v/H*(
+        sinc(k*l_u/(2*pi)*d_n[1])*sinc(k*l_v/(2*pi)*d_m[1]) + 1/2*sum( [ k / conj(sqrt(complex(k**2 - (s*pi/H)**2))) * (
+        exp( 1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] + s*l_u/(2*H)) + exp(-1j*s*pi/H*M_u[1])*sinc(k*l_u/(2*pi)*d_n[1] - s*l_u/(2*H)) ) *(
+        exp(-1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] + s*l_v/(2*H)) + exp( 1j*s*pi/H*M_v[1])*sinc(k*l_v/(2*pi)*d_m[1] - s*l_v/(2*H)) )
+        for s in range(1,N_modes)]) )
+
+    return  I1 + I2 + I3
+

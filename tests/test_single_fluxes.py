@@ -1,4 +1,4 @@
-from single_fluxes import SoundHard, Inner, Radiating_local
+from single_fluxes import SoundHard, Inner, Radiating_local, Radiating_nonlocal
 
 # , Gamma_term, Sigma_term, exact_RHS
 import pytest
@@ -99,19 +99,6 @@ def test_SoundHard(d_m, d_n):
 
 
 
-
-
-# def NewmanntoDirichlet(y, df_dy, k, H, M):
-
-#     dfn = np.zeros(M, dtype=np.complex128)
-#     dfn[0] = Int( df_dy*1/np.sqrt(2*H), y )
-#     for n in range(1,M):
-#         dfn[n] = Int( df_dy*cos(n*pi*y/H)/np.sqrt(H), y )
-    
-#     f_y = 1/(1j*k)*dfn[0]/np.sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*np.sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/np.sqrt(H) for n in range(1,M)])
-#     return f_y
-
-
 # def num_Sigma( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, Np=15):
 #     l = norm(Q-P)
 #     t = np.linspace(0,1,Nt)
@@ -184,19 +171,80 @@ def test_Radiating_local(d_m,d_n):
     N = np.array([1,0])
     M = (P+Q)/2
 
-    Edge = namedtuple('Edge',['P','Q','N','T', 'M', 'l'])
     E = Edge(P,Q,N,T,M,l)
 
     k = 8.
     d_n = np.array(d_n)/norm(d_n)
     d_m = np.array(d_m)/norm(d_m)
 
-    TestFunction = namedtuple('TestFunction',['d','k'])
-    phi_n = TestFunction(d=d_n,k=k)
-    psi_m = TestFunction(d=d_m,k=k)
+    phi = TstFunction(d=d_n,n=1)
+    psi = TstFunction(d=d_m,n=1)
     d2 = 0.5
-    I_exact = Radiating_local(phi_n, psi_m, k, E, d2)
+    I_exact = Radiating_local(phi, psi, k, E, d2)
     I_num = num_Radiating_local( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_POINTS)
+    assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
+
+
+
+
+def NewmanntoDirichlet(y, df_dy, k, H, M):
+
+    dfn = np.zeros(M, dtype=np.complex128)
+    dfn[0] = Int( df_dy*1/np.sqrt(2*H), y )
+    for n in range(1,M):
+        dfn[n] = Int( df_dy*cos(n*pi*y/H)/np.sqrt(H), y )
+    
+    f_y = 1/(1j*k)*dfn[0]/np.sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*np.sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/np.sqrt(H) for n in range(1,M)])
+    return f_y
+
+
+def num_Radiating( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, N_modes=15):
+    l = norm(Q-P)
+    t = np.linspace(0,1,Nt)
+    x = P + np.outer(t,Q-P)
+    phi_n = exp(1j*k*dot(x,d_n))
+    psi_m = exp(1j*k*dot(x,d_m))
+    grad_phi_n_N = 1j*k*dot(N,d_n)*exp(1j*k*dot(x,d_n))
+    grad_psi_m_N = 1j*k*dot(N,d_m)*exp(1j*k*dot(x,d_m))
+
+    N_gradphi_n = NewmanntoDirichlet(x[:,1], grad_phi_n_N, k, H, N_modes)
+    N_gradpsi_m = NewmanntoDirichlet(x[:,1], grad_psi_m_N, k, H, N_modes)
+
+    I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
+    I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
+    
+    
+
+    return I
+
+@pytest.mark.xfail(reason="mixed up dimensions of the waveguide")
+@pytest.mark.parametrize(('d_m', 'd_n'), directions )
+def test_Radiating(d_m,d_n):
+    H=1
+    R= 10
+    P = np.array([R,0])
+    Q = np.array([R,H])
+
+    l = norm(Q-P)
+    T = (Q - P)/l
+    N = np.array([1,0])
+    M = (P+Q)/2
+
+    E = Edge(P,Q,N,T,M,l)
+
+    k = 8.
+    d_n = np.array(d_n)/norm(d_n)
+    d_m = np.array(d_m)/norm(d_m)
+
+    phi = TstFunction(d=d_n,n=1)
+    psi = TstFunction(d=d_m,n=1)
+    d_2 = 0.0
+
+    N_modes = 15
+    I_exact_local = Radiating_local(phi, psi, k, E, d_2)
+    I_exact_nonlocal = Radiating_nonlocal(phi=phi, psi=psi, k=k, edge_u=E, edge_v=E, d_2=d_2, N_modes=N_modes, H=H)
+    I_exact = I_exact_nonlocal + I_exact_local
+    I_num = num_Radiating( k, P, Q, N, H, d_n, d_m, d2=d_2,  Nt=N_POINTS, N_modes=N_modes)
     assert np.isclose(I_num, I_exact, TOL, TOL), f'{I_exact=}, {I_num=}'
 
 
