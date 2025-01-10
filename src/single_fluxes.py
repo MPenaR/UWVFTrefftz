@@ -75,7 +75,7 @@ def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : f
     psi : TestFunction
         Test function.
     k : float
-        Wave number.
+        Wavenumber.
     edge : Edge
         Edge parameters.
     a : float
