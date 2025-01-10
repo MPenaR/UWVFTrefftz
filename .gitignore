@@ -7,3 +7,6 @@ theory/*.log
 theory/*.gz
 src/mode_vs_plane/
 results/
+src/__pycache__/
+test/__pycache__/
+*.pyc
