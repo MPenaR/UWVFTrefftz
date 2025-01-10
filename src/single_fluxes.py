@@ -37,7 +37,7 @@ def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, 
     psi : TestFunction
         Test function.
     k : float
-        Wave number.
+        Wavenumber.
     edge : Edge
         Edge parameters.
     d_1 : float
