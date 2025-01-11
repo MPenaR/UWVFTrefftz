@@ -21,7 +21,7 @@ def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, 
 
     .. math::
     
-        \int_{E}\left(\Phi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \Phi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \Psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}
+        \int_{E}\left(\varphi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \varphi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}
 
     This quantity can be exactly evaluated as:
 
@@ -66,7 +66,8 @@ def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : f
     Computes the flux on a inner facet with respect to the degrees
     of freedom from the same cell, that is:
     
-    FORGOT TO INCLUDE IT.    
+    .. math::
+        \int_E \left(\varphi_n+\frac{b}{ik}\nabla\varphi_n\cdot\mathbf{n}\right)\overline{\nabla\psi_m\cdot\mathbf{n}} \,\mathrm{d}S_\mathbf{x}    
 
     Parameters
     ----------
