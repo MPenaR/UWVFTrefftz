@@ -258,13 +258,16 @@ its tangent and normal unitary vectors.</p>
 <span class="sig-prename descclassname"><span class="pre">single_fluxes.</span></span><span class="sig-name descname"><span class="pre">Inner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#FEM.TrialFunction" title="FEM.TrialFunction"><span class="pre">TrialFunction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">psi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#FEM.TestFunction" title="FEM.TestFunction"><span class="pre">TestFunction</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#geometry.Edge" title="geometry.Edge"><span class="pre">Edge</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">complex</span></span></span><a class="reference internal" href="_modules/single_fluxes.html#Inner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#single_fluxes.Inner" title="Link to this definition">¶</a></dt>
 <dd><p>Computes the flux on a inner facet with respect to the degrees
 of freedom from the same cell, that is:</p>
-<p>FORGOT TO INCLUDE IT.</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\int_E \left(\varphi_n(\mathbf{x})+\frac{b}{ik}\nabla\varphi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla\psi_m(\mathbf{x})\cdot\mathbf{n}} \,\mathrm{d}S_\mathbf{x}\]</div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>phi</strong> (<a class="reference internal" href="#FEM.TrialFunction" title="FEM.TrialFunction"><em>TrialFunction</em></a>) – Trial function.</p></li>
 <li><p><strong>psi</strong> (<a class="reference internal" href="#FEM.TestFunction" title="FEM.TestFunction"><em>TestFunction</em></a>) – Test function.</p></li>
-<li><p><strong>k</strong> (<em>float</em>) – Wave number.</p></li>
+<li><p><strong>k</strong> (<em>float</em>) – Wavenumber.</p></li>
 <li><p><strong>edge</strong> (<a class="reference internal" href="#geometry.Edge" title="geometry.Edge"><em>Edge</em></a>) – Edge parameters.</p></li>
 <li><p><strong>a</strong> (<em>float</em>) – Stabilyzing parameter.</p></li>
 <li><p><strong>b</strong> (<em>float</em>) – Stabilyzing parameter.</p></li>
@@ -347,7 +350,7 @@ of freedom from another cell, that is:</p>
 <dd><p>Computes the flux on a sound-hard boundary, that is:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\int_{E}\left(\Phi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \Phi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \Psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}\]</div>
+\[\int_{E}\left(\varphi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \varphi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}\]</div>
 </div>
 <p>This quantity can be exactly evaluated as:</p>
 <div class="math-wrapper docutils container">
@@ -359,7 +362,7 @@ of freedom from another cell, that is:</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>phi</strong> (<a class="reference internal" href="#FEM.TrialFunction" title="FEM.TrialFunction"><em>TrialFunction</em></a>) – Trial function.</p></li>
 <li><p><strong>psi</strong> (<a class="reference internal" href="#FEM.TestFunction" title="FEM.TestFunction"><em>TestFunction</em></a>) – Test function.</p></li>
-<li><p><strong>k</strong> (<em>float</em>) – Wave number.</p></li>
+<li><p><strong>k</strong> (<em>float</em>) – Wavenumber.</p></li>
 <li><p><strong>edge</strong> (<a class="reference internal" href="#geometry.Edge" title="geometry.Edge"><em>Edge</em></a>) – Edge parameters.</p></li>
 <li><p><strong>d_1</strong> (<em>float</em>) – Stabilyzing parameter.</p></li>
 </ul>

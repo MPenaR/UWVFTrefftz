@@ -67,7 +67,7 @@ def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : f
     of freedom from the same cell, that is:
     
     .. math::
-        \int_E \left(\varphi_n+\frac{b}{ik}\nabla\varphi_n\cdot\mathbf{n}\right)\overline{\nabla\psi_m\cdot\mathbf{n}} \,\mathrm{d}S_\mathbf{x}    
+        \int_E \left(\varphi_n(\mathbf{x})+\frac{b}{ik}\nabla\varphi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla\psi_m(\mathbf{x})\cdot\mathbf{n}} \,\mathrm{d}S_\mathbf{x}    
 
     Parameters
     ----------

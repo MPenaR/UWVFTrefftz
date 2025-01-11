@@ -251,7 +251,7 @@
 
 
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">sinc</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">sqrt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">sinc</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">conj</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">FEM</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestFunction</span><span class="p">,</span> <span class="n">TrialFunction</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Edge</span>
 
@@ -264,7 +264,7 @@
 
 <span class="sd">    .. math::</span>
 <span class="sd">    </span>
-<span class="sd">        \int_{E}\left(\Phi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \Phi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \Psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}</span>
+<span class="sd">        \int_{E}\left(\varphi_n(\mathbf{x})+\frac{d_{1}}{ik}\nabla \varphi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla \psi_m(\mathbf{x})\cdot\mathbf{n}}\,\mathrm{d}S_{\mathbf{x}}</span>
 
 <span class="sd">    This quantity can be exactly evaluated as:</span>
 
@@ -280,7 +280,7 @@
 <span class="sd">    psi : TestFunction</span>
 <span class="sd">        Test function.</span>
 <span class="sd">    k : float</span>
-<span class="sd">        Wave number.</span>
+<span class="sd">        Wavenumber.</span>
 <span class="sd">    edge : Edge</span>
 <span class="sd">        Edge parameters.</span>
 <span class="sd">    d_1 : float</span>
@@ -312,7 +312,8 @@
 <span class="sd">    Computes the flux on a inner facet with respect to the degrees</span>
 <span class="sd">    of freedom from the same cell, that is:</span>
 <span class="sd">    </span>
-<span class="sd">    FORGOT TO INCLUDE IT.    </span>
+<span class="sd">    .. math::</span>
+<span class="sd">        \int_E \left(\varphi_n(\mathbf{x})+\frac{b}{ik}\nabla\varphi_n(\mathbf{x})\cdot\mathbf{n}\right)\overline{\nabla\psi_m(\mathbf{x})\cdot\mathbf{n}} \,\mathrm{d}S_\mathbf{x}    </span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -321,7 +322,7 @@
 <span class="sd">    psi : TestFunction</span>
 <span class="sd">        Test function.</span>
 <span class="sd">    k : float</span>
-<span class="sd">        Wave number.</span>
+<span class="sd">        Wavenumber.</span>
 <span class="sd">    edge : Edge</span>
 <span class="sd">        Edge parameters.</span>
 <span class="sd">    a : float</span>
