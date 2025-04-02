@@ -12,7 +12,7 @@ from collections import namedtuple
 TOL = 1E-7
 N_POINTS = int(1E5)
 Edge = namedtuple('Edge', ['P', 'Q', 'N', 'T', 'M', 'l'])
-TstFunction = namedtuple('TestFunction', ['d', 'n'])
+Function = namedtuple('Function', ['d', 'n'])
 
 from itertools import product  ## SHOULD BE A FIXTURE IN CONFTEST.PY
 NTH = 3
@@ -51,8 +51,8 @@ def test_Inner(d_m,d_n):
     d_n = array(d_n)/norm(d_n)
     d_m = array(d_m)/norm(d_m)
 
-    phi_n = TstFunction(d=d_n,n=1)
-    psi_m = TstFunction(d=d_m,n=1)
+    phi_n = Function(d=d_n,n=1)
+    psi_m = Function(d=d_m,n=1)
 
     a = 0.5
     b = 0.5
@@ -89,8 +89,8 @@ def test_SoundHard(d_m, d_n):
     d_n = array(d_n)/norm(d_n)
     d_m = array(d_m)/norm(d_m)
 
-    phi_n = TstFunction(d=d_n, n=1)
-    psi_m = TstFunction(d=d_m, n=1)
+    phi_n = Function(d=d_n, n=1)
+    psi_m = Function(d=d_m, n=1)
 
     d1 = 0.5
     I_exact = SoundHard(phi_n, psi_m, k, E, d1)
@@ -177,8 +177,8 @@ def test_Radiating_local(d_m,d_n):
     d_n = np.array(d_n)/norm(d_n)
     d_m = np.array(d_m)/norm(d_m)
 
-    phi = TstFunction(d=d_n,n=1)
-    psi = TstFunction(d=d_m,n=1)
+    phi = Function(d=d_n,n=1)
+    psi = Function(d=d_m,n=1)
     d2 = 0.5
     I_exact = Radiating_local(phi, psi, k, E, d2)
     I_num = num_Radiating_local( k, P, Q, N, H, d_n, d_m, d2=d2,  Nt=N_POINTS)
@@ -238,9 +238,9 @@ def test_Radiating(d_m,d_n):
     d_n = np.array(d_n)/norm(d_n)
     d_m = np.array(d_m)/norm(d_m)
 
-    phi = TstFunction(d=d_n,n=1)
-    psi = TstFunction(d=d_m,n=1)
-    d_2 = 0.0
+    phi = Function(d=d_n,n=1)
+    psi = Function(d=d_m,n=1)
+    d_2 = 0.5
 
     N_modes = 15
     I_exact_local = Radiating_local(phi, psi, k, E, d_2)
