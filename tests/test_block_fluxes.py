@@ -5,7 +5,7 @@ from single_fluxes import SoundHard, Inner, Radiating_local
 from block_fluxes import SoundHard_block, Inner_block, Radiating_local_block
 from geometry import Edge
 import numpy as np
-from FEM import TestFunction, TrialFunction
+from FEM import Function
 
 NTH = 15
 TOL = 1E-14
@@ -28,8 +28,8 @@ def test_SoundHard_block():
     I = np.zeros((NTH,NTH),dtype=np.complex128)
     for i in range(NTH):
         for j in range(NTH):
-            phi = TrialFunction(d=d[j], n=1)
-            psi = TestFunction(d=d[i], n=1)
+            phi = Function(d=d[j], n=1)
+            psi = Function(d=d[i], n=1)
             I[i,j] = SoundHard( phi=phi, psi=psi, k=k, edge=edge, d_1=d_1)
     assert np.allclose(I,I_block,atol=TOL)
 
@@ -54,8 +54,8 @@ def test_Inner_block():
     I = np.zeros((NTH,NTH),dtype=np.complex128)
     for i in range(NTH):
         for j in range(NTH):
-            phi = TrialFunction(d=d[j], n=1)
-            psi = TestFunction(d=d[i], n=1)
+            phi = Function(d=d[j], n=1)
+            psi = Function(d=d[i], n=1)
             I[i,j] = Inner(phi=phi, psi=psi, edge=edge, k=k, a=a, b=b)
     assert np.allclose(I,I_block,atol=TOL)
 
@@ -79,7 +79,7 @@ def test_Radiating_local_block():
     I = np.zeros((NTH,NTH),dtype=np.complex128)
     for i in range(NTH):
         for j in range(NTH):
-            phi = TrialFunction(d=d[j], n=1)
-            psi = TestFunction(d=d[i], n=1)
+            phi = Function(d=d[j], n=1)
+            psi = Function(d=d[i], n=1)
             I[i,j] = Radiating_local(phi=phi, psi=psi, k=k, edge=edge, d_2=d_2)
     assert np.allclose(I,I_block,atol=TOL)

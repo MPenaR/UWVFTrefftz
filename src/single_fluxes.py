@@ -11,11 +11,12 @@ its tangent and normal unitary vectors.
 
 
 from numpy import dot, sinc, pi, exp, sqrt, conj
-from FEM import TestFunction, TrialFunction
+# from FEM import Function, Function
+from FEM import Function 
 from geometry import Edge
 
 
-def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, d_1 : float) -> complex:
+def SoundHard( phi : Function, psi : Function, k : float, edge : Edge, d_1 : float) -> complex:
     r"""
     Computes the flux on a sound-hard boundary, that is:
 
@@ -32,9 +33,9 @@ def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, 
 
     Parameters
     ----------
-    phi : TrialFunction
+    phi : Function
         Trial function.
-    psi : TestFunction
+    psi : Function
         Test function.
     k : float
         Wavenumber.
@@ -61,7 +62,7 @@ def SoundHard( phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, 
     I = -1j*k*l*(1 + d_1 * dot(d_n, N))*dot(d_m, N)*exp(1j*k*dot(d_n - d_m, M)) * sinc(k*l/(2*pi)*dot(d_n-d_m, T))
     return I
 
-def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : float, b : float) -> complex:
+def Inner(phi : Function, psi : Function, edge : Edge, k : float, a : float, b : float) -> complex:
     r"""
     Computes the flux on a inner facet with respect to the degrees
     of freedom from the same cell, that is:
@@ -71,9 +72,9 @@ def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : f
 
     Parameters
     ----------
-    phi : TrialFunction
+    phi : Function
         Trial function.
-    psi : TestFunction
+    psi : Function
         Test function.
     k : float
         Wavenumber.
@@ -110,7 +111,7 @@ def Inner(phi : TrialFunction, psi : TestFunction, edge : Edge, k : float, a : f
     return I
 
 
-def Radiating_local(phi : TrialFunction, psi : TestFunction, k : float, edge : Edge, d_2 : float) -> complex:
+def Radiating_local(phi : Function, psi : Function, k : float, edge : Edge, d_2 : float) -> complex:
     r"""
     Computes the flux on a radiating boundary with respect to the degrees
     of freedom from the same cell, that is:
@@ -129,9 +130,9 @@ def Radiating_local(phi : TrialFunction, psi : TestFunction, k : float, edge : E
 
     Parameters
     ----------
-    phi : TrialFunction
+    phi : Function
         Trial function.
-    psi : TestFunction
+    psi : Function
         Test function.
     k : float
         Wave number.
@@ -161,7 +162,7 @@ def Radiating_local(phi : TrialFunction, psi : TestFunction, k : float, edge : E
     return I
 
 
-def Radiating_nonlocal(phi : TrialFunction, psi : TestFunction, k : float, edge_u : Edge, edge_v : Edge, d_2 : float, N_modes : int, H : float) -> complex:
+def Radiating_nonlocal(phi : Function, psi : Function, k : float, edge_u : Edge, edge_v : Edge, d_2 : float, N_modes : int, H : float) -> complex:
     r"""
     Computes the flux on a radiating boundary with respect to the degrees
     of freedom from another cell, that is:
@@ -170,9 +171,9 @@ def Radiating_nonlocal(phi : TrialFunction, psi : TestFunction, k : float, edge_
     
     Parameters
     ----------
-    phi : TrialFunction
+    phi : Function
         Trial function.
-    psi : TestFunction
+    psi : Function
         Test function.
     k : float
         Wave number.
