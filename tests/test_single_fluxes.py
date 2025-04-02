@@ -190,12 +190,16 @@ def test_Radiating_local(d_m,d_n):
 def NewmanntoDirichlet(y, df_dy, k, H, M):
 
     dfn = np.zeros(M, dtype=np.complex128)
-    dfn[0] = Int( df_dy*1/np.sqrt(2*H), y )
+    dfn[0] = Int( df_dy*1/np.sqrt(H), y )
     for n in range(1,M):
-        dfn[n] = Int( df_dy*cos(n*pi*y/H)/np.sqrt(H), y )
+        dfn[n] = Int( df_dy*cos(n*pi*y/H)/np.sqrt(H/2), y )
     
-    f_y = 1/(1j*k)*dfn[0]/np.sqrt(2*H)*np.ones_like(y) + sum([ 1/(1j*np.sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/np.sqrt(H) for n in range(1,M)])
+    f_y = 1/(1j*k)*dfn[0]/np.sqrt(H)*np.ones_like(y) + sum([ 1/(1j*np.sqrt(complex(k**2 - (n*pi/H)**2)))*dfn[n]*cos(n*pi*y/H)/np.sqrt(H/2) for n in range(1,M)])
     return f_y
+
+
+
+
 
 
 def num_Radiating( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, N_modes=15):
@@ -213,11 +217,9 @@ def num_Radiating( k, P, Q, N, H, d_n, d_m, d2=0, Nt = 100, N_modes=15):
     I = Int( N_gradphi_n*conj(grad_psi_m_N) - grad_phi_n_N*conj(psi_m), t)*l
     I+= -d2*1j*k*Int((N_gradphi_n - phi_n)*conj(N_gradpsi_m - psi_m), t)*l
     
-    
-
     return I
 
-@pytest.mark.xfail(reason="mixed up dimensions of the waveguide")
+#@pytest.mark.xfail(reason="mixed up dimensions of the waveguide")
 @pytest.mark.parametrize(('d_m', 'd_n'), directions )
 def test_Radiating(d_m,d_n):
     H=1
