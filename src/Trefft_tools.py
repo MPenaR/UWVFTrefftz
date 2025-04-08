@@ -10,7 +10,7 @@ from numpy import sinc, cos
 from exact_solutions import GreenFunctionImages, GreenFunctionModes
 from integrators import fekete3 as int2D
 from domains import ScattererType
-
+from scipy.integrate import trapezoid as Int
 
 import numpy.typing as npt
 
@@ -686,44 +686,44 @@ def AssembleRHS(V, Edges, k, H, d_2, t=0):
 
 
 
-# def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
-#     M = E.M
-#     T = E.T 
-#     N = E.N
-#     l = E.l
+def Green_RHS(psi, E, k, H, a, x_0, y_0, modes=False, n_modes=20):
+    M = E.M
+    T = E.T 
+    N = E.N
+    l = E.l
 
-#     d_m = psi.d
+    d_m = psi.d
 
-#     Npoints = 200
-#     t = np.linspace(-l/2,l/2,Npoints)
-#     if modes:
-#         g = GreenFunctionModes(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)    
-#     else:
-#         g = GreenFunctionImages(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)
-#     I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
-#     return I
-
-
+    Npoints = 400
+    t = np.linspace(-l/2,l/2,Npoints)
+    if modes:
+        g = GreenFunctionModes(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)    
+    else:
+        g = GreenFunctionImages(k, H, M + np.outer(t,T), x_0, y_0, M=n_modes)
+    I = -1j*k*( dot(d_m,N) - a)* exp(-1j*k*dot(d_m, M)) * Int( -g*exp(-1j*k*dot(d_m, T)*t), t)
+    return I
 
 
-# def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=20):
-#     N_DOF = V.N_DOF
-#     b = np.zeros((N_DOF), dtype=np.complex128)
-#     Psi = V.TestFunctions
-#     N_edges = len(Edges)
-#     if np.isscalar(a):
-#         a_vec = np.full(N_edges,a)
-#     else:
-#         a_vec = a
 
-#     for (E, a)  in zip(Edges,a_vec):
-#         match E.Type:                
-#             case EdgeType.D_OMEGA | EdgeType.COVER:
-#                 K = E.Triangles[0]
-#                 for m in V.DOF_range[K]:
-#                     psi = Psi[m]
-#                     b[m] += Green_RHS(psi, E, k, H, a, x_0, y_0, modes=modes, n_modes=M)
-#     return b
+
+def AssembleGreenRHS(V, Edges, k, H, a, x_0 = 0., y_0=0.5, modes=True, M=800):
+    N_DOF = V.N_DOF
+    b = np.zeros((N_DOF), dtype=np.complex128)
+    Psi = V.TestFunctions
+    N_edges = len(Edges)
+    if np.isscalar(a):
+        a_vec = np.full(N_edges,a)
+    else:
+        a_vec = a
+
+    for (E, a)  in zip(Edges,a_vec):
+        match E.Type:                
+            case EdgeType.D_OMEGA | EdgeType.COVER:
+                K = E.Triangles[0]
+                for m in V.DOF_range[K]:
+                    psi = Psi[m]
+                    b[m] += Green_RHS(psi, E, k, H, a, x_0, y_0, modes=modes, n_modes=M)
+    return b
 
 
 def AssembleGreenRHS_left(V, Edges, k, H, d_2, x_0 = 0., y_0=0.5, M=20):

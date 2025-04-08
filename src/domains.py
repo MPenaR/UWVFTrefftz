@@ -76,8 +76,8 @@ class Waveguide:
                 kwargs = {"edgecolor" : "k", "facecolor" : "None", "linewidth" : 2}
         match scatterer_shape:
             case ScattererShape.CIRCLE:
-                c, r = params
-
+                c, r, with_symmetry_line = params
+                H = self.H
                 self.scatterer_markers.append(lambda  x, y, c=c, r=r: (x-c[0])**2 + (y-c[1])**2 < r**2)
                 self.scatterer_patchs.append( lambda c=c, r=r, kwargs=kwargs : Circle(xy=c, radius=r, **kwargs))
 
@@ -87,6 +87,16 @@ class Waveguide:
                         self.geo.SetMaterial (2, "Omega_i")
                     case _:
                         self.geo.AddCircle(c=c, r=r, bc="D_Omega", leftdomain=0, rightdomain=1)
+                        d = 0.01
+                        if with_symmetry_line:
+                            p5 = self.geo.AppendPoint(c[0], c[1]+r+d)
+                            p6 = self.geo.AppendPoint(c[0], H-d)
+                            self.geo.Append(["line", p5,p6], leftdomain=1, rightdomain=1)
+                            p5 = self.geo.AppendPoint(c[0], 0+d)
+                            p6 = self.geo.AppendPoint(c[0], c[1]-r-d)
+                            self.geo.Append(["line", p5,p6], leftdomain=1, rightdomain=1)
+
+
             case ScattererShape.RECTANGLE:
                 c, width, height = params
 
@@ -99,6 +109,7 @@ class Waveguide:
                         self.geo.SetMaterial (2, "Omega_i")
                     case _:
                         self.geo.AddRectangle(p1=(c[0]-width/2,c[1]-height/2), p2=(c[0]+width/2,c[1]+height/2), bc="D_Omega", leftdomain=0, rightdomain=1)
+
                     
 
     def add_fine_mesh_region(self, factor = 0.9, h_min = 0.1):
