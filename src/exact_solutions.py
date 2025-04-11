@@ -34,12 +34,19 @@ def GreenFunctionImages(k, H, XY, x_0, y_0, M = 100):
     # return G + 0.0032*np.cos((XY[:,1]-0.39)/0.8*2*np.pi)
 
 def GreenFunctionModes(k, H, XY, x_0, y_0, M = 20):
-    n = np.arange(0,M)
+    n = np.arange(1,M)
     beta_n = sqrt(k**2 - (n*np.pi/H)**2)
 #    norm = np.full_like(n,2/H,dtype=np.float64)
-    norm = np.full(M, 2./H)
-    norm[0] = 1./H 
-    G = -np.sum( norm*exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (2*1j*beta_n) * cos( pi*np.outer(XY[:,1],n)/H) * cos(n* pi*y_0/H), -1)
+    # norm = np.full(M, 2./H)
+    # norm[0] = 1./H 
+    # G = -np.sum( norm*exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (2*1j*beta_n) * cos( pi*np.outer(XY[:,1],n)/H) * cos(n* pi*y_0/H), -1)
+# second implementation
+    G = exp(1j*k*abs(XY[:,0] - x_0)) / (1j*k)
+    G = G + 2*np.sum(exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (1j*beta_n) * cos( pi*np.outer(XY[:,1] - y_0, n)/H), -1)
+    G = 1 / (4*H) * G
+
+
+
     return G
 
 
