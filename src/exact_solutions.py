@@ -42,7 +42,7 @@ def GreenFunctionModes(k, H, XY, x_0, y_0, M = 20):
     # G = -np.sum( norm*exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (2*1j*beta_n) * cos( pi*np.outer(XY[:,1],n)/H) * cos(n* pi*y_0/H), -1)
 # second implementation
     G = exp(1j*k*abs(XY[:,0] - x_0)) / (1j*k)
-    G = G + 2*np.sum(exp(1j*np.outer( abs(XY[:,0] - x_0),beta_n)) / (1j*beta_n) * cos( pi*np.outer(XY[:,1] - y_0, n)/H), -1)
+    G = G + 2*np.sum(exp(1j*np.outer(abs(XY[:,0] - x_0), beta_n)) / (1j*beta_n) * cos(pi*np.outer(XY[:,1] - y_0, n)/H), -1)
     G = 1 / (4*H) * G
 
 
