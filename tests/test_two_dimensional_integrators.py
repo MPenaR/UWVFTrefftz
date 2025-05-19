@@ -9,7 +9,7 @@ TOL = 1E-6
 def test_standard():
     r_A = np.array([0,0])
     r_B = np.array([1,0])
-    r_C = np.array([0,1])
+    r_C = np.array([7,1])
 
     I_exact = 0.5
     I_numeric = fek3_int(r_A=r_A, r_B=r_C, r_C=r_B, f=lambda x, y : np.ones_like(x))
