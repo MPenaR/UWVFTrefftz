@@ -11,3 +11,6 @@ class DirichletCondition(BoundaryCondition):
 
 class NeumannCondition(BoundaryCondition):
     pass
+
+class RadiatingCondition(BoundaryCondition):
+    pass
