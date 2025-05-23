@@ -1,4 +1,5 @@
 # NtD fluxes for a circular boundary
+## Dirichlet to Neumann map
 The Dirichlet problem on the complement of a circle:
 
 $$
@@ -39,3 +40,15 @@ can be computed as the, non local, expression:
 $$
 u(\mathbf{x})=\sum_{n=-\infty}^\infty \int_0^{2\pi}f(\mathbf{x}(s))e^{-ins}\,\mathrm{d}s \frac{k}{\pi}\frac{H'^{(1)}_n\left(kR\right)}{H_n^{(1)}\left(kR\right)}e^{in\theta(\mathbf{x})}
 $$
+
+## Neumann to Dirichlet map.
+
+In the same manner, the Neumann problem
+$$
+\begin{cases}
+\Delta u + k^2u = 0 & \text{in }\mathbb{R}^2 \setminus\overline{\mathrm{B}_R}\\
+\partial_\mathbf{n}u = f & \text{on }\partial\mathrm{B}_R\\
+\partial_r u - iku = o\left( \frac{1}{\sqrt{r}} \right)\text{as }r\to\infty
+\end{cases}
+$$
+
