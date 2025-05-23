@@ -1,11 +1,20 @@
 """module for defining the mesh class"""
 
-import numpy as np 
+import numpy as np
 import numpy.typing as npt
+from matplotlib.tri import Triangulation
 
-vertex_dt = [("ID", "i64")] #the ID is important so I can define a subset of vertices without changing their IDs
-edge_dt = [ ("ID", "i64"), ("vertices", "i64", (2)) ]
-face_dt = [ ("ID", "i64"), ("edges", "i64", (3))]
+float_array = npt.NDArray[np.float64]
+complex_array = npt.NDArray[np.complex128]
+int_array = npt.NDArray[np.int64]
+
+
+# the ID is important so I can define a subset of vertices
+# without changing their IDs
+vertex_dt = [("ID", "i64")]
+
+edge_dt = [("ID", "i64"), ("vertices", "i64", (2))]
+face_dt = [("ID", "i64"), ("edges", "i64", (3)), ("vertices", "i64", (3))]
 
 
 class SurfaceMesh:
@@ -13,20 +22,27 @@ class SurfaceMesh:
         self.points = points
         self.vertices = vertices
         self.edges = edges
-        self.faces = faces 
-    
-    def __init__(self, points, edges, faces):
-        self.points = points
-        self.vertices = np.array()
-        self.edges = edges
-        self.faces = faces 
+        self.faces = faces
 
+    @staticmethod
+    def from_numpy(cls, points: float_array,
+                   edges: int_array,
+                   faces: int_array):
+        pass
+
+    @staticmethod
+    def from_netgen(cls, points, edges, faces):
+        pass
+
+    @staticmethod
+    def from_Triangulation(cls, tri: Triangulation):
+        pass
 
     def to_matplotlib(self):
-        x = self.points[self.vertices["ID"],0]
-        y = self.points[self.vertices["ID"],1]
-        Triangles = np.array([])
-        return (x, y, Triangles)
+        x = self.points[self.vertices["ID"], 0]
+        y = self.points[self.vertices["ID"], 1]
+        Triangles = self.faces["vertices"]
+        return Triangulation(x, y, Triangles)
 
 
 
