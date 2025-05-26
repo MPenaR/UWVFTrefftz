@@ -72,6 +72,37 @@ $$
 $$
 ### Left operators
 
+The case for the left operatores is very similar, in this case the Neumann problem is
+
+$$
+\begin{cases}
+\Delta u + k^2u=0 & \text{in }(-\infty,R)\times[0,H]\\
+-\frac{\partial u}{\partial x} = f & \text{on } x=R
+\end{cases}
+$$
+
+The expansion looks like
+
+$$
+u(\mathbf{x})=\frac{a_0}{\sqrt{2\pi}}e^{-ikx}+\sum_{n=1}^\infty a_n\frac{e^{-i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}kx}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right)
+$$
+
+the condition is then rewritten as:
+
+$$
+ik\frac{a_0}{\sqrt{2\pi}}e^{-ikR}+\sum_{n=1}^\infty ik\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}a_n\frac{e^{-i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}kR}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right) = \frac{f_0}{\sqrt{2\pi}}+ \sum_{n=1}^\infty f_n \frac{\cos\left(n\pi\frac{y}{H}\right)}{\sqrt{\pi}}
+$$
+
+So the solution is:
+
+$$
+u(\mathbf{x})=\frac{1}{ik}\frac{\int_0^Hf(\eta)\,\mathrm{d}\eta}{2\pi}e^{-ik(x-R)}+\frac{1}{ik}\sum_{n=1}^\infty \frac{1}{\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}} \frac{\int_0^H f(\eta)\cos(n\pi\frac{\eta}{H})\,\mathrm{d}\eta}{\pi} \cos\left(n\pi\frac{y}{H}\right)e^{-i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}ki(x-R)}
+$$
+but the Neumann to Dirichlet operator is again: 
+
+$$
+\mathrm{NtD}(f)=\frac{1}{ik}\frac{\int_0^Hf(\eta)\,\mathrm{d}\eta}{2\pi}+\frac{1}{ik}\sum_{n=1}^\infty \frac{1}{\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}} \frac{\int_0^H f(\eta)\cos(n\pi\frac{\eta}{H})\,\mathrm{d}\eta}{\pi} \cos\left(n\pi\frac{y}{H}\right)
+$$
 ## Circular domain
 ### Dirichlet to Neumann map
 The Dirichlet problem on the complement of a circle:
