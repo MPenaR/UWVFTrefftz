@@ -28,7 +28,14 @@ class SurfaceMesh:
     def from_numpy(cls, points: float_array,
                    edges: int_array,
                    faces: int_array):
-        pass
+        """it assumes the points/edges/faces IDs are their row index.
+        edges is a  n_edges x 2 array, refering to the index of its ends
+        faces is a n_faces x 3 array, refereing to the index of its edges"""
+
+        vertices = np.arange(len(points), dtype=np.int64)
+        edges = edges
+        faces = faces
+        return cls(points, vertices, edges, faces)
 
     @staticmethod
     def from_netgen(cls, points, edges, faces):
@@ -36,7 +43,17 @@ class SurfaceMesh:
 
     @staticmethod
     def from_Triangulation(cls, tri: Triangulation):
-        pass
+        """
+        Expects a Matplotlib triangulation
+        """
+
+        points = np.column_stack([tri.x, tri.y])
+        vertices =  np.arange(len(points), dtype=np.int64)
+        edges = tri.edges
+        triangles
+
+
+        return cls(points, vertices, edges, faces )
 
     def to_matplotlib(self):
         x = self.points[self.vertices["ID"], 0]
