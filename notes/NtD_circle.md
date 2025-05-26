@@ -1,5 +1,79 @@
-# NtD fluxes for a circular boundary
-## Dirichlet to Neumann map
+# Neumann to Dirichlet operators and fluxes.
+
+## Waveguide
+### Dirichlet to Neumann
+The right exterior problem in the waveguide:
+
+$$
+\begin{cases}
+\Delta u + k^2u=0 & \text{in }(R,\infty)\times[0,H]\\
+u = f & \text{on } x=R
+\end{cases}
+$$
+admits a solution in terms of waveguide modes:
+
+$$
+u(\mathbf{x})=\frac{a_0}{\sqrt{2\pi}}e^{ikx}+\sum_{n=1}^\infty a_n\frac{e^{i\sqrt{k^2 - \left(\frac{n\pi}{H}\right)^2}x}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right)
+$$
+
+$$
+u(\mathbf{x})=\frac{a_0}{\sqrt{2\pi}}e^{ikx}+\sum_{n=1}^\infty a_n\frac{e^{i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}kx}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right)
+$$
+
+If we impose the boundary condition:
+
+$$
+\frac{a_0}{\sqrt{2\pi}}e^{ikR}+\sum_{n=1}^\infty a_n\frac{e^{i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}kR}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right) = \frac{f_0}{\sqrt{2\pi}}+\sum_{n=1}^\infty \cos\left(n\pi\frac{y}{H}\right)\frac{f_n}{\sqrt{\pi}}
+$$
+where $f_n$, $n=0,1\dots$ are the cosine coeficcients of the function $f$. The solution is then: 
+$$
+u(\mathbf{x})=\frac{\int_0^Hf(\eta)\,\mathrm{d}\eta}{2\pi}e^{ik(x-R)}+\sum_{n=1}^\infty \frac{\int_0^H f(\eta)\cos(n\pi\frac{\eta}{H})\,\mathrm{d}\eta}{\pi} \cos\left(n\pi\frac{y}{H}\right)e^{i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}ki(x-R)}
+$$
+
+The right Dirichlet to Neumann map is then: 
+
+$$
+\mathrm{DtN}(f)=ik\frac{\int_0^Hf(\eta)\,\mathrm{d}\eta}{2\pi}+ik\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}\sum_{n=1}^\infty \frac{\int f(\eta)\cos(n\pi\frac{\eta}{H})\,\mathrm{d}\eta}{\pi} \cos\left(n\pi\frac{y}{H}\right)
+$$
+
+### Neumann to Dirichlet operator
+
+In the same manner, for the problem
+
+$$
+\begin{cases}
+\Delta u + k^2u=0 & \text{in }(R,\infty)\times[0,H]\\
+\frac{\partial u}{\partial x} = f & \text{on } x=R
+\end{cases}
+$$
+
+we also use the expansion:
+
+$$
+u(\mathbf{x})=\frac{a_0}{\sqrt{2\pi}}e^{ikx}+\sum_{n=1}^\infty a_n\frac{e^{i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}kx}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right)
+$$
+
+but now the Neumann boundary condition looks like:
+
+$$
+ik\frac{a_0}{\sqrt{2\pi}}e^{ikR}+\sum_{n=1}^\infty ik\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}a_n\frac{e^{i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}kR}}{\sqrt{\pi}} \cos\left(n\pi\frac{y}{H}\right) = \frac{f_0}{\sqrt{2\pi}}+ \sum_{n=1}^\infty f_n \frac{\cos\left(n\pi\frac{y}{H}\right)}{\sqrt{\pi}}
+$$
+
+so in this case the solution is:
+
+$$
+u(\mathbf{x})=\frac{1}{ik}\frac{\int_0^Hf(\eta)\,\mathrm{d}\eta}{2\pi}e^{ik(x-R)}+\frac{1}{ik}\sum_{n=1}^\infty \frac{1}{\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}} \frac{\int_0^H f(\eta)\cos(n\pi\frac{\eta}{H})\,\mathrm{d}\eta}{\pi} \cos\left(n\pi\frac{y}{H}\right)e^{i\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}ki(x-R)}
+$$
+
+and the Neumann to Dirichlet operator is:
+
+$$
+\mathrm{NtD}(f)=\frac{1}{ik}\frac{\int_0^Hf(\eta)\,\mathrm{d}\eta}{2\pi}+\frac{1}{ik}\sum_{n=1}^\infty \frac{1}{\sqrt{1 -n^2 \left(\frac{\pi}{kH}\right)^2}} \frac{\int_0^H f(\eta)\cos(n\pi\frac{\eta}{H})\,\mathrm{d}\eta}{\pi} \cos\left(n\pi\frac{y}{H}\right)
+$$
+### Left operators
+
+## Circular domain
+### Dirichlet to Neumann map
 The Dirichlet problem on the complement of a circle:
 
 $$
@@ -51,4 +125,13 @@ $$
 \partial_r u - iku = o\left( \frac{1}{\sqrt{r}} \right)\text{as }r\to\infty
 \end{cases}
 $$
+also admits a solution expressed as a sum of Hankel functions: 
 
+$$
+u(\mathbf{x})=\sum_{n=-\infty}^\infty \frac{a_n}{H_n^{(1)}\left(kR\right)}H_n^{(1)}\left(k\|\mathbf{x}\|\right)e^{in\theta(\mathbf{x})}
+$$
+
+Now the boundary condition reads: 
+$$
+\sum_{n=-\infty}^\infty \frac{a_nk}{H_n^{(1)}\left(kR\right)}H_n^{p(1)}\left(kR\right)e^{in\theta(\mathbf{x})} = \sum_{n=-\infty}^{\infty}f_ne^{in\theta}
+$$
