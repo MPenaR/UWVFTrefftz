@@ -1,4 +1,4 @@
-# Neumann to Dirichlet operators and fluxes.
+# Neumann to Dirichlet operators.
 
 ## Waveguide
 ### Dirichlet to Neumann
@@ -148,6 +148,7 @@ $$
 
 ## Neumann to Dirichlet map.
 
+
 In the same manner, the Neumann problem
 $$
 \begin{cases}
@@ -159,10 +160,21 @@ $$
 also admits a solution expressed as a sum of Hankel functions: 
 
 $$
-u(\mathbf{x})=\sum_{n=-\infty}^\infty \frac{a_n}{H_n^{(1)}\left(kR\right)}H_n^{(1)}\left(k\|\mathbf{x}\|\right)e^{in\theta(\mathbf{x})}
+u(\mathbf{x})= \sum_{n=-\infty}^\infty \frac{a_n}{H^{'(1)}_n\left(kR\right)}H^{(1)}_n\left(k\|\mathbf{x}\|\right)e^{in\theta(\mathbf{x})}
 $$
 
 Now the boundary condition reads: 
 $$
-\sum_{n=-\infty}^\infty \frac{a_nk}{H_n^{(1)}\left(kR\right)}H_n^{p(1)}\left(kR\right)e^{in\theta(\mathbf{x})} = \sum_{n=-\infty}^{\infty}f_ne^{in\theta}
+\sum_{n=-\infty}^\infty a_n ke^{in\theta(\mathbf{x})} = \sum_{n=-\infty}^{\infty}f_ne^{in\theta}
+$$
+
+so the solution is: 
+
+$$
+u(\mathbf{x})= \sum_{n=-\infty}^\infty \frac{1}{k}\frac{\int_0^{2\pi}f(\mathbf{x}(s))e^{-ins}\mathrm{d}s}{H^{'(1)}_n\left(kR\right)}H^{(1)}_n\left(k\|\mathbf{x}\|\right)e^{in\theta(\mathbf{x})}
+$$
+and the Neumann to Dirichlet map is:
+
+$$
+\mathrm{NtD}(f)= \sum_{n=-\infty}^\infty \frac{1}{k}\frac{\int_0^{2\pi}f(\mathbf{x}(s))e^{-ins}\mathrm{d}s}{H^{'(1)}_n\left(kR\right)}H^{(1)}_n\left(kR\right)e^{in\theta(\mathbf{x})}
 $$
