@@ -17,7 +17,6 @@ def test_from_Triangulation():
     faces = S.faces
     faces_expected = np.array([[0, 1, 2],
                                [1, 3, 4]], dtype=np.int64)
-    print(S.generate_edges_arrays())
     assert np.all(faces == faces_expected)
 
 
