@@ -36,3 +36,8 @@ where = ["src"]
 ##  include = ["DGTrefftz"]
 [tool.pytest.ini.options]
 pythonpath = ["src"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
