@@ -41,7 +41,12 @@ class SurfaceMesh:
 
     @classmethod
     def from_netgen(cls, mesh: Mesh):
-        points = np.array( [v.point for v in mesh.vertices] )
+        points = np.array([v.point for v in mesh.vertices])
+        vertices = np.arange(len(points), dtype=np.int64)
+        edges = np.array([[e.vertices[0].nr, e.vertices[1].nr] for e in mesh.edges])
+        faces = np.array([[f.edges[0].nr, f.edges[1].nr, f.edges[2].nr] for f in mesh.faces])
+        return cls(points, vertices, edges, faces)
+
         
 
     @classmethod
