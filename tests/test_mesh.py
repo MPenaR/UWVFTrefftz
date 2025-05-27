@@ -1,4 +1,28 @@
-import numpy as np 
+import numpy as np
+from mesh import SurfaceMesh
+from matplotlib.tri import Triangulation
+
+
+def test_from_Triangulation():
+    points = np.array([[0, 0],
+                       [1, 0],
+                       [1, 1],
+                       [0, 1]], dtype=np.float64)
+
+    triangles = np.array([[0, 1, 2],
+                          [0, 2, 3]], dtype=np.int64)
+
+    tri = Triangulation(x=points[:, 0], y=points[:, 1], triangles=triangles)
+    S = SurfaceMesh.from_Triangulation(tri)
+    faces = S.faces
+    faces_expected = np.array([[0, 1, 2],
+                               [1, 3, 4]], dtype=np.int64)
+    assert np.all(faces == faces_expected)
+
+
+
+
+
 # from block_fluxes import SoundHard_block
 
 # NP = 3
@@ -8,10 +32,10 @@ import numpy as np
 
 
 
-element_dtype = [("face", "i4"), ("edges", "i4", (3)), ("points", "i4", (3))]
-
-elements = np.array( [(0, [0, 1, 4], [0, 1, 2]),
-                      (0, [4, 2, 3], [0, 2, 3])], dtype=element_dtype)
+#element_dtype = [("face", "i4"), ("edges", "i4", (3)), ("points", "i4", (3))]
+#
+#elements = np.array( [(0, [0, 1, 4], [0, 1, 2]),
+#                      (0, [4, 2, 3], [0, 2, 3])], dtype=element_dtype)
 
 # A_wall = np.zeros([2*NP, 2*NP], dtype=np.complex128)
 
