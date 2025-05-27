@@ -4,6 +4,7 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib.tri import Triangulation
 from itertools import combinations
+from ngsolve import Mesh
 
 float_array = npt.NDArray[np.float64]
 complex_array = npt.NDArray[np.complex128]
@@ -39,10 +40,10 @@ class SurfaceMesh:
         return cls(points, vertices, edges, faces)
 
     @classmethod
-    def from_netgen(cls, points, edges, faces):
-        pass
+    def from_netgen(cls, mesh: Mesh):
+        points = np.array( [v.point for v in mesh.vertices] )
+        
 
-  
     @classmethod
     def from_Triangulation(cls, tri: Triangulation):
         """
@@ -50,9 +51,9 @@ class SurfaceMesh:
         """
 
         points = np.column_stack([tri.x, tri.y])
-        vertices =  np.arange(len(points), dtype=np.int64)
+        vertices = np.arange(len(points), dtype=np.int64)
         edges = tri.edges
-        
+
         edges_dict = generate_edges_dict(edges)
 
         triangles = tri.triangles
@@ -61,9 +62,7 @@ class SurfaceMesh:
         for n, T in enumerate(triangles):
             faces[n] = [edges_dict[frozenset(c)] for c in combinations(T, 2)]
 
-
-
-        return cls(points, vertices, edges, faces )
+        return cls(points, vertices, edges, faces)
 
     def to_matplotlib(self) -> Triangulation:
         x = self.points[:, 0]
@@ -75,10 +74,10 @@ class SurfaceMesh:
         return Triangulation(x, y, triangles)
 
     @property
-    def edges_dict(self) -> dict[frozenset,int]:
+    def edges_dict(self) -> dict[frozenset, int]:
         return generate_edges_dict(self.edges)
 
-#def generate_test_mesh() -> SurfaceMesh:
+# def generate_test_mesh() -> SurfaceMesh:
 
 
 def generate_edges_dict(edges: int_array) -> dict[frozenset, int]:
