@@ -1,5 +1,5 @@
 [project]
-name = "uwvftrefftz"
+name = "DGTrefftz"
 version = "0.1.0"
 description = "Trefftz method on a waveguide"
 authors = [
@@ -13,19 +13,26 @@ dependencies = [
 
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-pytest-cov = "^6.0.0"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 
-[tool.poetry.group.docs.dependencies]
-sphinx = "^8.1.3"
-myst-parser = "^4.0.0"
-sphinx-math-dollar = "^1.2.1"
-furo = "^2024.8.6"
+# [tool.poetry.group.dev.dependencies]
+# pytest = "^8.3.4"
+# pytest-cov = "^6.0.0"
 
-[tool.pytest.ini_options]
+
+# [tool.poetry.group.docs.dependencies]
+# sphinx = "^8.1.3"
+# myst-parser = "^4.0.0"
+# sphinx-math-dollar = "^1.2.1"
+# furo = "^2024.8.6"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+##  include = ["DGTrefftz"]
+[tool.pytest.ini.options]
 pythonpath = ["src"]

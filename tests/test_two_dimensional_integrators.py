@@ -1,4 +1,4 @@
-from two_dimensional_integrators import fek3_int
+from DGTrefftz.two_dimensional_integrators import fek3_int
 import numpy as np
 
 

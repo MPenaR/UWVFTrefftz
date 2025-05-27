@@ -12,8 +12,8 @@ its tangent and normal unitary vectors.
 
 from numpy import dot, sinc, pi, exp, sqrt, conj
 # from FEM import Function, Function
-from FEM import Function 
-from geometry import Edge
+from .FEM import Function 
+from .geometry import Edge
 
 
 def SoundHard( phi : Function, psi : Function, k : float, edge : Edge, d_1 : float) -> complex:

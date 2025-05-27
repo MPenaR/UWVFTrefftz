@@ -13,10 +13,23 @@ int_array = npt.NDArray[np.int64]
 
 # the ID is important so I can define a subset of vertices
 # without changing their IDs
-vertex_dt = [("ID", "i64")]
+vertex_dt = [("ID", np.int64)]
 
-edge_dt = [("ID", "i64"), ("vertices", "i64", (2))]
-face_dt = [("ID", "i64"), ("edges", "i64", (3)), ("vertices", "i64", (3))]
+DIM = 2
+
+# edge_dt = [("ID", np.int64), 
+#            ("P", np.float64, (DIM)), 
+#            ("Q", np.float64, (DIM)), 
+#            ("M", np.float64, (DIM)),
+#            ("l", np.float64),
+#            ("T", np.float64, (DIM)),
+#            ("N", np.float64, (DIM))]]
+edge_dt = [("ID", np.int64), 
+           ("M", np.float64, (DIM)),
+           ("l", np.float64),
+           ("T", np.float64, (DIM)),
+           ("N", np.float64, (DIM))]
+# face_dt = [("ID", np.int64, ("edges", "i64", (3)), ("vertices", "i64", (3))]
 
 
 class SurfaceMesh:
@@ -41,6 +54,9 @@ class SurfaceMesh:
 
     @classmethod
     def from_netgen(cls, mesh: Mesh):
+        """
+        Expects a ngsolve mesh
+        """
         points = np.array([v.point for v in mesh.vertices])
         vertices = np.arange(len(points), dtype=np.int64)
         edges = np.array([[e.vertices[0].nr, e.vertices[1].nr] for e in mesh.edges])
@@ -81,6 +97,19 @@ class SurfaceMesh:
     @property
     def edges_dict(self) -> dict[frozenset, int]:
         return generate_edges_dict(self.edges)
+
+    def generate_edges_arrays(self):
+        edges_array = np.zeros((len(self.edges)), dtype=edge_dt)
+        for i, e in enumerate(self.edges):
+            P = self.points[e[0]]
+            Q = self.points[e[1]]
+            M = 1/2*(P+Q)
+            l = np.linalg.norm(P-Q)
+            T = (P-Q)/l
+            N = np.array([-T[1], T[0]])
+            edges_array[i] = (i,M,l,T,N)
+        return edges_array
+
 
 # def generate_test_mesh() -> SurfaceMesh:
 

@@ -3,9 +3,9 @@ module for implementing blocks of fluxes, i.e. matrices containing all the fluxe
 given pair of cells.
 """
 
-from numpy_types import real_array, complex_array
+from .numpy_types import real_array, complex_array
 from numpy import dot, exp, sqrt, sinc, subtract, add, pi, outer
-from geometry import Edge
+from .geometry import Edge
 
 def SoundHard_block(k : complex, edge : Edge, d : real_array, d_d : real_array, d_1 : float) -> complex_array: #, M_trig : real_array) -> complex_array:
     

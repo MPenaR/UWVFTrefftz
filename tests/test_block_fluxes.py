@@ -1,11 +1,11 @@
 r"""
 module for testing the block fluxes against the single fluxes"""
 
-from single_fluxes import SoundHard, Inner, Radiating_local
-from block_fluxes import SoundHard_block, Inner_block, Radiating_local_block
-from geometry import Edge
+from DGTrefftz.single_fluxes import SoundHard, Inner, Radiating_local
+from DGTrefftz.block_fluxes import SoundHard_block, Inner_block, Radiating_local_block
+from DGTrefftz.geometry import Edge
 import numpy as np
-from FEM import Function
+from DGTrefftz.FEM import Function
 
 NTH = 15
 TOL = 1E-14

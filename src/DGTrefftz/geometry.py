@@ -1,7 +1,7 @@
 """
 module containing geometry entities and definitions.
 """
-from numpy_types import real_array
+from .numpy_types import real_array
 from numpy import array
 from numpy.linalg import norm
 from typing import NamedTuple

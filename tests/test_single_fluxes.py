@@ -1,4 +1,4 @@
-from single_fluxes import SoundHard, Inner, Radiating_local, Radiating_nonlocal
+from DGTrefftz.single_fluxes import SoundHard, Inner, Radiating_local, Radiating_nonlocal
 
 # , Gamma_term, Sigma_term, exact_RHS
 import pytest
