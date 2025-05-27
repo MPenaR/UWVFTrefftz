@@ -83,28 +83,3 @@ class SurfaceMesh:
 
 def generate_edges_dict(edges: int_array) -> dict[frozenset, int]:
     return {frozenset(e): i for i, e in enumerate(edges)}
-
-if __name__ == "__main__":
-
-    points = np.array([[0, 0],
-                       [1, 0],
-                       [1, 1],
-                       [0, 1]], dtype=np.float64)
-
-    edges = np.array([[0, 1],
-                      [1, 2],
-                      [2, 3],
-                      [3, 0],
-                      [0, 2]], dtype=np.int32) 
-
-    triangles = np.array([[0, 1, 2],
-                          [0, 2, 3]], dtype=np.int32)
-    
-    tri = Triangulation(x=points[:,0], y=points[:,1], triangles=triangles)
-    S = SurfaceMesh.from_Triangulation(tri)
-    print(S.edges)
-    print(S.faces)
-
-    tri_2 = S.to_matplotlib()
-    print(f'{tri_2.triangles=}')
-    print(f'{tri_2.x=}, {tri_2.y=}')
