@@ -5,6 +5,7 @@ import numpy.typing as npt
 from matplotlib.tri import Triangulation
 from itertools import combinations
 from ngsolve import Mesh
+from .boundary_conditions import BoundaryCondition
 
 float_array = npt.NDArray[np.float64]
 complex_array = npt.NDArray[np.complex128]
@@ -40,18 +41,22 @@ class SurfaceMesh:
         self.faces = faces
         self.in_triangle = in_triangle
 
-    @classmethod
-    def from_numpy(cls, points: float_array,
-                   edges: int_array,
-                   faces: int_array):
-        """it assumes the points/edges/faces IDs are their row index.
-        edges is a  n_edges x 2 array, refering to the index of its ends
-        faces is a n_faces x 3 array, refering to the index of its edges"""
 
-        vertices = np.arange(len(points), dtype=np.int64)
-        edges = edges
-        faces = faces
-        return cls(points, vertices, edges, faces)
+
+# THIS DOES NOT WORK YET AS IT DOES NOT IMPLEMENT ANY "IN_TRIANGLE" FUNCTION
+# FOR IT TO BE CONSIDERED TO WORK THIS FUNCTION NEEDS TO BE VECTORIZED
+#    @classmethod
+#    def from_numpy(cls, points: float_array,
+#                   edges: int_array,
+#                   faces: int_array):
+#        """it assumes the points/edges/faces IDs are their row index.
+#        edges is a  n_edges x 2 array, refering to the index of its ends
+#        faces is a n_faces x 3 array, refering to the index of its edges"""
+#
+#        vertices = np.arange(len(points), dtype=np.int64)
+#        edges = edges
+#        faces = faces
+#        return cls(points, vertices, edges, faces)
 
     @classmethod
     def from_netgen(cls, mesh: Mesh):
@@ -125,11 +130,6 @@ class SurfaceMesh:
         tri = Triangulation(x=points[:, 0], y=points[:, 1], triangles=triangles)
         S = cls.from_Triangulation(tri)
         return S
-
-
-
-# def generate_test_mesh() -> SurfaceMesh:
-
 
 def generate_edges_dict(edges: int_array) -> dict[frozenset, int]:
     return {frozenset(e): i for i, e in enumerate(edges)}
