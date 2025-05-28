@@ -33,11 +33,12 @@ edge_dt = [("ID", np.int64),
 
 
 class SurfaceMesh:
-    def __init__(self, points, vertices, edges, faces):
+    def __init__(self, points, vertices, edges, faces, in_triangle):
         self.points = points
         self.vertices = vertices
         self.edges = edges
         self.faces = faces
+        self.in_triangle = in_triangle
 
     @classmethod
     def from_numpy(cls, points: float_array,
@@ -61,7 +62,8 @@ class SurfaceMesh:
         vertices = np.arange(len(points), dtype=np.int64)
         edges = np.array([[e.vertices[0].nr, e.vertices[1].nr] for e in mesh.edges])
         faces = np.array([[f.edges[0].nr, f.edges[1].nr, f.edges[2].nr] for f in mesh.faces])
-        return cls(points, vertices, edges, faces)
+        in_triangle = lambda x, y : mesh(x,y).nr
+        return cls(points, vertices, edges, faces, in_triangle)
 
         
 
@@ -83,7 +85,7 @@ class SurfaceMesh:
         for n, T in enumerate(triangles):
             faces[n] = [edges_dict[frozenset(c)] for c in combinations(T, 2)]
 
-        return cls(points, vertices, edges, faces)
+        return cls(points, vertices, edges, faces, tri.get_trifinder())
 
     def to_matplotlib(self) -> Triangulation:
         x = self.points[:, 0]
