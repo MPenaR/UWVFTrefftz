@@ -1,7 +1,8 @@
 import numpy as np
 from DGTrefftz.mesh import SurfaceMesh
 from matplotlib.tri import Triangulation
-
+from netgen.geom2d import SplineGeometry
+from ngsolve import Mesh
 
 def test_from_Triangulation():
     points = np.array([[0, 0],
@@ -19,6 +20,15 @@ def test_from_Triangulation():
                                [1, 3, 4]], dtype=np.int64)
     assert np.all(faces == faces_expected)
 
+def test_from_netgen():
+    geo = SplineGeometry()
+    geo.AddRectangle((0., 0.), (1., 1.))
+    M = Mesh(geo.GenerateMesh())
+    S = SurfaceMesh.from_netgen(M)
+    faces = S.faces
+    faces_expected = np.array([[1, 3, 0],
+                               [2, 4, 1]], dtype=np.int64)
+    assert np.all(faces == faces_expected)
 
 
 
