@@ -18,6 +18,9 @@ def test_from_Triangulation():
     faces = S.faces
     faces_expected = np.array([[0, 1, 2],
                                [1, 3, 4]], dtype=np.int64)
+    x = np.array([0.3,0.6])
+    y = np.array([0.6,0.3])
+    print(S.in_triangle(x,y))
     assert np.all(faces == faces_expected)
 
 def test_from_netgen():
@@ -28,6 +31,9 @@ def test_from_netgen():
     faces = S.faces
     faces_expected = np.array([[1, 3, 0],
                                [2, 4, 1]], dtype=np.int64)
+    x = np.array([0.3,0.6])
+    y = np.array([0.6,0.3])
+    print(S.in_triangle(x,y))
     assert np.all(faces == faces_expected)
 
 

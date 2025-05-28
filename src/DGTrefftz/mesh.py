@@ -62,7 +62,7 @@ class SurfaceMesh:
         vertices = np.arange(len(points), dtype=np.int64)
         edges = np.array([[e.vertices[0].nr, e.vertices[1].nr] for e in mesh.edges])
         faces = np.array([[f.edges[0].nr, f.edges[1].nr, f.edges[2].nr] for f in mesh.faces])
-        in_triangle = lambda x, y : mesh(x,y).nr
+        in_triangle = lambda x, y : mesh(x,y)["nr"]
         return cls(points, vertices, edges, faces, in_triangle)
 
         
