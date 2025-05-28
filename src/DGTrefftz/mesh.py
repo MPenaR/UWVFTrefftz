@@ -105,9 +105,9 @@ class SurfaceMesh:
             Q = self.points[e[1]]
             M = 1/2*(P+Q)
             l = np.linalg.norm(P-Q)
-            T = (P-Q)/l
+            T = (P-Q)/length
             N = np.array([-T[1], T[0]])
-            edges_array[i] = (i,M,l,T,N)
+            edges_array[i] = (i, M, l, T, N)
         return edges_array
 
 
