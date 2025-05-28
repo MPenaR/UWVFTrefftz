@@ -107,10 +107,25 @@ class SurfaceMesh:
             Q = self.points[e[1]]
             M = 1/2*(P+Q)
             l = np.linalg.norm(P-Q)
-            T = (P-Q)/length
+            T = (P-Q)/l
             N = np.array([-T[1], T[0]])
             edges_array[i] = (i, M, l, T, N)
         return edges_array
+
+    @classmethod
+    def TestMesh(cls):
+        points = np.array([[0, 0],
+                           [1, 0],
+                           [1, 1],
+                           [0, 1]], dtype=np.float64)
+
+        triangles = np.array([[0, 1, 2],
+                              [0, 2, 3]], dtype=np.int64)
+
+        tri = Triangulation(x=points[:, 0], y=points[:, 1], triangles=triangles)
+        S = cls.from_Triangulation(tri)
+        return S
+
 
 
 # def generate_test_mesh() -> SurfaceMesh:
